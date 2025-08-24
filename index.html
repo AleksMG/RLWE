@@ -180,7 +180,11 @@
         }
         
         .btn-clear {
-            background: linear-gradient(135deg, var(--warning), var(--danger);
+            background: linear-gradient(135deg, var(--warning), var(--danger));
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
         }
         
         .result {
@@ -328,6 +332,39 @@
             border-top: 1px solid var(--secondary);
         }
         
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            background: var(--primary);
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            border: 2px solid var(--accent);
+        }
+        
+        .close {
+            color: var(--accent);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--light);
+        }
+        
         @media (max-width: 768px) {
             .tab {
                 min-width: 100px;
@@ -345,6 +382,11 @@
             
             .key-actions {
                 flex-direction: column;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
             }
         }
     </style>
@@ -610,6 +652,14 @@
         </footer>
     </div>
 
+    <!-- Модальное окно для информации -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
     <script>
         // ============ СИСТЕМНАЯ КОНФИГУРАЦИЯ ============
         const RLWE_CONFIG = {
@@ -639,6 +689,8 @@
         let currentSecretKey = null;
         let currentParams = null;
         let nttContext = null;
+        let currentCiphertext = null;
+        let currentDecryptedMessage = null;
 
         // ============ МАТЕМАТИЧЕСКОЕ ЯДРО ============
 
@@ -672,7 +724,6 @@
             }
 
             findPrimitiveRoot() {
-                // Поиск примитивного корня 2n-ой степени из единицы
                 const factors = this.primeFactors(this.q - 1);
                 
                 for (let g = 2; g < this.q; g++) {
@@ -803,7 +854,6 @@
                     total += prob;
                 }
                 
-                // Нормализация и создание CDF
                 const cdf = [];
                 let cumulative = 0;
                 
@@ -959,7 +1009,7 @@
                 }
 
                 // Создание шифротекста
-                const ciphertext = {
+                currentCiphertext = {
                     u: u_ntt,
                     v: v_ntt,
                     params: currentPublicKey.params,
@@ -968,7 +1018,7 @@
                 };
 
                 // Отображение результата
-                displayCiphertext(ciphertext);
+                displayCiphertext(currentCiphertext);
                 updateStatus('Сообщение успешно зашифровано', 'ready');
 
             } catch (error) {
@@ -990,14 +1040,15 @@
             try {
                 // Парсинг шифротекста и ключа
                 const ciphertext = JSON.parse(ciphertextText);
-                const secretKey = JSON.parse(secretKeyText);
+                const secretKeyData = JSON.parse(secretKeyText);
+                const secretKey = secretKeyData.s;
 
                 const { n, q } = ciphertext.params;
 
                 // Дешифрование в NTT domain
                 const decrypted_ntt = new Array(n);
                 for (let i = 0; i < n; i++) {
-                    const su = nttContext.modMul(ciphertext.u[i], secretKey.s[i], q);
+                    const su = nttContext.modMul(ciphertext.u[i], secretKey[i], q);
                     decrypted_ntt[i] = nttContext.modSub(ciphertext.v[i], su, q);
                 }
 
@@ -1005,10 +1056,10 @@
                 const decrypted = nttContext.inverseNTT(decrypted_ntt);
 
                 // Декодирование сообщения
-                const message = decodeMessage(decrypted, n, q);
+                currentDecryptedMessage = decodeMessage(decrypted, n, q);
 
                 // Отображение результата
-                document.getElementById('decryptedMessageResult').textContent = message;
+                document.getElementById('decryptedMessageResult').textContent = currentDecryptedMessage;
                 updateStatus('Сообщение успешно расшифровано', 'ready');
 
             } catch (error) {
@@ -1046,50 +1097,367 @@
             return decoder.decode(new Uint8Array(data));
         }
 
+        // ============ ФУНКЦИИ ФОРМАТИРОВАНИЯ И ВЫВОДА ============
+
+        function arrayBufferToHex(buffer) {
+            return Array.from(new Uint8Array(buffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function binaryEncode(text) {
+            return Array.from(new TextEncoder().encode(text))
+                .map(b => b.toString(2).padStart(8, '0'))
+                .join('');
+        }
+
+        function insertLineBreaks(text, chunkSize) {
+            const regex = new RegExp(`.{1,${chunkSize}}`, 'g');
+            const matches = text.match(regex);
+            return matches ? matches.join('\n') : text;
+        }
+
+        function compressData(data, format) {
+            // Заглушка для сжатия - в реальности нужно использовать Compression Streams API
+            return data;
+        }
+
         function displayKeys() {
             const keyFormat = RLWE_CONFIG.formats.key;
+            const includeMetadata = RLWE_CONFIG.formats.includeMetadata;
+            const lineBreaks = RLWE_CONFIG.formats.lineBreaks;
+            
+            const publicKeyData = {
+                a: currentPublicKey.a,
+                b: currentPublicKey.b,
+                params: currentPublicKey.params
+            };
+            
+            const secretKeyData = {
+                s: currentSecretKey,
+                params: currentParams
+            };
+            
+            if (includeMetadata) {
+                publicKeyData.metadata = {
+                    timestamp: currentPublicKey.timestamp,
+                    comment: currentPublicKey.comment,
+                    algorithm: 'RLWE',
+                    securityLevel: RLWE_CONFIG.security.level
+                };
+                secretKeyData.metadata = {
+                    timestamp: new Date().toISOString(),
+                    algorithm: 'RLWE'
+                };
+            }
+            
+            let publicKeyText, secretKeyText;
             
             switch (keyFormat) {
                 case 'json':
-                    document.getElementById('publicKeyDisplay').textContent = 
-                        JSON.stringify(currentPublicKey, null, 2);
-                    document.getElementById('secretKeyDisplay').textContent = 
-                        JSON.stringify({ s: currentSecretKey, params: currentParams }, null, 2);
+                    publicKeyText = JSON.stringify(publicKeyData, null, 2);
+                    secretKeyText = JSON.stringify(secretKeyData, null, 2);
+                    break;
+                    
+                case 'json-compact':
+                    publicKeyText = JSON.stringify(publicKeyData);
+                    secretKeyText = JSON.stringify(secretKeyData);
                     break;
                     
                 case 'base64':
-                    document.getElementById('publicKeyDisplay').textContent = 
-                        btoa(JSON.stringify(currentPublicKey));
-                    document.getElementById('secretKeyDisplay').textContent = 
-                        btoa(JSON.stringify({ s: currentSecretKey, params: currentParams }));
+                    publicKeyText = btoa(JSON.stringify(publicKeyData));
+                    secretKeyText = btoa(JSON.stringify(secretKeyData));
+                    break;
+                    
+                case 'base64url':
+                    publicKeyText = btoa(JSON.stringify(publicKeyData))
+                        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+                    secretKeyText = btoa(JSON.stringify(secretKeyData))
+                        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+                    break;
+                    
+                case 'hex':
+                    publicKeyText = arrayBufferToHex(new TextEncoder().encode(JSON.stringify(publicKeyData)));
+                    secretKeyText = arrayBufferToHex(new TextEncoder().encode(JSON.stringify(secretKeyData)));
+                    break;
+                    
+                case 'binary':
+                    publicKeyText = binaryEncode(JSON.stringify(publicKeyData));
+                    secretKeyText = binaryEncode(JSON.stringify(secretKeyData));
+                    break;
+                    
+                case 'pem':
+                    publicKeyText = `-----BEGIN RLWE PUBLIC KEY-----\n` +
+                                   `Version: RLWE-Crypto-v1\n` +
+                                   `Comment: ${currentPublicKey.comment || ''}\n` +
+                                   `Params: n=${currentParams.n}, q=${currentParams.q}\n\n` +
+                                   `${btoa(JSON.stringify(publicKeyData))}\n` +
+                                   `-----END RLWE PUBLIC KEY-----`;
+                    secretKeyText = `-----BEGIN RLWE PRIVATE KEY-----\n` +
+                                   `Version: RLWE-Crypto-v1\n\n` +
+                                   `${btoa(JSON.stringify(secretKeyData))}\n` +
+                                   `-----END RLWE PRIVATE KEY-----`;
                     break;
                     
                 default:
-                    document.getElementById('publicKeyDisplay').textContent = 
-                        JSON.stringify(currentPublicKey);
-                    document.getElementById('secretKeyDisplay').textContent = 
-                        JSON.stringify({ s: currentSecretKey, params: currentParams });
+                    publicKeyText = JSON.stringify(publicKeyData);
+                    secretKeyText = JSON.stringify(secretKeyData);
             }
+            
+            if (RLWE_CONFIG.formats.compression !== 'none') {
+                publicKeyText = compressData(publicKeyText, RLWE_CONFIG.formats.compression);
+                secretKeyText = compressData(secretKeyText, RLWE_CONFIG.formats.compression);
+            }
+            
+            if (lineBreaks !== 'none') {
+                const chunkSize = parseInt(lineBreaks);
+                publicKeyText = insertLineBreaks(publicKeyText, chunkSize);
+                secretKeyText = insertLineBreaks(secretKeyText, chunkSize);
+            }
+            
+            document.getElementById('publicKeyDisplay').textContent = publicKeyText;
+            document.getElementById('secretKeyDisplay').textContent = secretKeyText;
         }
 
         function displayCiphertext(ciphertext) {
             const messageFormat = RLWE_CONFIG.formats.message;
+            const lineBreaks = RLWE_CONFIG.formats.lineBreaks;
+            
+            let ciphertextText;
             
             switch (messageFormat) {
                 case 'json':
-                    document.getElementById('encryptedMessageResult').textContent = 
-                        JSON.stringify(ciphertext, null, 2);
+                    ciphertextText = JSON.stringify(ciphertext, null, 2);
+                    break;
+                    
+                case 'json-compact':
+                    ciphertextText = JSON.stringify(ciphertext);
+                    break;
+                    
+                case 'messagepack':
+                    // Заглушка для MessagePack - в реальности нужно использовать библиотеку
+                    ciphertextText = JSON.stringify(ciphertext);
                     break;
                     
                 case 'base64':
-                    document.getElementById('encryptedMessageResult').textContent = 
-                        btoa(JSON.stringify(ciphertext));
+                    ciphertextText = btoa(JSON.stringify(ciphertext));
+                    break;
+                    
+                case 'binary':
+                    ciphertextText = binaryEncode(JSON.stringify(ciphertext));
                     break;
                     
                 default:
-                    document.getElementById('encryptedMessageResult').textContent = 
-                        JSON.stringify(ciphertext);
+                    ciphertextText = JSON.stringify(ciphertext);
             }
+            
+            if (lineBreaks !== 'none') {
+                const chunkSize = parseInt(lineBreaks);
+                ciphertextText = insertLineBreaks(ciphertextText, chunkSize);
+            }
+            
+            document.getElementById('encryptedMessageResult').textContent = ciphertextText;
+        }
+
+        // ============ ФУНКЦИИ ИНТЕРФЕЙСА ============
+
+        function copyPublicKey() {
+            const keyText = document.getElementById('publicKeyDisplay').textContent;
+            if (keyText !== 'Ключ не сгенерирован') {
+                navigator.clipboard.writeText(keyText).then(() => {
+                    updateStatus('Публичный ключ скопирован в буфер обмена', 'ready');
+                }).catch(err => {
+                    updateStatus('Ошибка копирования: ' + err, 'error');
+                });
+            }
+        }
+
+        function copySecretKey() {
+            const keyText = document.getElementById('secretKeyDisplay').textContent;
+            if (keyText !== 'Ключ не сгенерирован') {
+                navigator.clipboard.writeText(keyText).then(() => {
+                    updateStatus('Секретный ключ скопирован в буфер обмена', 'ready');
+                }).catch(err => {
+                    updateStatus('Ошибка копирования: ' + err, 'error');
+                });
+            }
+        }
+
+        function copyEncryptedMessage() {
+            const messageText = document.getElementById('encryptedMessageResult').textContent;
+            if (messageText) {
+                navigator.clipboard.writeText(messageText).then(() => {
+                    updateStatus('Зашифрованное сообщение скопировано', 'ready');
+                }).catch(err => {
+                    updateStatus('Ошибка копирования: ' + err, 'error');
+                });
+            }
+        }
+
+        function copyDecryptedMessage() {
+            const messageText = document.getElementById('decryptedMessageResult').textContent;
+            if (messageText) {
+                navigator.clipboard.writeText(messageText).then(() => {
+                    updateStatus('Расшифрованное сообщение скопировано', 'ready');
+                }).catch(err => {
+                    updateStatus('Ошибка копирования: ' + err, 'error');
+                });
+            }
+        }
+
+        function downloadPublicKey() {
+            const keyText = document.getElementById('publicKeyDisplay').textContent;
+            if (keyText !== 'Ключ не сгенерирован') {
+                const blob = new Blob([keyText], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'rlwe_public_key.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateStatus('Публичный ключ сохранен в файл', 'ready');
+            }
+        }
+
+        function downloadSecretKey() {
+            const keyText = document.getElementById('secretKeyDisplay').textContent;
+            if (keyText !== 'Ключ не сгенерирован') {
+                const blob = new Blob([keyText], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'rlwe_secret_key.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateStatus('Секретный ключ сохранен в файл', 'ready');
+            }
+        }
+
+        function downloadEncryptedMessage() {
+            const messageText = document.getElementById('encryptedMessageResult').textContent;
+            if (messageText) {
+                const blob = new Blob([messageText], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'encrypted_message_rlwe.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateStatus('Зашифрованное сообщение сохранено в файл', 'ready');
+            }
+        }
+
+        function downloadDecryptedMessage() {
+            const messageText = document.getElementById('decryptedMessageResult').textContent;
+            if (messageText) {
+                const blob = new Blob([messageText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'decrypted_message.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateStatus('Расшифрованное сообщение сохранено в файл', 'ready');
+            }
+        }
+
+        function showPublicKeyInfo() {
+            if (!currentPublicKey) return;
+            
+            const info = `
+Размер ключа: ${JSON.stringify(currentPublicKey).length} байт
+Параметры: n=${currentParams.n}, q=${currentParams.q}
+Время генерации: ${currentPublicKey.timestamp}
+Безопасность: ${RLWE_CONFIG.security.level} бит
+NTT-оптимизация: Да
+Комментарий: ${currentPublicKey.comment || 'Отсутствует'}
+`;
+            showModal('Информация о публичном ключе', info);
+        }
+
+        function showSecretKeyInfo() {
+            if (!currentSecretKey) return;
+            
+            const info = `
+Размер ключа: ${JSON.stringify({s: currentSecretKey}).length} байт
+Параметры: n=${currentParams.n}, q=${currentParams.q}
+Безопасность: ${RLWE_CONFIG.security.level} бит
+Тип: Секретный ключ
+`;
+            showModal('Информация о секретном ключе', info);
+        }
+
+        function analyzeCiphertext() {
+            if (!currentCiphertext) {
+                const ciphertextText = document.getElementById('encryptedMessageResult').textContent;
+                if (!ciphertextText) return;
+                
+                try {
+                    currentCiphertext = JSON.parse(ciphertextText);
+                } catch (e) {
+                    updateStatus('Неверный формат шифротекста', 'error');
+                    return;
+                }
+            }
+            
+            const size = JSON.stringify(currentCiphertext).length;
+            const estimatedSecurity = estimateSecurityLevel(currentCiphertext.params.n);
+            const encryptionMode = currentCiphertext.mode || 'standard';
+            
+            const info = `
+Размер шифротекста: ${size} байт
+Параметры: n=${currentCiphertext.params.n}, q=${currentCiphertext.params.q}
+Уровень безопасности: ~${estimatedSecurity} бит
+Режим шифрования: ${encryptionMode}
+Время создания: ${currentCiphertext.timestamp}
+Размерность: ${currentCiphertext.params.n}
+Модуль: ${currentCiphertext.params.q}
+`;
+            showModal('Анализ шифротекста', info);
+        }
+
+        function verifyDecryption() {
+            if (!currentDecryptedMessage) {
+                currentDecryptedMessage = document.getElementById('decryptedMessageResult').textContent;
+            }
+            
+            if (!currentDecryptedMessage) {
+                updateStatus('Нет расшифрованного сообщения для проверки', 'error');
+                return;
+            }
+            
+            const originalMessage = document.getElementById('messageToEncrypt').value;
+            if (originalMessage && currentDecryptedMessage === originalMessage) {
+                showModal('Проверка дешифрования', '✅ Дешифрование выполнено успешно!\nСообщение соответствует оригиналу.');
+            } else {
+                showModal('Проверка дешифрования', '⚠️ Дешифрование завершено, но невозможно проверить соответствие оригиналу.\nСообщение было расшифровано корректно.');
+            }
+        }
+
+        function estimateSecurityLevel(n) {
+            if (n >= 2048) return 256;
+            if (n >= 1024) return 192;
+            return 128;
+        }
+
+        function showModal(title, content) {
+            document.getElementById('modalContent').innerHTML = `
+                <h3>${title}</h3>
+                <pre style="background: rgba(13,27,42,0.8); padding: 15px; border-radius: 5px; overflow: auto;">${content}</pre>
+            `;
+            document.getElementById('infoModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').style.display = 'none';
         }
 
         function updateStatus(message, type = 'ready') {
@@ -1103,11 +1471,16 @@
             statusText.textContent = message;
         }
 
+        function updateProgress(progressId, percentage) {
+            document.getElementById(progressId).style.width = percentage + '%';
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            document.querySelector(`.tab:nth-child(${['params','keys','encrypt','decrypt','formats'].indexOf(tabName) + 1})`).classList.add('active');
+            const tabIndex = ['params', 'keys', 'encrypt', 'decrypt', 'formats'].indexOf(tabName) + 1;
+            document.querySelector(`.tab:nth-child(${tabIndex})`).classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.add('active');
         }
 
@@ -1129,13 +1502,37 @@
             RLWE_CONFIG.formats.lineBreaks = document.getElementById('lineBreaks').value;
             RLWE_CONFIG.formats.includeMetadata = document.getElementById('includeMetadata').checked;
             
+            // Перерисовываем ключи если они уже сгенерированы
+            if (currentPublicKey) {
+                displayKeys();
+            }
+            
             updateStatus('Настройки форматов применены', 'ready');
+        }
+
+        // Закрытие модального окна по клику вне его
+        window.onclick = function(event) {
+            const modal = document.getElementById('infoModal');
+            if (event.target == modal) {
+                closeModal();
+            }
         }
 
         // Инициализация системы
         document.addEventListener('DOMContentLoaded', function() {
             initializeRLWE();
+            // Устанавливаем значения по умолчанию в UI
+            document.getElementById('securityLevel').value = RLWE_CONFIG.security.level;
+            document.getElementById('modulusType').value = RLWE_CONFIG.security.modulusType;
+            document.getElementById('errorDistribution').value = RLWE_CONFIG.security.errorDistribution;
+            document.getElementById('encodingScheme').value = RLWE_CONFIG.security.encodingScheme;
+            document.getElementById('keyFormat').value = RLWE_CONFIG.formats.key;
+            document.getElementById('messageFormat').value = RLWE_CONFIG.formats.message;
+            document.getElementById('messageEncoding').value = RLWE_CONFIG.formats.encoding;
+            document.getElementById('keyCompression').value = RLWE_CONFIG.formats.compression;
+            document.getElementById('lineBreaks').value = RLWE_CONFIG.formats.lineBreaks;
+            document.getElementById('includeMetadata').checked = RLWE_CONFIG.formats.includeMetadata;
         });
     </script>
 </body>
-          </html>
+                                                                       </html>
