@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantumSafe RLWE Cryptosystem</title>
+    <style>
+        :root {
+            --primary-dark: #0d1b2a;
+            --primary: #1b263b;
+            --secondary: #415a77;
+            --accent: #778da9;
+            --light: #e0e1dd;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --danger: #e63946;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(27, 38, 59, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--accent);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(13, 27, 42, 0.7);
+            border-radius: 10px;
+            border: 1px solid var(--secondary);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: var(--success);
+            text-shadow: 0 2px 10px rgba(76, 201, 240, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(13, 27, 42, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            min-width: 120px;
+        }
+        
+        .tab.active {
+            background: rgba(76, 201, 240, 0.2);
+            border-bottom: 3px solid var(--success);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .panel {
+            background: rgba(21, 31, 46, 0.9);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--secondary);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .panel h2 {
+            color: var(--success);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+            font-size: 1.5rem;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(13, 27, 42, 0.8);
+            color: var(--light);
+            font-size: 1rem;
+            border: 1px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--success);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.2);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-encrypt {
+            background: linear-gradient(135deg, #2a9d8f, #264653);
+        }
+        
+        .btn-decrypt {
+            background: linear-gradient(135deg, #e76f51, #f4a261);
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #7209b7, #3a0ca3);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, var(--warning), var(--danger);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: rgba(13, 27, 42, 0.8);
+            min-height: 120px;
+            border: 1px solid var(--secondary);
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        
+        .result-label {
+            font-size: 1rem;
+            color: var(--success);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(13, 27, 42, 0.8);
+            border-radius: 8px;
+            border: 1px solid var(--secondary);
+        }
+        
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        .status-working {
+            animation: pulse 1.5s infinite;
+            background: var(--success);
+        }
+        
+        .status-error {
+            background: var(--danger);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .key-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(13, 27, 42, 0.7);
+            border-radius: 8px;
+            border: 1px solid var(--secondary);
+            word-break: break-all;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .key-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .key-actions button {
+            flex: 1;
+            margin-top: 0;
+            padding: 10px;
+            min-width: 120px;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+            background: rgba(13, 27, 42, 0.8);
+            border-radius: 8px;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--success));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .settings-panel {
+            background: rgba(13, 27, 42, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid var(--secondary);
+        }
+        
+        .settings-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .settings-row label {
+            margin-bottom: 0;
+            min-width: 150px;
+        }
+        
+        .settings-row select, .settings-row input {
+            flex: 1;
+            margin-bottom: 0;
+            min-width: 200px;
+        }
+        
+        .format-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .format-option {
+            padding: 15px;
+            background: rgba(27, 38, 59, 0.7);
+            border-radius: 8px;
+            border: 1px solid var(--secondary);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--accent);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .tab {
+                min-width: 100px;
+                padding: 10px;
+            }
+            
+            .settings-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .settings-row select, .settings-row input {
+                width: 100%;
+            }
+            
+            .key-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>QuantumSafe RLWE Cryptosystem</h1>
+            <p class="subtitle">Профессиональная реализация криптосистемы на кольцевых решетках</p>
+        </header>
+        
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('params')">Параметры</div>
+            <div class="tab" onclick="switchTab('keys')">Ключи</div>
+            <div class="tab" onclick="switchTab('encrypt')">Шифрование</div>
+            <div class="tab" onclick="switchTab('decrypt')">Дешифрование</div>
+            <div class="tab" onclick="switchTab('formats')">Форматы</div>
+        </div>
+        
+        <div class="tab-content active" id="params-tab">
+            <div class="panel">
+                <h2>Параметры безопасности</h2>
+                
+                <div class="settings-row">
+                    <label for="securityLevel">Уровень безопасности:</label>
+                    <select id="securityLevel">
+                        <option value="128">128 бит (n=512)</option>
+                        <option value="192" selected>192 бит (n=1024)</option>
+                        <option value="256">256 бит (n=2048)</option>
+                    </select>
+                </div>
+                
+                <div class="settings-row">
+                    <label for="modulusType">Тип модуля:</label>
+                    <select id="modulusType">
+                        <option value="12289">q=12289 (NTT-дружественный)</option>
+                        <option value="7681">q=7681 (Оптимизированный)</option>
+                    </select>
+                </div>
+                
+                <div class="settings-row">
+                    <label for="errorDistribution">Распределение ошибок:</label>
+                    <select id="errorDistribution">
+                        <option value="gaussian">Дискретное гауссово (σ=3.2)</option>
+                        <option value="uniform">Равномерное (более быстрое)</option>
+                    </select>
+                </div>
+                
+                <div class="settings-row">
+                    <label for="encodingScheme">Схема кодирования:</label>
+                    <select id="encodingScheme">
+                        <option value="coefficient">Кодирование в коэффициенты</option>
+                        <option value="ntt">NTT-представление</option>
+                    </select>
+                </div>
+                
+                <button class="btn-apply" onclick="saveParameters()">Применить параметры</button>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="keys-tab">
+            <div class="panel">
+                <h2>Управление ключами</h2>
+                
+                <div class="input-group">
+                    <label for="keyComment">Комментарий к ключам:</label>
+                    <input type="text" id="keyComment" placeholder="Мои RLWE ключи">
+                </div>
+                
+                <button class="btn-generate" onclick="generateKeyPair()">🔑 Сгенерировать ключевую пару</button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="keyGenProgress"></div>
+                </div>
+                
+                <div class="result">
+                    <div class="result-label">Публичный ключ:</div>
+                    <div class="key-display" id="publicKeyDisplay">Ключ не сгенерирован</div>
+                    <div class="key-actions">
+                        <button onclick="copyPublicKey()">📋 Копировать</button>
+                        <button onclick="downloadPublicKey()">📥 Сохранить</button>
+                        <button onclick="showPublicKeyInfo()">📊 Информация</button>
+                    </div>
+                </div>
+                
+                <div class="result">
+                    <div class="result-label">Секретный ключ:</div>
+                    <div class="key-display" id="secretKeyDisplay">Ключ не сгенерирован</div>
+                    <div class="key-actions">
+                        <button onclick="copySecretKey()">📋 Копировать</button>
+                        <button onclick="downloadSecretKey()">📥 Сохранить</button>
+                        <button onclick="showSecretKeyInfo()">📊 Информация</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="encrypt-tab">
+            <div class="panel">
+                <h2>Шифрование сообщения</h2>
+                
+                <div class="input-group">
+                    <label for="recipientPublicKey">Публичный ключ получателя:</label>
+                    <textarea id="recipientPublicKey" placeholder="Вставьте публичный ключ в формате JSON..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="messageToEncrypt">Сообщение для шифрования:</label>
+                    <textarea id="messageToEncrypt" placeholder="Введите текст для шифрования...">Конфиденциальное сообщение, защищенное RLWE криптографией</textarea>
+                </div>
+                
+                <div class="settings-row">
+                    <label for="encryptionMode">Режим шифрования:</label>
+                    <select id="encryptionMode">
+                        <option value="standard">Стандартный</option>
+                        <option value="authenticated">Аутентифицированный</option>
+                        <option value="hybrid">Гибридный (RLWE + AES)</option>
+                    </select>
+                </div>
+                
+                <button class="btn-encrypt" onclick="encryptMessage()">🔒 Зашифровать сообщение</button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="encryptProgress"></div>
+                </div>
+                
+                <div class="result">
+                    <div class="result-label">Зашифрованное сообщение:</div>
+                    <div id="encryptedMessageResult"></div>
+                    <div class="key-actions">
+                        <button onclick="copyEncryptedMessage()">📋 Копировать</button>
+                        <button onclick="downloadEncryptedMessage()">📥 Сохранить</button>
+                        <button onclick="analyzeCiphertext()">📊 Анализ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="decrypt-tab">
+            <div class="panel">
+                <h2>Дешифрование сообщения</h2>
+                
+                <div class="input-group">
+                    <label for="encryptedMessage">Зашифрованное сообщение:</label>
+                    <textarea id="encryptedMessage" placeholder="Вставьте зашифрованное сообщение..."></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <label for="decryptionKey">Секретный ключ для дешифрования:</label>
+                    <textarea id="decryptionKey" placeholder="Вставьте ваш секретный ключ..."></textarea>
+                </div>
+                
+                <div class="settings-row">
+                    <label for="decryptionMode">Режим дешифрования:</label>
+                    <select id="decryptionMode">
+                        <option value="auto">Автоматическое определение</option>
+                        <option value="standard">Стандартный</option>
+                        <option value="authenticated">Аутентифицированный</option>
+                    </select>
+                </div>
+                
+                <button class="btn-decrypt" onclick="decryptMessage()">🔓 Расшифровать сообщение</button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="decryptProgress"></div>
+                </div>
+                
+                <div class="result">
+                    <div class="result-label">Расшифрованное сообщение:</div>
+                    <div id="decryptedMessageResult"></div>
+                    <div class="key-actions">
+                        <button onclick="copyDecryptedMessage()">📋 Копировать</button>
+                        <button onclick="downloadDecryptedMessage()">📥 Сохранить</button>
+                        <button onclick="verifyDecryption()">✅ Проверить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="formats-tab">
+            <div class="panel">
+                <h2>Настройки форматов</h2>
+                
+                <div class="format-options">
+                    <div class="format-option">
+                        <h3>Форматы ключей</h3>
+                        <div class="settings-row">
+                            <label for="keyFormat">Формат представления:</label>
+                            <select id="keyFormat">
+                                <option value="json">JSON (полный)</option>
+                                <option value="json-compact">JSON (компактный)</option>
+                                <option value="base64">Base64</option>
+                                <option value="base64url">Base64 URL Safe</option>
+                                <option value="hex">Hex</option>
+                                <option value="binary">Бинарный</option>
+                                <option value="pem">PEM-like</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <label for="keyCompression">Сжатие:</label>
+                            <select id="keyCompression">
+                                <option value="none">Без сжатия</option>
+                                <option value="gzip">GZIP</option>
+                                <option value="brotli">Brotli</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="format-option">
+                        <h3>Форматы сообщений</h3>
+                        <div class="settings-row">
+                            <label for="messageFormat">Формат шифротекста:</label>
+                            <select id="messageFormat">
+                                <option value="json">JSON Structured</option>
+                                <option value="json-compact">JSON Compact</option>
+                                <option value="messagepack">MessagePack</option>
+                                <option value="base64">Base64</option>
+                                <option value="binary">Binary</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <label for="messageEncoding">Кодировка:</label>
+                            <select id="messageEncoding">
+                                <option value="utf8">UTF-8</option>
+                                <option value="base64">Base64</option>
+                                <option value="hex">Hex</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="format-option">
+                        <h3>Дополнительные опции</h3>
+                        <div class="settings-row">
+                            <label for="lineBreaks">Переносы строк:</label>
+                            <select id="lineBreaks">
+                                <option value="64">Через 64 символа</option>
+                                <option value="76">Через 76 символов (стандарт)</option>
+                                <option value="80">Через 80 символов</option>
+                                <option value="none">Без переносов</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-row">
+                            <label for="includeMetadata">Включать метаданные:</label>
+                            <input type="checkbox" id="includeMetadata" checked>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-apply" onclick="applyFormatSettings()">Применить настройки форматов</button>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <span id="statusText">Система инициализирована. Выберите параметры безопасности.</span>
+        </div>
+        
+        <footer>
+            <p>QuantumSafe RLWE Cryptosystem v2.0 | Post-Quantum Cryptographic System | 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============ СИСТЕМНАЯ КОНФИГУРАЦИЯ ============
+        const RLWE_CONFIG = {
+            parameters: {
+                '128': { n: 512, q: 12289, sigma: 3.2 },
+                '192': { n: 1024, q: 12289, sigma: 3.2 },
+                '256': { n: 2048, q: 12289, sigma: 3.2 }
+            },
+            formats: {
+                key: 'json',
+                message: 'json',
+                encoding: 'utf8',
+                compression: 'none',
+                lineBreaks: '76',
+                includeMetadata: true
+            },
+            security: {
+                level: '192',
+                modulusType: '12289',
+                errorDistribution: 'gaussian',
+                encodingScheme: 'coefficient'
+            }
+        };
+
+        // Глобальные состояния
+        let currentPublicKey = null;
+        let currentSecretKey = null;
+        let currentParams = null;
+        let nttContext = null;
+
+        // ============ МАТЕМАТИЧЕСКОЕ ЯДРО ============
+
+        class NTTContext {
+            constructor(n, q) {
+                this.n = n;
+                this.q = q;
+                this.roots = this.precomputeRoots();
+                this.invRoots = this.precomputeInverseRoots();
+                this.invN = this.modInverse(n, q);
+            }
+
+            precomputeRoots() {
+                const root = this.findPrimitiveRoot();
+                const roots = new Array(this.n);
+                roots[0] = 1;
+                
+                for (let i = 1; i < this.n; i++) {
+                    roots[i] = this.modPow(root, i, this.q);
+                }
+                
+                return roots;
+            }
+
+            precomputeInverseRoots() {
+                const invRoots = new Array(this.n);
+                for (let i = 0; i < this.n; i++) {
+                    invRoots[i] = this.modInverse(this.roots[i], this.q);
+                }
+                return invRoots;
+            }
+
+            findPrimitiveRoot() {
+                // Поиск примитивного корня 2n-ой степени из единицы
+                const factors = this.primeFactors(this.q - 1);
+                
+                for (let g = 2; g < this.q; g++) {
+                    if (this.modPow(g, (this.q - 1) / 2, this.q) !== 1) {
+                        let valid = true;
+                        for (const factor of factors) {
+                            if (factor !== 2 && this.modPow(g, (this.q - 1) / factor, this.q) === 1) {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        if (valid) return g;
+                    }
+                }
+                throw new Error("Primitive root not found");
+            }
+
+            primeFactors(n) {
+                const factors = new Set();
+                while (n % 2 === 0) {
+                    factors.add(2);
+                    n = n / 2;
+                }
+                
+                for (let i = 3; i <= Math.sqrt(n); i += 2) {
+                    while (n % i === 0) {
+                        factors.add(i);
+                        n = n / i;
+                    }
+                }
+                
+                if (n > 2) factors.add(n);
+                return Array.from(factors);
+            }
+
+            modPow(base, exponent, mod) {
+                let result = 1n;
+                base = BigInt(base) % BigInt(mod);
+                let exp = BigInt(exponent);
+                
+                while (exp > 0) {
+                    if (exp % 2n === 1n) {
+                        result = (result * base) % BigInt(mod);
+                    }
+                    base = (base * base) % BigInt(mod);
+                    exp = exp / 2n;
+                }
+                
+                return Number(result);
+            }
+
+            modInverse(a, m) {
+                let [old_r, r] = [BigInt(a), BigInt(m)];
+                let [old_s, s] = [1n, 0n];
+                
+                while (r !== 0n) {
+                    const quotient = old_r / r;
+                    [old_r, r] = [r, old_r - quotient * r];
+                    [old_s, s] = [s, old_s - quotient * s];
+                }
+                
+                return Number(old_s < 0n ? old_s + BigInt(m) : old_s) % m;
+            }
+
+            forwardNTT(poly) {
+                return this.transform(poly, this.roots);
+            }
+
+            inverseNTT(poly) {
+                const result = this.transform(poly, this.invRoots);
+                for (let i = 0; i < this.n; i++) {
+                    result[i] = this.modMul(result[i], this.invN, this.q);
+                }
+                return result;
+            }
+
+            transform(poly, roots) {
+                const result = [...poly];
+                let len = this.n / 2;
+                
+                for (let i = 1; i < this.n; i <<= 1) {
+                    for (let j = 0; j < this.n; j += 2 * i) {
+                        for (let k = 0; k < i; k++) {
+                            const u = result[j + k];
+                            const v = this.modMul(result[j + k + i], roots[this.n / (2 * i) * k], this.q);
+                            
+                            result[j + k] = this.modAdd(u, v, this.q);
+                            result[j + k + i] = this.modSub(u, v, this.q);
+                        }
+                    }
+                }
+                
+                return result;
+            }
+
+            modAdd(a, b, mod) {
+                return (a + b) % mod;
+            }
+
+            modSub(a, b, mod) {
+                return (a - b + mod) % mod;
+            }
+
+            modMul(a, b, mod) {
+                return Number((BigInt(a) * BigInt(b)) % BigInt(mod));
+            }
+        }
+
+        class GaussianSampler {
+            constructor(sigma, tau = 6) {
+                this.sigma = sigma;
+                this.tau = tau;
+                this.precomputed = this.precomputeDistribution();
+            }
+
+            precomputeDistribution() {
+                const values = [];
+                const probabilities = [];
+                let total = 0;
+                
+                const min = -Math.floor(this.tau * this.sigma);
+                const max = Math.floor(this.tau * this.sigma);
+                
+                for (let x = min; x <= max; x++) {
+                    const prob = Math.exp(-x * x / (2 * this.sigma * this.sigma));
+                    values.push(x);
+                    probabilities.push(prob);
+                    total += prob;
+                }
+                
+                // Нормализация и создание CDF
+                const cdf = [];
+                let cumulative = 0;
+                
+                for (let i = 0; i < values.length; i++) {
+                    cumulative += probabilities[i] / total;
+                    cdf.push({ value: values[i], cumulative });
+                }
+                
+                return cdf;
+            }
+
+            sample() {
+                const u = crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296;
+                
+                for (const item of this.precomputed) {
+                    if (u <= item.cumulative) {
+                        return item.value;
+                    }
+                }
+                
+                return this.precomputed[this.precomputed.length - 1].value;
+            }
+
+            sampleArray(n) {
+                const result = new Array(n);
+                for (let i = 0; i < n; i++) {
+                    result[i] = this.sample();
+                }
+                return result;
+            }
+        }
+
+        // ============ ОСНОВНЫЕ ФУНКЦИИ RLWE ============
+
+        function initializeRLWE() {
+            const securityLevel = RLWE_CONFIG.security.level;
+            currentParams = RLWE_CONFIG.parameters[securityLevel];
+            nttContext = new NTTContext(currentParams.n, currentParams.q);
+            
+            updateStatus(`Инициализированы параметры: n=${currentParams.n}, q=${currentParams.q}`, 'ready');
+        }
+
+        function generateKeyPair() {
+            if (!currentParams) {
+                updateStatus('Сначала инициализируйте параметры', 'error');
+                return;
+            }
+
+            updateStatus('Генерация ключей...', 'working');
+            
+            try {
+                const { n, q, sigma } = currentParams;
+                const sampler = new GaussianSampler(sigma);
+
+                // Генерация секретного ключа
+                currentSecretKey = sampler.sampleArray(n);
+
+                // Генерация публичного параметра a
+                const a = new Array(n);
+                const randomValues = new Uint32Array(n);
+                window.crypto.getRandomValues(randomValues);
+                
+                for (let i = 0; i < n; i++) {
+                    a[i] = randomValues[i] % q;
+                }
+
+                // Генерация ошибки e
+                const e = sampler.sampleArray(n);
+
+                // Вычисление b = a*s + e в NTT domain
+                const a_ntt = nttContext.forwardNTT(a);
+                const s_ntt = nttContext.forwardNTT(currentSecretKey);
+                const e_ntt = nttContext.forwardNTT(e);
+
+                const b_ntt = new Array(n);
+                for (let i = 0; i < n; i++) {
+                    b_ntt[i] = nttContext.modAdd(
+                        nttContext.modMul(a_ntt[i], s_ntt[i], q),
+                        e_ntt[i],
+                        q
+                    );
+                }
+
+                currentPublicKey = {
+                    a: a_ntt,
+                    b: b_ntt,
+                    params: currentParams,
+                    timestamp: new Date().toISOString(),
+                    comment: document.getElementById('keyComment').value || 'RLWE Key'
+                };
+
+                // Отображение ключей
+                displayKeys();
+                updateStatus('Ключевая пара успешно сгенерирована', 'ready');
+
+            } catch (error) {
+                updateStatus('Ошибка генерации ключей: ' + error.message, 'error');
+            }
+        }
+
+        function encryptMessage() {
+            if (!currentPublicKey) {
+                updateStatus('Сначала сгенерируйте ключи', 'error');
+                return;
+            }
+
+            const message = document.getElementById('messageToEncrypt').value;
+            if (!message) {
+                updateStatus('Введите сообщение для шифрования', 'error');
+                return;
+            }
+
+            updateStatus('Шифрование сообщения...', 'working');
+
+            try {
+                const { n, q, sigma } = currentPublicKey.params;
+                const sampler = new GaussianSampler(sigma);
+
+                // Кодирование сообщения
+                const messagePoly = encodeMessage(message, n, q);
+                const message_ntt = nttContext.forwardNTT(messagePoly);
+
+                // Генерация случайного полинома r
+                const r = sampler.sampleArray(n);
+                const r_ntt = nttContext.forwardNTT(r);
+
+                // Генерация ошибок e1, e2
+                const e1 = sampler.sampleArray(n);
+                const e2 = sampler.sampleArray(n);
+                const e1_ntt = nttContext.forwardNTT(e1);
+                const e2_ntt = nttContext.forwardNTT(e2);
+
+                // Шифрование в NTT domain
+                const u_ntt = new Array(n);
+                const v_ntt = new Array(n);
+
+                for (let i = 0; i < n; i++) {
+                    u_ntt[i] = nttContext.modAdd(
+                        nttContext.modMul(currentPublicKey.a[i], r_ntt[i], q),
+                        e1_ntt[i],
+                        q
+                    );
+
+                    v_ntt[i] = nttContext.modAdd(
+                        nttContext.modAdd(
+                            nttContext.modMul(currentPublicKey.b[i], r_ntt[i], q),
+                            e2_ntt[i],
+                            q
+                        ),
+                        message_ntt[i],
+                        q
+                    );
+                }
+
+                // Создание шифротекста
+                const ciphertext = {
+                    u: u_ntt,
+                    v: v_ntt,
+                    params: currentPublicKey.params,
+                    timestamp: new Date().toISOString(),
+                    mode: document.getElementById('encryptionMode').value
+                };
+
+                // Отображение результата
+                displayCiphertext(ciphertext);
+                updateStatus('Сообщение успешно зашифровано', 'ready');
+
+            } catch (error) {
+                updateStatus('Ошибка шифрования: ' + error.message, 'error');
+            }
+        }
+
+        function decryptMessage() {
+            const ciphertextText = document.getElementById('encryptedMessage').value;
+            const secretKeyText = document.getElementById('decryptionKey').value;
+
+            if (!ciphertextText || !secretKeyText) {
+                updateStatus('Введите шифротекст и секретный ключ', 'error');
+                return;
+            }
+
+            updateStatus('Дешифрование сообщения...', 'working');
+
+            try {
+                // Парсинг шифротекста и ключа
+                const ciphertext = JSON.parse(ciphertextText);
+                const secretKey = JSON.parse(secretKeyText);
+
+                const { n, q } = ciphertext.params;
+
+                // Дешифрование в NTT domain
+                const decrypted_ntt = new Array(n);
+                for (let i = 0; i < n; i++) {
+                    const su = nttContext.modMul(ciphertext.u[i], secretKey.s[i], q);
+                    decrypted_ntt[i] = nttContext.modSub(ciphertext.v[i], su, q);
+                }
+
+                // Обратное NTT преобразование
+                const decrypted = nttContext.inverseNTT(decrypted_ntt);
+
+                // Декодирование сообщения
+                const message = decodeMessage(decrypted, n, q);
+
+                // Отображение результата
+                document.getElementById('decryptedMessageResult').textContent = message;
+                updateStatus('Сообщение успешно расшифровано', 'ready');
+
+            } catch (error) {
+                updateStatus('Ошибка дешифрования: ' + error.message, 'error');
+            }
+        }
+
+        // ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
+
+        function encodeMessage(message, n, q) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(message);
+            const scale = Math.floor(q / 256);
+            
+            const result = new Array(n).fill(0);
+            
+            for (let i = 0; i < Math.min(data.length, n); i++) {
+                result[i] = data[i] * scale;
+            }
+            
+            return result;
+        }
+
+        function decodeMessage(coefficients, n, q) {
+            const scale = Math.floor(q / 256);
+            const data = [];
+            
+            for (let i = 0; i < n; i++) {
+                const value = Math.round(coefficients[i] / scale) % 256;
+                if (value === 0) break;
+                data.push(value);
+            }
+            
+            const decoder = new TextDecoder();
+            return decoder.decode(new Uint8Array(data));
+        }
+
+        function displayKeys() {
+            const keyFormat = RLWE_CONFIG.formats.key;
+            
+            switch (keyFormat) {
+                case 'json':
+                    document.getElementById('publicKeyDisplay').textContent = 
+                        JSON.stringify(currentPublicKey, null, 2);
+                    document.getElementById('secretKeyDisplay').textContent = 
+                        JSON.stringify({ s: currentSecretKey, params: currentParams }, null, 2);
+                    break;
+                    
+                case 'base64':
+                    document.getElementById('publicKeyDisplay').textContent = 
+                        btoa(JSON.stringify(currentPublicKey));
+                    document.getElementById('secretKeyDisplay').textContent = 
+                        btoa(JSON.stringify({ s: currentSecretKey, params: currentParams }));
+                    break;
+                    
+                default:
+                    document.getElementById('publicKeyDisplay').textContent = 
+                        JSON.stringify(currentPublicKey);
+                    document.getElementById('secretKeyDisplay').textContent = 
+                        JSON.stringify({ s: currentSecretKey, params: currentParams });
+            }
+        }
+
+        function displayCiphertext(ciphertext) {
+            const messageFormat = RLWE_CONFIG.formats.message;
+            
+            switch (messageFormat) {
+                case 'json':
+                    document.getElementById('encryptedMessageResult').textContent = 
+                        JSON.stringify(ciphertext, null, 2);
+                    break;
+                    
+                case 'base64':
+                    document.getElementById('encryptedMessageResult').textContent = 
+                        btoa(JSON.stringify(ciphertext));
+                    break;
+                    
+                default:
+                    document.getElementById('encryptedMessageResult').textContent = 
+                        JSON.stringify(ciphertext);
+            }
+        }
+
+        function updateStatus(message, type = 'ready') {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            indicator.className = 'status-indicator';
+            if (type === 'working') indicator.classList.add('status-working');
+            if (type === 'error') indicator.classList.add('status-error');
+            
+            statusText.textContent = message;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`.tab:nth-child(${['params','keys','encrypt','decrypt','formats'].indexOf(tabName) + 1})`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        function saveParameters() {
+            RLWE_CONFIG.security.level = document.getElementById('securityLevel').value;
+            RLWE_CONFIG.security.modulusType = document.getElementById('modulusType').value;
+            RLWE_CONFIG.security.errorDistribution = document.getElementById('errorDistribution').value;
+            RLWE_CONFIG.security.encodingScheme = document.getElementById('encodingScheme').value;
+            
+            initializeRLWE();
+            updateStatus('Параметры безопасности применены', 'ready');
+        }
+
+        function applyFormatSettings() {
+            RLWE_CONFIG.formats.key = document.getElementById('keyFormat').value;
+            RLWE_CONFIG.formats.message = document.getElementById('messageFormat').value;
+            RLWE_CONFIG.formats.encoding = document.getElementById('messageEncoding').value;
+            RLWE_CONFIG.formats.compression = document.getElementById('keyCompression').value;
+            RLWE_CONFIG.formats.lineBreaks = document.getElementById('lineBreaks').value;
+            RLWE_CONFIG.formats.includeMetadata = document.getElementById('includeMetadata').checked;
+            
+            updateStatus('Настройки форматов применены', 'ready');
+        }
+
+        // Инициализация системы
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeRLWE();
+        });
+    </script>
+</body>
+          </html>
