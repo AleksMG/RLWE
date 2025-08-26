@@ -580,6 +580,7 @@
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
+            font-size: 0.85rem;
         }
 
         .copy-feedback.show {
@@ -772,7 +773,6 @@
                         <i class="fas fa-file-import"></i> Load Settings
                     </label>
                     <button class="btn btn-outline" id="saveSettings"><i class="fas fa-file-export"></i> Save Settings</button>
-                    <button class="btn btn-outline" id="advancedSettings"><i class="fas fa-cogs"></i> Advanced</button>
                 </div>
                 
                 <div id="alphabetStatus" class="alert" style="display: none;"></div>
@@ -887,6 +887,7 @@
                 this.fillerChar = "~";
                 this.encryptionKey = "";
                 this.rounds = 5;
+                this.salt = window.crypto.getRandomValues(new Uint8Array(16)).join('');
                 this.fillMethod = "row";
                 this.initEventListeners();
                 this.initTheme();
@@ -930,7 +931,6 @@
                 document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
                 document.getElementById('saveSettings').addEventListener('click', () => this.saveSettingsToFile());
                 document.getElementById('settingsFileInput').addEventListener('change', (e) => this.loadSettingsFromFile(e));
-                document.getElementById('advancedSettings').addEventListener('click', () => this.showAdvancedSettings());
                 
                 // Dynamic updates
                 document.getElementById('encryptionKey').addEventListener('input', (e) => {
@@ -1053,7 +1053,7 @@
                         }
                     } else {
                         // With key - deterministic generation
-                        const masterSeed = await this.deriveKey(key, 100000);
+                        const masterSeed = await this.deriveKey(key, this.salt, 100000);
                         
                         for (let round = 0; round < this.rounds; round++) {
                             const roundSeed = await this.hmacSha256(masterSeed, round.toString());
@@ -1090,14 +1090,7 @@
 
             async generateCubeFromSeed(seed) {
                 const shuffledAlphabet = await this.deterministicShuffle(this.alphabet, seed);
-                
-                switch(this.fillMethod) {
-                    case 'column': return this.fillByColumns(shuffledAlphabet);
-                    case 'diagonal': return this.fillDiagonal(shuffledAlphabet);
-                    case 'spiral': return this.fillSpiral(shuffledAlphabet);
-                    case 'checkerboard': return this.fillCheckerboard(shuffledAlphabet);
-                    default: return this.fillByRows(shuffledAlphabet);
-                }
+                return this.fillByRows(shuffledAlphabet);
             }
 
             // ========================
@@ -1114,109 +1107,6 @@
                         const cubeRow = [];
                         for (let col = 0; col < 4; col++) {
                             cubeRow.push(shuffledAlphabet[pos++ % shuffledAlphabet.length]);
-                        }
-                        cubeLayer.push(cubeRow);
-                    }
-                    cube.push(cubeLayer);
-                }
-                
-                return cube;
-            }
-
-            fillByColumns(shuffledAlphabet) {
-                const cube = [];
-                let pos = 0;
-                
-                for (let layer = 0; layer < 4; layer++) {
-                    const cubeLayer = [];
-                    for (let col = 0; col < 4; col++) {
-                        const cubeCol = [];
-                        for (let row = 0; row < 4; row++) {
-                            cubeCol.push(shuffledAlphabet[pos++ % shuffledAlphabet.length]);
-                        }
-                        cubeLayer.push(cubeCol);
-                    }
-                    cube.push(cubeLayer);
-                }
-                
-                return cube;
-            }
-
-            fillDiagonal(shuffledAlphabet) {
-                const cube = [];
-                let pos = 0;
-                
-                for (let layer = 0; layer < 4; layer++) {
-                    const cubeLayer = Array(4).fill().map(() => Array(4).fill(null));
-                    
-                    // Fill diagonals
-                    for (let diag = 0; diag < 7; diag++) {
-                        for (let row = 0; row < 4; row++) {
-                            const col = diag - row;
-                            if (col >= 0 && col < 4 && cubeLayer[row][col] === null) {
-                                cubeLayer[row][col] = shuffledAlphabet[pos++ % shuffledAlphabet.length];
-                            }
-                        }
-                    }
-                    cube.push(cubeLayer);
-                }
-                
-                return cube;
-            }
-
-            fillSpiral(shuffledAlphabet) {
-                const cube = [];
-                let pos = 0;
-                
-                for (let layer = 0; layer < 4; layer++) {
-                    const cubeLayer = Array(4).fill().map(() => Array(4).fill(null));
-                    let top = 0, bottom = 3, left = 0, right = 3;
-                    let direction = 0; // 0: right, 1: down, 2: left, 3: up
-                    
-                    while (top <= bottom && left <= right) {
-                        if (direction === 0) {
-                            for (let i = left; i <= right; i++) {
-                                cubeLayer[top][i] = shuffledAlphabet[pos++ % shuffledAlphabet.length];
-                            }
-                            top++;
-                        } else if (direction === 1) {
-                            for (let i = top; i <= bottom; i++) {
-                                cubeLayer[i][right] = shuffledAlphabet[pos++ % shuffledAlphabet.length];
-                            }
-                            right--;
-                        } else if (direction === 2) {
-                            for (let i = right; i >= left; i--) {
-                                cubeLayer[bottom][i] = shuffledAlphabet[pos++ % shuffledAlphabet.length];
-                            }
-                            bottom--;
-                        } else if (direction === 3) {
-                            for (let i = bottom; i >= top; i--) {
-                                cubeLayer[i][left] = shuffledAlphabet[pos++ % shuffledAlphabet.length];
-                            }
-                            left++;
-                        }
-                        direction = (direction + 1) % 4;
-                    }
-                    cube.push(cubeLayer);
-                }
-                
-                return cube;
-            }
-
-            fillCheckerboard(shuffledAlphabet) {
-                const cube = [];
-                let pos = 0;
-                let reversePos = shuffledAlphabet.length - 1;
-                
-                for (let layer = 0; layer < 4; layer++) {
-                    const cubeLayer = [];
-                    for (let row = 0; row < 4; row++) {
-                        const cubeRow = [];
-                        for (let col = 0; col < 4; col++) {
-                            const index = (row % 2 === col % 2) 
-                                ? pos++ 
-                                : reversePos--;
-                            cubeRow.push(shuffledAlphabet[index % shuffledAlphabet.length]);
                         }
                         cubeLayer.push(cubeRow);
                     }
@@ -1259,7 +1149,7 @@
                 return arr.join('');
             }
 
-            async deriveKey(password, iterations) {
+            async deriveKey(password, salt, iterations) {
                 const encoder = new TextEncoder();
                 const keyMaterial = await window.crypto.subtle.importKey(
                     'raw',
@@ -1269,13 +1159,10 @@
                     ['deriveBits']
                 );
                 
-                // Use a fixed salt for deterministic key derivation (ensures reversibility)
-                const salt = encoder.encode("fixed_salt_for_reversibility");
-                
                 const derivedBits = await window.crypto.subtle.deriveBits(
                     {
                         name: 'PBKDF2',
-                        salt: salt,
+                        salt: encoder.encode(salt),
                         iterations: iterations,
                         hash: 'SHA-256'
                     },
@@ -1705,7 +1592,7 @@
                             <td>${i + 1}</td>
                             <td>${layer}</td>
                             <td>${row}</td>
-                            <td>${col}</td>
+                            <td>${col</td>
                             <td><code>${this.escapeHtml(char)}</code></td>
                         </tr>
                     `;
@@ -1871,61 +1758,6 @@
             // UI Methods
             // ========================
 
-            showAdvancedSettings() {
-                const modalHtml = `
-                    <div class="modal-overlay">
-                        <div class="modal-content">
-                            <button class="modal-close">&times;</button>
-                            <h3><i class="fas fa-cogs"></i> Advanced Settings</h3>
-                            
-                            <div class="form-group">
-                                <label for="fillMethod">Cube Fill Method:</label>
-                                <select id="fillMethod">
-                                    <option value="row">By Rows (Default)</option>
-                                    <option value="column">By Columns</option>
-                                    <option value="diagonal">Diagonal</option>
-                                    <option value="spiral">Spiral</option>
-                                    <option value="checkerboard">Checkerboard</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="iterations">PBKDF2 Iterations (10,000-1,000,000)</label>
-                                <input type="number" id="iterations" value="100000" min="10000" max="1000000">
-                            </div>
-                            
-                            <div class="btn-group">
-                                <button class="btn" id="saveAdvanced">Save Settings</button>
-                                <button class="btn btn-outline" id="cancelAdvanced">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                const modal = document.createElement('div');
-                modal.innerHTML = modalHtml;
-                document.body.appendChild(modal);
-                
-                // Set current values
-                modal.querySelector('#fillMethod').value = this.fillMethod;
-                modal.querySelector('#iterations').value = 100000;
-                
-                // Event handlers
-                modal.querySelector('#saveAdvanced').addEventListener('click', () => {
-                    this.fillMethod = modal.querySelector('#fillMethod').value;
-                    modal.remove();
-                });
-                
-                const closeModal = () => modal.remove();
-                modal.querySelector('.modal-close').addEventListener('click', closeModal);
-                modal.querySelector('#cancelAdvanced').addEventListener('click', closeModal);
-                modal.querySelector('.modal-overlay').addEventListener('click', (e) => {
-                    if (e.target === modal.querySelector('.modal-overlay')) {
-                        closeModal();
-                    }
-                });
-            }
-
             visualizeCubes() {
                 const container = document.getElementById('cubesContainer');
                 container.innerHTML = '';
@@ -2081,7 +1913,7 @@
             }
 
             showSuccess(element, message) {
-                element.innerHTML = `<i class="fas fa-check-circle status-icon"></i> ${message}`;
+                element.innerHTML = `<i class="fas fa-check-circle status-icon"></i> ${message`;
                 element.classList.remove('alert-error', 'alert-warning');
                 element.classList.add('alert-success');
                 element.style.display = 'block';
@@ -2129,6 +1961,7 @@
                     encryptionKey: "", // Never save the actual key
                     keyHash: this.hashString(this.encryptionKey),
                     rounds: this.rounds,
+                    salt: this.salt,
                     fillMethod: this.fillMethod,
                     cubeHashes: this.cubes.map(cube => this.hashString(JSON.stringify(cube)))
                 };
@@ -2184,6 +2017,7 @@
                         this.substitutionTable = settings.substitutionTable;
                         this.fillerChar = settings.fillerChar;
                         this.rounds = settings.rounds;
+                        this.salt = settings.salt || window.crypto.getRandomValues(new Uint8Array(16)).join('');
                         this.fillMethod = settings.fillMethod || "row";
                         
                         // Update previews
@@ -2211,4 +2045,4 @@
         });
     </script>
 </body>
-                                </html>
+    </html>
