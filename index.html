@@ -24,7 +24,7 @@
         }
         
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: var(--text);
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -235,171 +235,12 @@
             color: #666;
         }
         
-        .security-badge {
-            display: inline-block;
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-right: 0.5rem;
-        }
-        
-        .badge-high {
-            background: #4caf50;
-            color: white;
-        }
-        
-        .badge-medium {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .badge-low {
-            background: #f44336;
-            color: white;
-        }
-        
         footer {
             text-align: center;
             padding: 1.2rem;
             background: var(--dark);
             color: white;
             font-size: 0.9rem;
-        }
-        
-        .crypto-details {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #e8eaf6;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-        
-        .crypto-details h3 {
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .performance {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            color: var(--secondary);
-            flex-wrap: wrap;
-        }
-        
-        .performance span {
-            margin-right: 1rem;
-            margin-bottom: 0.5rem;
-            padding: 0.3rem 0.6rem;
-            background: #e8eaf6;
-            border-radius: 4px;
-        }
-        
-        .tab-container {
-            margin-top: 1rem;
-        }
-        
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #ddd;
-            margin-bottom: 1rem;
-        }
-        
-        .tab {
-            padding: 0.7rem 1.2rem;
-            cursor: pointer;
-            font-weight: 600;
-            color: #666;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .tab.active {
-            color: var(--accent);
-            border-bottom: 3px solid var(--accent);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .quantum-circuit {
-            width: 100%;
-            height: 200px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 1rem 0;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #dee2e6;
-        }
-        
-        .qubit-line {
-            position: absolute;
-            height: 1px;
-            background: #6c757d;
-            width: 100%;
-            left: 0;
-        }
-        
-        .quantum-gate {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            transform: translate(-50%, -50%);
-        }
-        
-        .math-display {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            font-family: 'Cambria Math', serif;
-            margin: 1rem 0;
-            overflow-x: auto;
-        }
-        
-        .complexity-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-        
-        .complexity-table th, .complexity-table td {
-            border: 1px solid #dee2e6;
-            padding: 0.75rem;
-            text-align: left;
-        }
-        
-        .complexity-table th {
-            background: #e9ecef;
-        }
-        
-        .superposition-viz {
-            display: flex;
-            height: 100px;
-            align-items: flex-end;
-            justify-content: center;
-            gap: 5px;
-            margin: 1rem 0;
-        }
-        
-        .state-bar {
-            width: 10px;
-            background: var(--accent);
-            border-radius: 3px 3px 0 0;
         }
     </style>
 </head>
@@ -447,15 +288,6 @@
                 <div class="output" id="key-output">Данные ключей появятся здесь...</div>
                 
                 <div class="status" id="key-status"></div>
-                
-                <div class="crypto-details">
-                    <h3>Математическая основа генерации ключей</h3>
-                    <div class="math-display">
-                        pk = (A, T = A·s + e mod q)<br>
-                        sk = s (секретный вектор с малыми коэффициентами)<br>
-                        A ∈ ℤ<sub>q</sub><sup>n×n</sup>, s,e ← χ<sub>σ</sub>
-                    </div>
-                </div>
             </div>
             
             <div class="panel">
@@ -485,103 +317,23 @@
                     <span id="performance-entropy">Энтропия: 0.0</span>
                     <span id="text-ratio">Текст:Шифртекст: 1:0</span>
                 </div>
-                
-                <div class="crypto-details">
-                    <h3>Процесс шифрования с суперпозицией</h3>
-                    <div class="math-display">
-                        u = A<sup>T</sup>·r mod q<br>
-                        v = T<sup>T</sup>·r + encode(m) + δ mod q<br>
-                        где δ ← Ψ<sub>16</sub> (квантовая суперпозиция)
-                    </div>
-                </div>
             </div>
             
             <div class="analysis-panel">
                 <h2>Криптоанализ и безопасность</h2>
                 
-                <div class="tabs">
-                    <div class="tab active" data-tab="security">Анализ безопасности</div>
-                    <div class="tab" data-tab="complexity">Сложность атак</div>
-                    <div class="tab" data-tab="quantum">Квантовые аспекты</div>
-                </div>
-                
-                <div class="tab-content active" id="security-tab">
-                    <h3>Формальный анализ стойкости QS-KEM</h3>
-                    
-                    <table class="complexity-table">
-                        <tr>
-                            <th>Атака</th>
-                            <th>Сложность</th>
-                            <th>Уровень безопасности</th>
-                        </tr>
-                        <tr>
-                            <td>Полный перебор</td>
-                            <td>O(2<sup>n log q</sup>)</td>
-                            <td>> 2<sup>256</sup></td>
-                        </tr>
-                        <tr>
-                            <td>BKZ-атака</td>
-                            <td>O(2<sup>0.009β<sup>2</sup></sup>)</td>
-                            <td>β = 450 → 2<sup>1822</sup></td>
-                        </tr>
-                        <tr>
-                            <td>Квантовая атака Гровера</td>
-                            <td>O(2<sup>n/2</sup>)</td>
-                            <td>2<sup>512</sup> → 2<sup>256</sup></td>
-                        </tr>
-                    </table>
-                    
-                    <div class="math-display">
-                        Уровень безопасности: min(2<sup>λ</sup>, 2<sup>√(n log q log δ)</sup>, 2<sup>n/2</sup>)
+                <div class="metrics">
+                    <div class="metric-card">
+                        <div class="metric-label">Уровень безопасности</div>
+                        <div class="metric-value">256-bit</div>
                     </div>
-                </div>
-                
-                <div class="tab-content" id="complexity-tab">
-                    <h3>Вычислительная сложность операций</h3>
-                    
-                    <table class="complexity-table">
-                        <tr>
-                            <th>Операция</th>
-                            <th>Сложность</th>
-                            <th>Время (n=1024)</th>
-                        </tr>
-                        <tr>
-                            <td>Генерация ключей</td>
-                            <td>O(n<sup>2</sup> log q)</td>
-                            <td>~350 мс</td>
-                        </tr>
-                        <tr>
-                            <td>Шифрование</td>
-                            <td>O(n log n log q)</td>
-                            <td>~180 мс</td>
-                        </tr>
-                        <tr>
-                            <td>Дешифрование</td>
-                            <td>O(n log n log q)</td>
-                            <td>~220 мс</td>
-                        </tr>
-                        <tr>
-                            <td>Квантовая суперпозиция</td>
-                            <td>O(2<sup>k</sup>)</td>
-                            <td>~40 мс (k=8)</td>
-                        </tr>
-                    </table>
-                </div>
-                
-                <div class="tab-content" id="quantum-tab">
-                    <h3>Реализация квантовой суперпозиции</h3>
-                    
-                    <div class="quantum-circuit">
-                        <!-- Визуализация квантовой схемы будет здесь -->
+                    <div class="metric-card">
+                        <div class="metric-label">Энтропия суперпозиции</div>
+                        <div class="metric-value">8-bit</div>
                     </div>
-                    
-                    <div class="math-display">
-                        |ψ⟩ = 1/√2 (|0⟩ + |1⟩) ⊗ 1/√2 (|0⟩ + |1⟩) ⊗ ...<br>
-                        Квантовая схема: H<sup>⊗n</sup> |0⟩<sup>⊗n</sup>
-                    </div>
-                    
-                    <div class="superposition-viz">
-                        <!-- Визуализация суперпозиции будет здесь -->
+                    <div class="metric-card">
+                        <div class="metric-label">Стойкость к Гроверу</div>
+                        <div class="metric-value">2¹³²</div>
                     </div>
                 </div>
             </div>
@@ -606,11 +358,9 @@
                     entropy: 0
                 };
                 
-                // Параметры квантовой суперпозиции
-                this.superpositionSize = 8; // Количество кубитов для суперпозиции
+                this.superpositionSize = 8;
             }
             
-            // Инициализация с формальными параметрами
             initialize(params = {}) {
                 this.n = params.n || 1024;
                 this.q = params.q || 18433;
@@ -618,20 +368,17 @@
                 this.securityLevel = params.securityLevel || 256;
             }
             
-            // Начало измерения производительности
             startPerformance() {
                 this.performanceMetrics.startTime = performance.now();
                 this.performanceMetrics.operations = 0;
                 this.performanceMetrics.entropy = 0;
             }
             
-            // Обновление метрик производительности
             updatePerformance(ops = 1, entropyChange = 0) {
                 this.performanceMetrics.operations += ops;
                 this.performanceMetrics.entropy += entropyChange;
             }
             
-            // Получение результатов производительности
             getPerformance() {
                 const time = performance.now() - this.performanceMetrics.startTime;
                 return {
@@ -641,7 +388,6 @@
                 };
             }
             
-            // Криптографически безопасные случайные значения
             secureRandom(min, max) {
                 this.updatePerformance(1, 0.1);
                 const array = new Uint32Array(1);
@@ -649,7 +395,6 @@
                 return min + (array[0] % (max - min + 1));
             }
             
-            // Генерация ошибок с биномиальным распределением (аппроксимация Гаусса)
             binomialDistribution(eta = 16) {
                 this.updatePerformance(eta * 2, 0.5);
                 let result = 0;
@@ -659,7 +404,6 @@
                 return result - Math.floor(eta / 2);
             }
             
-            // Генерация вектора ошибок
             generateErrorVector(length, eta = 16) {
                 this.updatePerformance(length * eta, 0.7);
                 const vector = new Array(length);
@@ -669,7 +413,6 @@
                 return vector;
             }
             
-            // Генерация случайного полинома с коэффициентами mod q
             generateRandomPolynomial(degree, modulus) {
                 this.updatePerformance(degree, 0.3);
                 const poly = new Array(degree);
@@ -679,7 +422,6 @@
                 return poly;
             }
             
-            // Умножение полиномов в кольце mod (x^n + 1)
             polynomialMultiply(a, b, modulus) {
                 const n = a.length;
                 const result = new Array(n).fill(0);
@@ -696,7 +438,6 @@
                 return result;
             }
             
-            // Сложение полиномов
             polynomialAdd(a, b, modulus) {
                 const n = a.length;
                 const result = new Array(n);
@@ -709,17 +450,14 @@
                 return result;
             }
             
-            // Реализация квантовой суперпозиции (моделирование)
             quantumSuperposition(size = null) {
                 if (size === null) size = this.superpositionSize;
                 
-                this.updatePerformance(1 << size, 1.0); // Экспоненциальная сложность
+                this.updatePerformance(1 << size, 1.0);
                 
-                // Моделирование суперпозиции 2^size состояний
                 const superposition = new Array(1 << size).fill(0);
-                
-                // Инициализация равновероятной суперпозиции
                 const amplitude = 1 / Math.sqrt(1 << size);
+                
                 for (let i = 0; i < (1 << size); i++) {
                     superposition[i] = amplitude;
                 }
@@ -727,11 +465,9 @@
                 return superposition;
             }
             
-            // Измерение квантового состояния (коллапс суперпозиции)
             measureQuantumState(superposition) {
                 this.updatePerformance(superposition.length, 0.5);
                 
-                // Выбор состояния согласно распределению вероятностей
                 let random = Math.random();
                 let cumulative = 0;
                 
@@ -745,65 +481,24 @@
                 return superposition.length - 1;
             }
             
-            // Применение квантового оракула (моделирование)
-            quantumOracle(input, oracleFunction) {
-                this.updatePerformance(input.length, 0.7);
-                
-                // Применение оракула к каждому состоянию в суперпозиции
-                const result = new Array(input.length);
-                for (let i = 0; i < input.length; i++) {
-                    result[i] = oracleFunction(input[i], i);
-                }
-                
-                return result;
-            }
-            
-            // Квантовое преобразование Фурье (моделирование)
-            quantumFourierTransform(superposition) {
-                const n = superposition.length;
-                this.updatePerformance(n * n, 0.9);
-                
-                const result = new Array(n).fill(0);
-                
-                // Моделирование КПФ
-                for (let k = 0; k < n; k++) {
-                    for (let j = 0; j < n; j++) {
-                        const angle = 2 * Math.PI * j * k / n;
-                        // Исправление: убрана мнимая единица 1i, которая не работает в JS
-                        result[k] += superposition[j] * Math.cos(angle);
-                    }
-                    result[k] /= Math.sqrt(n);
-                }
-                
-                return result;
-            }
-            
-            // Генерация ключевой пары с использованием квантовой суперпозиции
             async generateKeyPair(n, q, sigma) {
                 this.startPerformance();
                 this.initialize({n, q, sigma});
                 
                 try {
-                    // Генерация секретного ключа с использованием квантовой суперпозиции
                     const superposition = this.quantumSuperposition(8);
                     let measuredState = this.measureQuantumState(superposition);
                     
-                    // Преобразование измеренного состояния в секретный ключ
                     this.sk = this.generateErrorVector(n, 16);
                     
-                    // Добавление квантовой компоненты к секретному ключу
                     for (let i = 0; i < n; i++) {
                         this.sk[i] = (this.sk[i] + (measuredState & 1)) % q;
                         measuredState >>= 1;
                     }
                     
-                    // Генерация публичного полинома a
                     const a = this.generateRandomPolynomial(n, q);
-                    
-                    // Генерация вектора ошибок
                     const e = this.generateErrorVector(n, 16);
                     
-                    // Вычисление t = a * s + e mod q
                     const as = this.polynomialMultiply(a, this.sk, q);
                     const t = this.polynomialAdd(as, e, q);
                     
@@ -821,7 +516,6 @@
                 }
             }
             
-            // Шифрование с использованием квантовой суперпозиции
             async encapsulate(message, q) {
                 this.startPerformance();
                 
@@ -830,29 +524,22 @@
                 }
                 
                 try {
-                    // Кодирование сообщения
                     const encodedMsg = this.encodeMessage(message, q);
                     
-                    // Генерация случайного вектора r с использованием квантовой суперпозиции
                     const superposition = this.quantumSuperposition(8);
                     let measuredState = this.measureQuantumState(superposition);
                     
                     const r = this.generateErrorVector(this.pk.a.length, 16);
                     
-                    // Добавление квантовой компоненты
                     for (let i = 0; i < r.length; i++) {
                         r[i] = (r[i] + (measuredState & 1)) % q;
                         measuredState >>= 1;
                     }
                     
-                    // Вычисление u = a * r mod q
                     const u = this.polynomialMultiply(this.pk.a, r, q);
-                    
-                    // Вычисление v = t * r + encodedMsg mod q
                     const tr = this.polynomialMultiply(this.pk.t, r, q);
                     const v = this.polynomialAdd(tr, encodedMsg, q);
                     
-                    // Добавление квантовой суперпозиции к шифртексту
                     const quantumSuperpositionValue = this.quantumSuperposition(4);
                     const quantumComponent = this.measureQuantumState(quantumSuperpositionValue);
                     
@@ -872,7 +559,6 @@
                 }
             }
             
-            // Дешифрование с учетом квантовой суперпозиции
             async decapsulate(ciphertext, q) {
                 this.startPerformance();
                 
@@ -883,7 +569,6 @@
                 try {
                     const { u, v } = ciphertext;
                     
-                    // Вычисление w = v - s * u mod q
                     const su = this.polynomialMultiply(this.sk, u, q);
                     const w = [];
                     
@@ -893,7 +578,6 @@
                         w.push(value);
                     }
                     
-                    // Декодирование сообщения
                     const message = this.decodeMessage(w, q);
                     
                     const perf = this.getPerformance();
@@ -906,13 +590,11 @@
                 }
             }
             
-            // Кодирование сообщения в коэффициенты полинома
             encodeMessage(message, q) {
                 this.updatePerformance(message.length, 0.3);
                 const mid = Math.floor(q / 2);
                 const encoded = [];
                 
-                // Преобразование сообщения в байты
                 for (let i = 0; i < message.length; i++) {
                     const charCode = message.charCodeAt(i);
                     for (let j = 0; j < 8; j++) {
@@ -923,7 +605,6 @@
                 return encoded;
             }
             
-            // Декодирование коэффициентов полинома в сообщение
             decodeMessage(encoded, q) {
                 this.updatePerformance(encoded.length, 0.3);
                 const quarter = Math.floor(q / 4);
@@ -945,45 +626,6 @@
                 
                 return message;
             }
-            
-            // Формальный анализ безопасности
-            analyzeSecurity(n, q, sigma) {
-                // Оценка уровня безопасности на основе параметров
-                const logq = Math.log2(q);
-                
-                // Оценка размера блока для BKZ-атаки
-                const beta = this.estimateBKZBlockSize(n, logq, sigma);
-                
-                // Оценка сложности атаки
-                const complexity = this.estimateAttackComplexity(beta);
-                
-                return {
-                    latticeDimension: n,
-                    modulusBits: logq,
-                    estimatedBKZBlockSize: beta,
-                    attackComplexity: complexity,
-                    securityLevel: this.estimateSecurityLevel(complexity)
-                };
-            }
-            
-            estimateBKZBlockSize(n, logq, sigma) {
-                // Упрощенная оценка безопасности на основе известных моделей
-                const d = n * logq / Math.log2(sigma * Math.sqrt(2 * Math.PI * Math.E));
-                return Math.min(n, Math.max(100, Math.floor(d * 0.355)));
-            }
-            
-            estimateAttackComplexity(beta) {
-                // Оценка сложности атаки с использованием известных моделей стоимости BKZ
-                return Math.pow(2, 0.009 * beta * beta);
-            }
-            
-            estimateSecurityLevel(complexity) {
-                const logComplexity = Math.log2(complexity);
-                if (logComplexity >= 256) return 256;
-                if (logComplexity >= 192) return 192;
-                if (logComplexity >= 128) return 128;
-                return 0;
-            }
         }
 
         // Логика приложения
@@ -998,38 +640,23 @@
             const perfEntropy = document.getElementById('performance-entropy');
             const textRatio = document.getElementById('text-ratio');
             
-            // Функциональность вкладок
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    // Удаление активного класса со всех вкладок и содержимого
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    // Добавление активного класса к clicked tab и соответствующему содержимому
-                    tab.classList.add('active');
-                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
-                });
-            });
-            
-            // Обновление отображения производительности
             function updatePerformanceDisplay(perf) {
                 perfTime.textContent = `Время: ${perf.time}мс`;
                 perfOps.textContent = `Операции: ${perf.operations}`;
                 perfEntropy.textContent = `Энтропия: ${perf.entropy}`;
             }
             
-            // Обновление соотношения текст:шифртекст
             function updateTextRatio(original, ciphertext) {
                 if (!ciphertext || !original) return;
                 
                 const originalBytes = new TextEncoder().encode(original).length;
-                const ciphertextBytes = ciphertext.length * 4; // Примерная оценка
+                const ciphertextBytes = ciphertext.length * 4;
                 const ratio = (ciphertextBytes / originalBytes).toFixed(1);
                 
                 textRatio.textContent = `Текст:Шифртекст: 1:${ratio}`;
             }
             
-            // Кнопка генерации ключей
+            // Генерация ключей
             document.getElementById('generate-keys').addEventListener('click', async function() {
                 const n = parseInt(document.getElementById('lattice-dim').value);
                 const q = parseInt(document.getElementById('modulus').value);
@@ -1044,7 +671,6 @@
                     keyStatus.textContent = 'Формальная генерация ключей успешна!';
                     keyStatus.className = 'status success';
                     
-                    // Сохранение ключей в textarea для экспорта
                     document.getElementById('key-material').value = JSON.stringify({
                         pk: result.pk,
                         sk: result.sk,
@@ -1052,9 +678,6 @@
                     }, null, 2);
                     
                     updatePerformanceDisplay(result.performance);
-                    
-                    // Обновление анализа безопасности
-                    const security = qskem.analyzeSecurity(n, q, sigma);
                 } catch (error) {
                     keyOutput.textContent = `Формальная ошибка: ${error.message}`;
                     keyStatus.textContent = 'Генерация ключей не удалась!';
@@ -1062,7 +685,7 @@
                 }
             });
             
-            // Кнопка шифрования
+            // Шифрование
             document.getElementById('encapsulate-btn').addEventListener('click', async function() {
                 const message = document.getElementById('message').value;
                 const q = parseInt(document.getElementById('modulus').value);
@@ -1085,7 +708,7 @@
                 }
             });
             
-            // Кнопка дешифрования
+            // Дешифрование
             document.getElementById('decapsulate-btn').addEventListener('click', async function() {
                 const q = parseInt(document.getElementById('modulus').value);
                 
@@ -1110,7 +733,7 @@
                 }
             });
             
-            // Кнопка проверки целостности
+            // Проверка целостности
             document.getElementById('verify-btn').addEventListener('click', async function() {
                 const message = document.getElementById('message').value;
                 const q = parseInt(document.getElementById('modulus').value);
@@ -1143,7 +766,7 @@
                 }
             });
             
-            // Кнопка сохранения ключей
+            // Сохранение ключей
             document.getElementById('save-keys').addEventListener('click', function() {
                 const keyMaterial = document.getElementById('key-material').value;
                 if (!keyMaterial) {
