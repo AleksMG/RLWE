@@ -769,7 +769,8 @@
                 for (let k = 0; k < n; k++) {
                     for (let j = 0; j < n; j++) {
                         const angle = 2 * Math.PI * j * k / n;
-                        result[k] += superposition[j] * (Math.cos(angle) + Math.sin(angle) * 1i);
+                        // Исправление: убрана мнимая единица 1i, которая не работает в JS
+                        result[k] += superposition[j] * Math.cos(angle);
                     }
                     result[k] /= Math.sqrt(n);
                 }
@@ -785,7 +786,7 @@
                 try {
                     // Генерация секретного ключа с использованием квантовой суперпозиции
                     const superposition = this.quantumSuperposition(8);
-                    const measuredState = this.measureQuantumState(superposition);
+                    let measuredState = this.measureQuantumState(superposition);
                     
                     // Преобразование измеренного состояния в секретный ключ
                     this.sk = this.generateErrorVector(n, 16);
@@ -834,7 +835,7 @@
                     
                     // Генерация случайного вектора r с использованием квантовой суперпозиции
                     const superposition = this.quantumSuperposition(8);
-                    const measuredState = this.measureQuantumState(superposition);
+                    let measuredState = this.measureQuantumState(superposition);
                     
                     const r = this.generateErrorVector(this.pk.a.length, 16);
                     
