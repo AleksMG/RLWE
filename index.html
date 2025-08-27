@@ -276,7 +276,7 @@
         
         .mapping-display {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
             gap: 12px;
             margin-top: 20px;
             padding: 20px;
@@ -312,7 +312,8 @@
         
         .mapping-symbol {
             color: #00ffea;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
+            line-height: 1.4;
         }
         
         .vigenere-grid {
@@ -338,13 +339,13 @@
         
         .square-content {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
             gap: 8px;
             font-family: 'Courier New', monospace;
         }
         
         .square-char {
-            padding: 10px;
+            padding: 12px 8px;
             text-align: center;
             background: rgba(30, 30, 60, 0.8);
             border-radius: 6px;
@@ -362,6 +363,13 @@
         
         .char-value {
             font-size: 1.1rem;
+            margin-bottom: 3px;
+        }
+        
+        .char-symbols {
+            font-size: 0.9rem;
+            color: #00ffea;
+            line-height: 1.2;
         }
         
         footer {
@@ -398,7 +406,7 @@
             }
         }
         
-        .symbol-multimap {
+        .symbol-controls {
             margin-top: 20px;
             padding: 15px;
             background: rgba(15, 15, 30, 0.8);
@@ -406,79 +414,29 @@
             border: 1px solid rgba(100, 100, 200, 0.2);
         }
         
-        .multimap-item {
+        .symbol-input-group {
             display: flex;
-            align-items: center;
+            gap: 10px;
             margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(30, 30, 60, 0.8);
-            border-radius: 8px;
+            align-items: center;
         }
         
-        .multimap-char {
-            min-width: 30px;
-            text-align: center;
-            font-weight: bold;
-            color: #aaccff;
-        }
-        
-        .multimap-input {
+        .symbol-input {
             flex: 1;
-            margin: 0 10px;
-            padding: 8px;
+            padding: 10px;
             background: rgba(40, 40, 80, 0.8);
             border: 1px solid rgba(100, 100, 200, 0.3);
             border-radius: 6px;
             color: white;
         }
         
-        .multimap-remove {
-            background: #ff3366;
-            border: none;
-            border-radius: 6px;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: white;
-        }
-        
-        .multimap-add {
+        .symbol-add-btn {
             background: #00cc66;
             border: none;
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 10px 15px;
             cursor: pointer;
             color: white;
-            margin-top: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .formula-display {
-            background: rgba(20, 20, 40, 0.8);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            border: 1px solid rgba(100, 100, 200, 0.2);
-            font-family: 'Courier New', monospace;
-        }
-        
-        .formula-title {
-            text-align: center;
-            margin-bottom: 15px;
-            color: #00ffea;
-            font-weight: 600;
-        }
-        
-        .formula-content {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #aaccff;
-            line-height: 1.6;
         }
     </style>
 </head>
@@ -504,21 +462,17 @@
                     <div class="error" id="alphabetError">Alphabet contains duplicate characters</div>
                 </div>
                 
-                <div class="input-group">
-                    <label for="symbols">SYMBOL MAPPING</label>
-                    <input type="text" id="symbols" value="ⴽ×+ꓘꓥꓭꓷ⊕ΞΔ⌖#ⵁ$%&*!@^~()[]{}">
-                    <div class="error" id="symbolsError">Symbols contain duplicates or invalid characters</div>
-                </div>
-                
-                <div class="symbol-multimap">
+                <div class="symbol-controls">
                     <div class="card-title">
                         <i class="fas fa-map-signs"></i>
-                        <span>MULTI-SYMBOL MAPPING</span>
+                        <span>SYMBOL MAPPING CONFIGURATION</span>
                     </div>
-                    <div id="multimapContainer">
-                        <!-- Multi-symbol mapping will be generated here -->
+                    
+                    <div id="symbolInputsContainer">
+                        <!-- Symbol inputs will be generated here -->
                     </div>
-                    <button class="multimap-add" onclick="addMultiSymbol()">
+                    
+                    <button class="symbol-add-btn" onclick="addSymbolMapping()">
                         <i class="fas fa-plus"></i> ADD SYMBOL MAPPING
                     </button>
                 </div>
@@ -555,14 +509,6 @@
                     <div class="status-indicator" id="systemStatus"></div>
                     <span id="statusText">SYSTEM READY</span>
                 </div>
-            </div>
-        </div>
-        
-        <div class="formula-display">
-            <div class="formula-title">ENCRYPTION FORMULA</div>
-            <div class="formula-content">
-                CipherChar = symbols[(alphabet.indexOf(char) + alphabet.indexOf(key1[i])) % alphabet.length +<br>
-                alphabet.indexOf(key2[i])) % symbols.length]
             </div>
         </div>
         
@@ -642,15 +588,41 @@
     <script>
         // Configuration
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        let symbols = "ⴽ×+ꓘꓥꓭꓷ⊕ΞΔ⌖#ⵁ$%&*!@^~()[]{}";
-        let multiSymbolMap = {};
+        let symbolMap = [
+            ["ⴽ", "×", "+"],      // 0: A
+            ["ꓘ", "ꓥ", "ꓭ"],      // 1: B  
+            ["ꓷ", "⊕", "Ξ"],      // 2: C
+            ["Δ", "⌖", "#"],      // 3: D
+            ["ⵁ", "$", "%"],      // 4: E
+            ["&", "*", "!"],      // 5: F
+            ["@", "^", "~"],      // 6: G
+            ["(", ")", "["],      // 7: H
+            ["]", "{", "}"],      // 8: I
+            ["§", "¶", "†"],      // 9: J
+            ["‡", "•", "‡"],      // 10: K
+            ["→", "←", "↑"],      // 11: L
+            ["↓", "↔", "↕"],      // 12: M
+            ["◊", "♠", "♣"],      // 13: N
+            ["♥", "♦", "✓"],      // 14: O
+            ["✔", "✕", "✖"],      // 15: P
+            ["✨", "⚡", "🔥"],    // 16: Q
+            ["🌙", "⭐", "🌟"],    // 17: R
+            ["☀", "☁", "☂"],      // 18: S
+            ["☃", "☄", "☎"],      // 19: T
+            ["☏", "☑", "☒"],      // 20: U
+            ["☓", "☔", "☕"],      // 21: V
+            ["☘", "☙", "☚"],      // 22: W
+            ["☛", "☜", "☝"],      // 23: X
+            ["☞", "☟", "☠"],      // 24: Y
+            ["☢", "☣", "☤"]       // 25: Z
+        ];
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateSecurityMetrics();
             updateMappingPreview();
             generateVigenereSquares();
-            initMultiSymbolMap();
+            initSymbolInputs();
             
             // Add real-time updates
             document.getElementById('alphabet').addEventListener('input', function() {
@@ -662,16 +634,6 @@
                 updateSecurityMetrics();
                 updateMappingPreview();
                 generateVigenereSquares();
-                updateMultiSymbolMap();
-            });
-            
-            document.getElementById('symbols').addEventListener('input', function() {
-                symbols = this.value;
-                validateSymbols();
-                updateSecurityMetrics();
-                updateMappingPreview();
-                generateVigenereSquares();
-                updateMultiSymbolMap();
             });
             
             document.getElementById('key1').addEventListener('input', function() {
@@ -685,55 +647,56 @@
             });
         });
         
-        // Initialize multi-symbol mapping
-        function initMultiSymbolMap() {
-            const container = document.getElementById('multimapContainer');
+        // Initialize symbol inputs
+        function initSymbolInputs() {
+            const container = document.getElementById('symbolInputsContainer');
             container.innerHTML = '';
             
-            // Initialize with default mappings
-            for (let i = 0; i < Math.min(alphabet.length, 5); i++) {
-                addMultiSymbolRow(alphabet[i], symbols[i] + String.fromCharCode(0x2080 + i + 1));
+            for (let i = 0; i < alphabet.length; i++) {
+                const char = alphabet[i];
+                const symbols = symbolMap[i] || [''];
+                
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'symbol-input-group';
+                inputGroup.innerHTML = `
+                    <label style="min-width: 30px; text-align: center; font-weight: bold;">${char}</label>
+                    <input type="text" class="symbol-input" value="${symbols.join('')}" 
+                        oninput="updateSymbolMapping(${i}, this.value)" placeholder="Symbols...">
+                `;
+                
+                container.appendChild(inputGroup);
+            }
+        }
+        
+        // Add symbol mapping
+        function addSymbolMapping() {
+            const container = document.getElementById('symbolInputsContainer');
+            const index = container.children.length;
+            
+            if (index >= alphabet.length) {
+                setSystemStatus('warning', 'MAX SYMBOL MAPPINGS REACHED');
+                return;
             }
             
-            updateMultiSymbolMap();
-        }
-        
-        // Add a multi-symbol row
-        function addMultiSymbolRow(char = '', symbolsStr = '') {
-            const container = document.getElementById('multimapContainer');
-            const row = document.createElement('div');
-            row.className = 'multimap-item';
-            row.innerHTML = `
-                <div class="multimap-char">${char}</div>
-                <input type="text" class="multimap-input" value="${symbolsStr}" 
-                    oninput="updateMultiSymbolMap()" placeholder="Symbols...">
-                <button class="multimap-remove" onclick="this.parentElement.remove(); updateMultiSymbolMap()">
-                    <i class="fas fa-times"></i>
-                </button>
+            const char = alphabet[index];
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'symbol-input-group';
+            inputGroup.innerHTML = `
+                <label style="min-width: 30px; text-align: center; font-weight: bold;">${char}</label>
+                <input type="text" class="symbol-input" value="" 
+                    oninput="updateSymbolMapping(${index}, this.value)" placeholder="Symbols...">
             `;
-            container.appendChild(row);
+            
+            container.appendChild(inputGroup);
+            updateSymbolMapping(index, '');
         }
         
-        // Add multi-symbol mapping
-        function addMultiSymbol() {
-            addMultiSymbolRow('', '');
-        }
-        
-        // Update multi-symbol mapping from UI
-        function updateMultiSymbolMap() {
-            multiSymbolMap = {};
-            const rows = document.querySelectorAll('.multimap-item');
-            
-            rows.forEach(row => {
-                const char = row.querySelector('.multimap-char').textContent;
-                const symbolsStr = row.querySelector('.multimap-input').value;
-                
-                if (char && symbolsStr) {
-                    multiSymbolMap[char] = symbolsStr;
-                }
-            });
-            
+        // Update symbol mapping
+        function updateSymbolMapping(index, symbolsStr) {
+            symbolMap[index] = symbolsStr.split('');
             updateMappingPreview();
+            generateVigenereSquares();
+            updateSecurityMetrics();
         }
         
         // Validate alphabet for duplicates
@@ -743,26 +706,6 @@
             const chars = new Set();
             
             for (let char of alphabet) {
-                if (chars.has(char)) {
-                    errorElement.style.display = 'block';
-                    inputElement.classList.add('input-error');
-                    return false;
-                }
-                chars.add(char);
-            }
-            
-            errorElement.style.display = 'none';
-            inputElement.classList.remove('input-error');
-            return true;
-        }
-        
-        // Validate symbols for duplicates
-        function validateSymbols() {
-            const errorElement = document.getElementById('symbolsError');
-            const inputElement = document.getElementById('symbols');
-            const chars = new Set();
-            
-            for (let char of symbols) {
                 if (chars.has(char)) {
                     errorElement.style.display = 'block';
                     inputElement.classList.add('input-error');
@@ -812,8 +755,17 @@
                 return;
             }
             
+            // Calculate additional entropy from multi-symbol mapping
+            let symbolEntropy = 0;
+            for (let i = 0; i < symbolMap.length; i++) {
+                if (symbolMap[i] && symbolMap[i].length > 0) {
+                    symbolEntropy += Math.log2(symbolMap[i].length);
+                }
+            }
+            const avgSymbolEntropy = symbolEntropy / alphabet.length;
+            
             // Calculate key space
-            const keySpace = Math.pow(alphabet.length, key1.length) * Math.pow(alphabet.length, key2.length);
+            const keySpace = Math.pow(alphabet.length, key1.length) * Math.pow(alphabet.length, key2.length) * Math.pow(2, symbolEntropy);
             document.getElementById('keySpace').textContent = `2^${Math.log2(keySpace).toFixed(0)}`;
             
             // Calculate brute force time
@@ -838,32 +790,25 @@
             const mappingContainer = document.getElementById('mappingPreview');
             mappingContainer.innerHTML = '';
             
-            const maxDisplay = Math.min(alphabet.length, 36);
-            
-            for (let i = 0; i < maxDisplay; i++) {
+            for (let i = 0; i < alphabet.length; i++) {
                 if (i >= alphabet.length) break;
                 
                 const mappingItem = document.createElement('div');
                 mappingItem.className = 'mapping-item';
                 
                 const char = alphabet[i];
-                const symbol = i < symbols.length ? symbols[i] : '?';
-                const multiSymbol = multiSymbolMap[char] || symbol;
+                const symbols = symbolMap[i] || ['?'];
                 
                 mappingItem.innerHTML = `
                     <div class="mapping-index">${i}</div>
                     <div class="mapping-char">${char}</div>
-                    <div class="mapping-symbol">${multiSymbol}</div>
+                    <div class="mapping-symbol">${symbols.join(' ')}</div>
                 `;
                 
                 mappingContainer.appendChild(mappingItem);
             }
             
-            if (alphabet.length !== symbols.length) {
-                setSystemStatus('warning', 'ALPHABET/SYMBOL LENGTH MISMATCH');
-            } else {
-                setSystemStatus('active', 'MAPPING VALID');
-            }
+            setSystemStatus('active', 'MAPPING VALID');
         }
         
         // Generate Vigenère squares with numbering
@@ -875,7 +820,7 @@
             symbolSquare.innerHTML = '';
             
             // Generate alphabet square
-            for (let i = 0; i < Math.min(alphabet.length, 36); i++) {
+            for (let i = 0; i < alphabet.length; i++) {
                 const charElement = document.createElement('div');
                 charElement.className = 'square-char';
                 charElement.innerHTML = `
@@ -886,13 +831,17 @@
             }
             
             // Generate symbol square
-            for (let i = 0; i < Math.min(symbols.length, 36); i++) {
+            for (let i = 0; i < symbolMap.length; i++) {
                 const symbolElement = document.createElement('div');
                 symbolElement.className = 'square-char';
+                
+                const symbols = symbolMap[i] || ['?'];
                 symbolElement.innerHTML = `
                     <div class="char-index">${i}</div>
-                    <div class="char-value">${symbols[i]}</div>
+                    <div class="char-value">${alphabet[i]}</div>
+                    <div class="char-symbols">${symbols.join(' ')}</div>
                 `;
+                
                 symbolSquare.appendChild(symbolElement);
             }
         }
@@ -906,8 +855,6 @@
                 setSystemStatus('error', 'KEYS REQUIRED');
             } else if (key1.length < 6 || key2.length < 6) {
                 setSystemStatus('warning', 'WEAK KEYS DETECTED');
-            } else if (alphabet.length !== symbols.length) {
-                setSystemStatus('warning', 'ALPHABET/SYMBOL LENGTH MISMATCH');
             } else {
                 setSystemStatus('active', 'SYSTEM READY');
             }
@@ -925,42 +872,25 @@
             statusText.textContent = message;
         }
         
-        // Get symbol for a character (with multi-symbol support)
-        function getSymbolForChar(char, index) {
-            if (multiSymbolMap[char]) {
-                const symbols = multiSymbolMap[char];
-                return symbols[index % symbols.length];
-            }
-            
-            const charIndex = alphabet.indexOf(char);
-            return symbols[charIndex % symbols.length];
+        // Get random symbol for a character index
+        function getRandomSymbol(index) {
+            const symbols = symbolMap[index];
+            if (!symbols || symbols.length === 0) return '?';
+            return symbols[Math.floor(Math.random() * symbols.length)];
         }
         
-        // Get char for symbol (with multi-symbol support)
-        function getCharForSymbol(symbol) {
-            // First check multi-symbol mappings
-            for (const [char, symbols] of Object.entries(multiSymbolMap)) {
-                if (symbols.includes(symbol)) {
-                    return char;
+        // Get character index for symbol
+        function getCharIndexForSymbol(symbol) {
+            for (let i = 0; i < symbolMap.length; i++) {
+                if (symbolMap[i] && symbolMap[i].includes(symbol)) {
+                    return i;
                 }
             }
-            
-            // Fall back to default mapping
-            const symbolIndex = symbols.indexOf(symbol);
-            if (symbolIndex >= 0 && symbolIndex < alphabet.length) {
-                return alphabet[symbolIndex];
-            }
-            
-            return null;
+            return -1;
         }
         
         // Encrypt text with proper two-round Vigenère logic
         function encrypt() {
-            if (alphabet.length !== symbols.length) {
-                setSystemStatus('error', 'ALPHABET/SYMBOL LENGTH MISMATCH');
-                return;
-            }
-            
             const key1 = document.getElementById('key1').value;
             const key2 = document.getElementById('key2').value;
             const inputText = document.getElementById('inputText').value;
@@ -995,10 +925,10 @@
                     const keyChar2 = key2[keyIndex2 % key2.length];
                     const intermediateIndex = alphabet.indexOf(intermediateChar);
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
-                    const symbolIndex = (intermediateIndex + keyIndexPos2) % symbols.length;
+                    const symbolIndex = (intermediateIndex + keyIndexPos2) % alphabet.length;
                     
-                    // Use multi-symbol mapping if available
-                    output += getSymbolForChar(alphabet[symbolIndex], keyIndex2);
+                    // Use random symbol from mapping
+                    output += getRandomSymbol(symbolIndex);
                     keyIndex1++;
                     keyIndex2++;
                 }
@@ -1013,11 +943,6 @@
         
         // Decrypt text with proper two-round Vigenère logic
         function decrypt() {
-            if (alphabet.length !== symbols.length) {
-                setSystemStatus('error', 'ALPHABET/SYMBOL LENGTH MISMATCH');
-                return;
-            }
-            
             const key1 = document.getElementById('key1').value;
             const key2 = document.getElementById('key2').value;
             const inputText = document.getElementById('inputText').value;
@@ -1035,20 +960,19 @@
                 for (let i = 0; i < inputText.length; i++) {
                     const symbol = inputText[i];
                     
-                    // Find the character for this symbol
-                    const charFromSymbol = getCharForSymbol(symbol);
+                    // Find the character index for this symbol
+                    const symbolCharIndex = getCharIndexForSymbol(symbol);
                     
-                    // Skip characters not in symbols or multi-symbol mappings
-                    if (!charFromSymbol) {
+                    // Skip characters not in symbol mapping
+                    if (symbolCharIndex === -1) {
                         output += symbol; // Keep original character
                         continue;
                     }
                     
                     // First layer: Reverse symbol mapping with Vigenère
                     const keyChar2 = key2[keyIndex2 % key2.length];
-                    const symbolIndex = alphabet.indexOf(charFromSymbol);
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
-                    let intermediateIndex = symbolIndex - keyIndexPos2;
+                    let intermediateIndex = symbolCharIndex - keyIndexPos2;
                     if (intermediateIndex < 0) intermediateIndex += alphabet.length;
                     const intermediateChar = alphabet[intermediateIndex % alphabet.length];
                     
@@ -1106,9 +1030,9 @@
                     const keyChar2 = key2[keyIndex2 % key2.length];
                     const intermediateIndex = alphabet.indexOf(intermediateChar);
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
-                    const symbolIndex = (intermediateIndex + keyIndexPos2) % symbols.length;
+                    const symbolIndex = (intermediateIndex + keyIndexPos2) % alphabet.length;
                     
-                    encrypted += getSymbolForChar(alphabet[symbolIndex], keyIndex2);
+                    encrypted += getRandomSymbol(symbolIndex);
                     keyIndex1++;
                     keyIndex2++;
                 }
@@ -1120,17 +1044,16 @@
                 
                 for (let i = 0; i < encrypted.length; i++) {
                     const symbol = encrypted[i];
-                    const charFromSymbol = getCharForSymbol(symbol);
+                    const symbolCharIndex = getCharIndexForSymbol(symbol);
                     
-                    if (!charFromSymbol) {
+                    if (symbolCharIndex === -1) {
                         decrypted += symbol;
                         continue;
                     }
                     
                     const keyChar2 = key2[keyIndex2 % key2.length];
-                    const symbolIndex = alphabet.indexOf(charFromSymbol);
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
-                    let intermediateIndex = symbolIndex - keyIndexPos2;
+                    let intermediateIndex = symbolCharIndex - keyIndexPos2;
                     if (intermediateIndex < 0) intermediateIndex += alphabet.length;
                     const intermediateChar = alphabet[intermediateIndex % alphabet.length];
                     
@@ -1162,19 +1085,28 @@
         // Reset all fields
         function resetAll() {
             document.getElementById('alphabet').value = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            document.getElementById('symbols').value = "ⴽ×+ꓘꓥꓭꓷ⊕ΞΔ⌖#ⵁ$%&*!@^~()[]{}";
             document.getElementById('key1').value = "SECRETKEY";
             document.getElementById('key2').value = "SYMBOLKEY";
             document.getElementById('inputText').value = "Confidential Operation Midnight at 23:59:01. Top secret!";
             document.getElementById('outputText').textContent = "READY FOR ENCRYPTION OPERATION";
             
             alphabet = document.getElementById('alphabet').value;
-            symbols = document.getElementById('symbols').value;
+            
+            // Reset symbol map to default
+            symbolMap = [
+                ["ⴽ", "×", "+"],      ["ꓘ", "ꓥ", "ꓭ"],      ["ꓷ", "⊕", "Ξ"],      ["Δ", "⌖", "#"],
+                ["ⵁ", "$", "%"],      ["&", "*", "!"],      ["@", "^", "~"],      ["(", ")", "["],
+                ["]", "{", "}"],      ["§", "¶", "†"],      ["‡", "•", "‡"],      ["→", "←", "↑"],
+                ["↓", "↔", "↕"],      ["◊", "♠", "♣"],      ["♥", "♦", "✓"],      ["✔", "✕", "✖"],
+                ["✨", "⚡", "🔥"],    ["🌙", "⭐", "🌟"],    ["☀", "☁", "☂"],      ["☃", "☄", "☎"],
+                ["☏", "☑", "☒"],      ["☓", "☔", "☕"],      ["☘", "☙", "☚"],      ["☛", "☜", "☝"],
+                ["☞", "☟", "☠"],      ["☢", "☣", "☤"]
+            ];
             
             updateSecurityMetrics();
             updateMappingPreview();
             generateVigenereSquares();
-            initMultiSymbolMap();
+            initSymbolInputs();
             setSystemStatus('active', 'SYSTEM RESET');
         }
     </script>
