@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -438,6 +438,16 @@
             cursor: pointer;
             color: white;
         }
+        
+        .validation-success {
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 255, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+        }
     </style>
 </head>
 <body>
@@ -588,37 +598,66 @@
     <script>
         // Configuration
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        let symbolMap = [
-            ["ⴽ", "×", "+"],      // 0: A
-            ["ꓘ", "ꓥ", "ꓭ"],      // 1: B  
-            ["ꓷ", "⊕", "Ξ"],      // 2: C
-            ["Δ", "⌖", "#"],      // 3: D
-            ["ⵁ", "$", "%"],      // 4: E
-            ["&", "*", "!"],      // 5: F
-            ["@", "^", "~"],      // 6: G
-            ["(", ")", "["],      // 7: H
-            ["]", "{", "}"],      // 8: I
-            ["§", "¶", "†"],      // 9: J
-            ["‡", "•", "‡"],      // 10: K
-            ["→", "←", "↑"],      // 11: L
-            ["↓", "↔", "↕"],      // 12: M
-            ["◊", "♠", "♣"],      // 13: N
-            ["♥", "♦", "✓"],      // 14: O
-            ["✔", "✕", "✖"],      // 15: P
-            ["✨", "⚡", "🔥"],    // 16: Q
-            ["🌙", "⭐", "🌟"],    // 17: R
-            ["☀", "☁", "☂"],      // 18: S
-            ["☃", "☄", "☎"],      // 19: T
-            ["☏", "☑", "☒"],      // 20: U
-            ["☓", "☔", "☕"],      // 21: V
-            ["☘", "☙", "☚"],      // 22: W
-            ["☛", "☜", "☝"],      // 23: X
-            ["☞", "☟", "☠"],      // 24: Y
-            ["☢", "☣", "☤"]       // 25: Z
-        ];
         
+        // УНИКАЛЬНЫЕ СИМВОЛЫ БЕЗ ПОВТОРЕНИЙ
+        let symbolMap = [
+            ["×", "÷", "±"],      // 0: A
+            ["+", "−", "∓"],      // 1: B  
+            ["=", "≠", "≈"],      // 2: C
+            ["/", "\\", "|"],     // 3: D
+            ["!", "¡", "‼"],      // 4: E
+            ["@", "§", "¶"],      // 5: F
+            ["#", "№", "¤"],      // 6: G
+            ["$", "¢", "£"],      // 7: H
+            ["%", "‰", "‱"],      // 8: I
+            ["^", "¨", "¯"],      // 9: J
+            ["&", "⅋", "®"],      // 10: K
+            ["*", "⁎", "⁕"],      // 11: L
+            ["(", "[", "{"],      // 12: M
+            [")", "]", "}"],      // 13: N
+            ["_", "‗", "⁀"],      // 14: O
+            ["-", "‐", "–"],      // 15: P
+            ["{", "⦃", "⦄"],     // 16: Q
+            ["}", "⦆", "⦇"],      // 17: R
+            ["[", "⟦", "⦉"],      // 18: S
+            ["]", "⟧", "⦊"],      // 19: T
+            [":", "∶", "∷"],      // 20: U
+            [";", "⁏", "︔"],      // 21: V
+            ["<", "≤", "≪"],      // 22: W
+            [">", "≥", "≫"],      // 23: X
+            ["?", "¿", "⸮"],      // 24: Y
+            ["~", "∼", "∽"]       // 25: Z
+        ];
+
+        // Проверка уникальности всех символов
+        function validateSymbolUniqueness() {
+            const allSymbols = new Set();
+            let hasDuplicates = false;
+            
+            for (let i = 0; i < symbolMap.length; i++) {
+                for (let j = 0; j < symbolMap[i].length; j++) {
+                    const symbol = symbolMap[i][j];
+                    if (allSymbols.has(symbol)) {
+                        console.error(`Дубликат символа: ${symbol} в позиции ${i}-${j}`);
+                        hasDuplicates = true;
+                    }
+                    allSymbols.add(symbol);
+                }
+            }
+            
+            if (!hasDuplicates) {
+                console.log("Все символы уникальны ✓");
+            }
+            return !hasDuplicates;
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем уникальность символов при загрузке
+            if (!validateSymbolUniqueness()) {
+                setSystemStatus('error', 'Есть дубликаты символов!');
+            }
+            
             updateSecurityMetrics();
             updateMappingPreview();
             generateVigenereSquares();
@@ -693,10 +732,27 @@
         
         // Update symbol mapping
         function updateSymbolMapping(index, symbolsStr) {
-            symbolMap[index] = symbolsStr.split('');
+            const newSymbols = symbolsStr.split('');
+            
+            // Проверяем на дубликаты
+            const allSymbols = new Set();
+            for (let i = 0; i < symbolMap.length; i++) {
+                if (i !== index) {
+                    symbolMap[i].forEach(s => allSymbols.add(s));
+                }
+            }
+            
+            const duplicates = newSymbols.filter(s => allSymbols.has(s));
+            if (duplicates.length > 0) {
+                setSystemStatus('error', `Дубликаты символов: ${duplicates.join(', ')}`);
+                return;
+            }
+            
+            symbolMap[index] = newSymbols;
             updateMappingPreview();
             generateVigenereSquares();
             updateSecurityMetrics();
+            setSystemStatus('active', 'Mapping обновлен');
         }
         
         // Validate alphabet for duplicates
@@ -998,6 +1054,12 @@
         
         // Test integrity
         function testIntegrity() {
+            // Проверяем уникальность символов перед тестом
+            if (!validateSymbolUniqueness()) {
+                setSystemStatus('error', 'Проверка не пройдена: есть дубликаты символов');
+                return;
+            }
+            
             const originalText = document.getElementById('inputText').value;
             const key1 = document.getElementById('key1').value;
             const key2 = document.getElementById('key2').value;
@@ -1074,11 +1136,14 @@
                 
                 if (decryptedAlphabetOnly === originalAlphabetOnly) {
                     setSystemStatus('active', 'INTEGRITY VERIFIED');
+                    document.getElementById('outputText').classList.add('validation-success');
                 } else {
                     setSystemStatus('error', 'INTEGRITY CHECK FAILED');
+                    document.getElementById('outputText').classList.remove('validation-success');
                 }
             } catch (error) {
                 setSystemStatus('error', 'VALIDATION ERROR');
+                document.getElementById('outputText').classList.remove('validation-success');
             }
         }
         
@@ -1089,18 +1154,38 @@
             document.getElementById('key2').value = "SYMBOLKEY";
             document.getElementById('inputText').value = "Confidential Operation Midnight at 23:59:01. Top secret!";
             document.getElementById('outputText').textContent = "READY FOR ENCRYPTION OPERATION";
+            document.getElementById('outputText').classList.remove('validation-success');
             
             alphabet = document.getElementById('alphabet').value;
             
             // Reset symbol map to default
             symbolMap = [
-                ["ⴽ", "×", "+"],      ["ꓘ", "ꓥ", "ꓭ"],      ["ꓷ", "⊕", "Ξ"],      ["Δ", "⌖", "#"],
-                ["ⵁ", "$", "%"],      ["&", "*", "!"],      ["@", "^", "~"],      ["(", ")", "["],
-                ["]", "{", "}"],      ["§", "¶", "†"],      ["‡", "•", "‡"],      ["→", "←", "↑"],
-                ["↓", "↔", "↕"],      ["◊", "♠", "♣"],      ["♥", "♦", "✓"],      ["✔", "✕", "✖"],
-                ["✨", "⚡", "🔥"],    ["🌙", "⭐", "🌟"],    ["☀", "☁", "☂"],      ["☃", "☄", "☎"],
-                ["☏", "☑", "☒"],      ["☓", "☔", "☕"],      ["☘", "☙", "☚"],      ["☛", "☜", "☝"],
-                ["☞", "☟", "☠"],      ["☢", "☣", "☤"]
+                ["×", "÷", "±"],      // 0: A
+                ["+", "−", "∓"],      // 1: B  
+                ["=", "≠", "≈"],      // 2: C
+                ["/", "\\", "|"],     // 3: D
+                ["!", "¡", "‼"],      // 4: E
+                ["@", "§", "¶"],      // 5: F
+                ["#", "№", "¤"],      // 6: G
+                ["$", "¢", "£"],      // 7: H
+                ["%", "‰", "‱"],      // 8: I
+                ["^", "¨", "¯"],      // 9: J
+                ["&", "⅋", "®"],      // 10: K
+                ["*", "⁎", "⁕"],      // 11: L
+                ["(", "[", "{"],      // 12: M
+                [")", "]", "}"],      // 13: N
+                ["_", "‗", "⁀"],      // 14: O
+                ["-", "‐", "–"],      // 15: P
+                ["{", "⦃", "⦄"],     // 16: Q
+                ["}", "⦆", "⦇"],      // 17: R
+                ["[", "⟦", "⦉"],      // 18: S
+                ["]", "⟧", "⦊"],      // 19: T
+                [":", "∶", "∷"],      // 20: U
+                [";", "⁏", "︔"],      // 21: V
+                ["<", "≤", "≪"],      // 22: W
+                [">", "≥", "≫"],      // 23: X
+                ["?", "¿", "⸮"],      // 24: Y
+                ["~", "∼", "∽"]       // 25: Z
             ];
             
             updateSecurityMetrics();
