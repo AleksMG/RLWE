@@ -298,6 +298,25 @@
             color: var(--text);
         }
 
+        .output-section {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .output-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .output-label {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
         .status {
             padding: 0.8rem 1rem;
             border-radius: 8px;
@@ -689,7 +708,16 @@
                     <button id="save-keys"><i class="fas fa-download"></i> Экспорт ключей</button>
                 </div>
                 
-                <div class="output" id="key-output">Данные ключей появятся здесь...</div>
+                <div class="output" id="key-output">
+                    <div class="output-section">
+                        <span class="output-label">Публичный ключ:</span>
+                        <div id="public-key-output">Не сгенерирован</div>
+                    </div>
+                    <div class="output-section">
+                        <span class="output-label">Секретный ключ:</span>
+                        <div id="private-key-output">Не сгенерирован</div>
+                    </div>
+                </div>
                 
                 <div class="status" id="key-status"></div>
                 
@@ -722,7 +750,16 @@
                     <button id="verify-btn" class="info"><i class="fas fa-check-circle"></i> Проверить целостность</button>
                 </div>
                 
-                <div class="output" id="process-output">Результаты появятся здесь...</div>
+                <div class="output" id="process-output">
+                    <div class="output-section">
+                        <span class="output-label">Шифротекст:</span>
+                        <div id="ciphertext-output">Не сгенерирован</div>
+                    </div>
+                    <div class="output-section">
+                        <span class="output-label">Результат:</span>
+                        <div id="result-output">-</div>
+                    </div>
+                </div>
                 
                 <div class="status" id="process-status"></div>
                 
@@ -1250,10 +1287,12 @@
                 const encoded = [];
                 
                 // Преобразование сообщения в байты
-                for (let i = 0; i < message.length; i++) {
-                    const charCode = message.charCodeAt(i);
+                const encoder = new TextEncoder();
+                const bytes = encoder.encode(message);
+                
+                for (let i = 0; i < bytes.length; i++) {
                     for (let j = 0; j < 8; j++) {
-                        encoded.push((charCode & (1 << j)) ? mid : 0);
+                        encoded.push((bytes[i] & (1 << j)) ? mid : 0);
                     }
                 }
                 
@@ -1265,22 +1304,23 @@
                 this.updatePerformance(encoded.length, 0.3);
                 const quarter = Math.floor(q / 4);
                 const mid = Math.floor(q / 2);
-                let message = '';
+                const bytes = [];
                 
                 for (let i = 0; i < encoded.length; i += 8) {
-                    let charCode = 0;
+                    let byte = 0;
                     for (let j = 0; j < 8; j++) {
                         if (i + j < encoded.length) {
                             const val = encoded[i + j];
                             if (Math.abs(val - mid) <= quarter) {
-                                charCode |= (1 << j);
+                                byte |= (1 << j);
                             }
                         }
                     }
-                    message += String.fromCharCode(charCode);
+                    bytes.push(byte);
                 }
                 
-                return message;
+                const decoder = new TextDecoder();
+                return decoder.decode(new Uint8Array(bytes));
             }
             
             // Формальный анализ безопасности
@@ -1321,13 +1361,40 @@
                 if (logComplexity >= 128) return 128;
                 return 0;
             }
+            
+            // Форматирование ключа для отображения
+            formatKey(key, maxLength = 200) {
+                if (!key) return "Не сгенерирован";
+                
+                const jsonStr = JSON.stringify(key);
+                if (jsonStr.length <= maxLength) return jsonStr;
+                
+                return jsonStr.substring(0, maxLength) + "...";
+            }
+            
+            // Форматирование шифротекста для отображения
+            formatCiphertext(ciphertext, maxElements = 5) {
+                if (!ciphertext) return "Не сгенерирован";
+                
+                const uPart = ciphertext.u 
+                    ? `u: [${ciphertext.u.slice(0, maxElements).join(', ')}${ciphertext.u.length > maxElements ? '...' : ''}]` 
+                    : '';
+                
+                const vPart = ciphertext.v 
+                    ? `v: [${ciphertext.v.slice(0, maxElements).join(', ')}${ciphertext.v.length > maxElements ? '...' : ''}]` 
+                    : '';
+                
+                return `${uPart}\n${vPart}`;
+            }
         }
 
         // Логика приложения
         document.addEventListener('DOMContentLoaded', function() {
             const qskem = new FormalQSKEM();
-            const keyOutput = document.getElementById('key-output');
-            const processOutput = document.getElementById('process-output');
+            const publicKeyOutput = document.getElementById('public-key-output');
+            const privateKeyOutput = document.getElementById('private-key-output');
+            const ciphertextOutput = document.getElementById('ciphertext-output');
+            const resultOutput = document.getElementById('result-output');
             const keyStatus = document.getElementById('key-status');
             const processStatus = document.getElementById('process-status');
             const perfTime = document.getElementById('performance-time');
@@ -1365,7 +1432,8 @@
                 if (!ciphertext || !original) return;
                 
                 const originalBytes = new TextEncoder().encode(original).length;
-                const ciphertextBytes = ciphertext.length * 4; // Примерная оценка
+                // Правильное соотношение 1:4 для lattice-based криптографии
+                const ciphertextBytes = (ciphertext.u.length + ciphertext.v.length) * 2; 
                 const ratio = (ciphertextBytes / originalBytes).toFixed(1);
                 
                 textRatio.textContent = `Текст:Шифртекст: 1:${ratio}`;
@@ -1382,7 +1450,11 @@
                 
                 try {
                     const result = await qskem.generateKeyPair(n, q, sigma);
-                    keyOutput.textContent = `Формальная ключевая пара успешно сгенерирована\n\nРазмерность решетки: ${n}\nМодуль: ${q}\nПараметр безопасности: ${result.params.sigma}\n\nРазмер публичного ключа: ~${Math.round(JSON.stringify(result.pk).length/1024)} КБ\nРазмер секретного ключа: ~${Math.round(JSON.stringify(result.sk).length/1024)} КБ`;
+                    
+                    // Отдельный вывод для публичного и приватного ключей
+                    publicKeyOutput.textContent = qskem.formatKey(result.pk);
+                    privateKeyOutput.textContent = qskem.formatKey(result.sk);
+                    
                     keyStatus.textContent = 'Формальная генерация ключей успешна!';
                     keyStatus.className = 'status success';
                     
@@ -1398,7 +1470,8 @@
                     // Обновление анализа безопасности
                     const security = qskem.analyzeSecurity(n, q, sigma);
                 } catch (error) {
-                    keyOutput.textContent = `Формальная ошибка: ${error.message}`;
+                    publicKeyOutput.textContent = "Ошибка генерации";
+                    privateKeyOutput.textContent = "Ошибка генерации";
                     keyStatus.textContent = 'Генерация ключей не удалась!';
                     keyStatus.className = 'status error';
                 }
@@ -1414,14 +1487,19 @@
                 
                 try {
                     const result = await qskem.encapsulate(message, q);
-                    processOutput.textContent = `Формальное шифрование успешно\n\nШифртекст (u): [${result.ciphertext.u.slice(0, 5).join(', ')}...]\nШифртекст (v): [${result.ciphertext.v.slice(0, 5).join(', ')}...]`;
+                    
+                    // Отдельный вывод для шифротекста
+                    ciphertextOutput.textContent = qskem.formatCiphertext(result.ciphertext);
+                    resultOutput.textContent = "Сообщение успешно зашифровано";
+                    
                     processStatus.textContent = 'Формальное шифрование успешно!';
                     processStatus.className = 'status success';
                     
                     updatePerformanceDisplay(result.performance);
-                    updateTextRatio(message, result.ciphertext.u.concat(result.ciphertext.v));
+                    updateTextRatio(message, result.ciphertext);
                 } catch (error) {
-                    processOutput.textContent = `Формальная ошибка: ${error.message}`;
+                    ciphertextOutput.textContent = "Ошибка шифрования";
+                    resultOutput.textContent = `Ошибка: ${error.message}`;
                     processStatus.textContent = 'Шифрование не удалось!';
                     processStatus.className = 'status error';
                 }
@@ -1440,13 +1518,16 @@
                     }
                     
                     const result = await qskem.decapsulate(qskem.encapsulatedData.ciphertext, q);
-                    processOutput.textContent = `Формальное дешифрование успешно\n\nРасшифрованное сообщение: ${result.message}`;
+                    
+                    // Вывод результата дешифрования
+                    resultOutput.textContent = result.message;
+                    
                     processStatus.textContent = 'Формальное дешифрование успешно!';
                     processStatus.className = 'status success';
                     
                     updatePerformanceDisplay(result.performance);
                 } catch (error) {
-                    processOutput.textContent = `Формальная ошибка: ${error.message}`;
+                    resultOutput.textContent = `Ошибка: ${error.message}`;
                     processStatus.textContent = 'Дешифрование не удалось!';
                     processStatus.className = 'status error';
                 }
@@ -1468,18 +1549,18 @@
                     const decryptionResult = await qskem.decapsulate(qskem.encapsulatedData.ciphertext, q);
                     
                     if (message === decryptionResult.message) {
-                        processOutput.textContent = `Проверка целостности успешна\n\nИсходное и расшифрованное сообщения идентичны.`;
+                        resultOutput.textContent = "✓ Целостность подтверждена: исходное и расшифрованное сообщения идентичны";
                         processStatus.textContent = 'Целостность подтверждена!';
                         processStatus.className = 'status success';
                     } else {
-                        processOutput.textContent = `Проверка целостности не удалась\n\nИсходное и расшифрованное сообщения различаются.`;
+                        resultOutput.textContent = "✗ Нарушение целостности: исходное и расшифрованное сообщения различаются";
                         processStatus.textContent = 'Нарушение целостности!';
                         processStatus.className = 'status error';
                     }
                     
                     updatePerformanceDisplay(decryptionResult.performance);
                 } catch (error) {
-                    processOutput.textContent = `Формальная ошибка: ${error.message}`;
+                    resultOutput.textContent = `Ошибка: ${error.message}`;
                     processStatus.textContent = 'Проверка не удалась!';
                     processStatus.className = 'status error';
                 }
@@ -1506,4 +1587,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
