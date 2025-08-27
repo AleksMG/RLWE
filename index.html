@@ -397,66 +397,6 @@
                 grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
             }
         }
-        
-        .symbol-multimap {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(15, 15, 30, 0.8);
-            border-radius: 12px;
-            border: 1px solid rgba(100, 100, 200, 0.2);
-        }
-        
-        .multimap-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(30, 30, 60, 0.8);
-            border-radius: 8px;
-        }
-        
-        .multimap-char {
-            min-width: 30px;
-            text-align: center;
-            font-weight: bold;
-            color: #aaccff;
-        }
-        
-        .multimap-input {
-            flex: 1;
-            margin: 0 10px;
-            padding: 8px;
-            background: rgba(40, 40, 80, 0.8);
-            border: 1px solid rgba(100, 100, 200, 0.3);
-            border-radius: 6px;
-            color: white;
-        }
-        
-        .multimap-remove {
-            background: #ff3366;
-            border: none;
-            border-radius: 6px;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: white;
-        }
-        
-        .multimap-add {
-            background: #00cc66;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            color: white;
-            margin-top: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
     </style>
 </head>
 <body>
@@ -485,19 +425,6 @@
                     <label for="symbols">SYMBOL MAPPING</label>
                     <input type="text" id="symbols" value="ⴽ×+ꓘꓥꓭꓷ⊕ΞΔ⌖#ⵁ$%&*!@^~()[]{}">
                     <div class="error" id="symbolsError">Symbols contain duplicates or invalid characters</div>
-                </div>
-                
-                <div class="symbol-multimap">
-                    <div class="card-title">
-                        <i class="fas fa-map-signs"></i>
-                        <span>MULTI-SYMBOL MAPPING</span>
-                    </div>
-                    <div id="multimapContainer">
-                        <!-- Multi-symbol mapping will be generated here -->
-                    </div>
-                    <button class="multimap-add" onclick="addMultiSymbol()">
-                        <i class="fas fa-plus"></i> ADD SYMBOL MAPPING
-                    </button>
                 </div>
                 
                 <div class="mapping-display" id="mappingPreview">
@@ -612,14 +539,12 @@
         // Configuration
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         let symbols = "ⴽ×+ꓘꓥꓭꓷ⊕ΞΔ⌖#ⵁ$%&*!@^~()[]{}";
-        let multiSymbolMap = {};
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateSecurityMetrics();
             updateMappingPreview();
             generateVigenereSquares();
-            initMultiSymbolMap();
             
             // Add real-time updates
             document.getElementById('alphabet').addEventListener('input', function() {
@@ -631,7 +556,6 @@
                 updateSecurityMetrics();
                 updateMappingPreview();
                 generateVigenereSquares();
-                updateMultiSymbolMap();
             });
             
             document.getElementById('symbols').addEventListener('input', function() {
@@ -640,7 +564,6 @@
                 updateSecurityMetrics();
                 updateMappingPreview();
                 generateVigenereSquares();
-                updateMultiSymbolMap();
             });
             
             document.getElementById('key1').addEventListener('input', function() {
@@ -653,57 +576,6 @@
                 updateSecurityMetrics();
             });
         });
-        
-        // Initialize multi-symbol mapping
-        function initMultiSymbolMap() {
-            const container = document.getElementById('multimapContainer');
-            container.innerHTML = '';
-            
-            // Initialize with default mappings
-            for (let i = 0; i < Math.min(alphabet.length, 5); i++) {
-                addMultiSymbolRow(alphabet[i], symbols[i] + String.fromCharCode(0x2080 + i + 1));
-            }
-            
-            updateMultiSymbolMap();
-        }
-        
-        // Add a multi-symbol row
-        function addMultiSymbolRow(char = '', symbolsStr = '') {
-            const container = document.getElementById('multimapContainer');
-            const row = document.createElement('div');
-            row.className = 'multimap-item';
-            row.innerHTML = `
-                <div class="multimap-char">${char}</div>
-                <input type="text" class="multimap-input" value="${symbolsStr}" 
-                    oninput="updateMultiSymbolMap()" placeholder="Symbols...">
-                <button class="multimap-remove" onclick="this.parentElement.remove(); updateMultiSymbolMap()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            container.appendChild(row);
-        }
-        
-        // Add multi-symbol mapping
-        function addMultiSymbol() {
-            addMultiSymbolRow('', '');
-        }
-        
-        // Update multi-symbol mapping from UI
-        function updateMultiSymbolMap() {
-            multiSymbolMap = {};
-            const rows = document.querySelectorAll('.multimap-item');
-            
-            rows.forEach(row => {
-                const char = row.querySelector('.multimap-char').textContent;
-                const symbolsStr = row.querySelector('.multimap-input').value;
-                
-                if (char && symbolsStr) {
-                    multiSymbolMap[char] = symbolsStr;
-                }
-            });
-            
-            updateMappingPreview();
-        }
         
         // Validate alphabet for duplicates
         function validateAlphabet() {
@@ -807,22 +679,16 @@
             const mappingContainer = document.getElementById('mappingPreview');
             mappingContainer.innerHTML = '';
             
-            const maxDisplay = Math.min(alphabet.length, 36);
+            const maxDisplay = Math.min(alphabet.length, symbols.length, 36);
             
             for (let i = 0; i < maxDisplay; i++) {
-                if (i >= alphabet.length) break;
-                
                 const mappingItem = document.createElement('div');
                 mappingItem.className = 'mapping-item';
                 
-                const char = alphabet[i];
-                const symbol = i < symbols.length ? symbols[i] : '?';
-                const multiSymbol = multiSymbolMap[char] || symbol;
-                
                 mappingItem.innerHTML = `
                     <div class="mapping-index">${i}</div>
-                    <div class="mapping-char">${char}</div>
-                    <div class="mapping-symbol">${multiSymbol}</div>
+                    <div class="mapping-char">${i < alphabet.length ? alphabet[i] : '?'}</div>
+                    <div class="mapping-symbol">${i < symbols.length ? symbols[i] : '?'}</div>
                 `;
                 
                 mappingContainer.appendChild(mappingItem);
@@ -894,36 +760,7 @@
             statusText.textContent = message;
         }
         
-        // Get symbol for a character (with multi-symbol support)
-        function getSymbolForChar(char, index) {
-            if (multiSymbolMap[char]) {
-                const symbols = multiSymbolMap[char];
-                return symbols[index % symbols.length];
-            }
-            
-            const charIndex = alphabet.indexOf(char);
-            return symbols[charIndex % symbols.length];
-        }
-        
-        // Get char for symbol (with multi-symbol support)
-        function getCharForSymbol(symbol) {
-            // First check multi-symbol mappings
-            for (const [char, symbols] of Object.entries(multiSymbolMap)) {
-                if (symbols.includes(symbol)) {
-                    return char;
-                }
-            }
-            
-            // Fall back to default mapping
-            const symbolIndex = symbols.indexOf(symbol);
-            if (symbolIndex >= 0 && symbolIndex < alphabet.length) {
-                return alphabet[symbolIndex];
-            }
-            
-            return null;
-        }
-        
-        // Encrypt text
+        // Encrypt text with original two-round Vigenère logic
         function encrypt() {
             if (alphabet.length !== symbols.length) {
                 setSystemStatus('error', 'ALPHABET/SYMBOL LENGTH MISMATCH');
@@ -966,8 +803,7 @@
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
                     const symbolIndex = (intermediateIndex + keyIndexPos2) % symbols.length;
                     
-                    // Use multi-symbol mapping if available
-                    output += getSymbolForChar(intermediateChar, keyIndex2);
+                    output += symbols[symbolIndex];
                     keyIndex1++;
                     keyIndex2++;
                 }
@@ -980,7 +816,7 @@
             }
         }
         
-        // Decrypt text
+        // Decrypt text with original two-round Vigenère logic
         function decrypt() {
             if (alphabet.length !== symbols.length) {
                 setSystemStatus('error', 'ALPHABET/SYMBOL LENGTH MISMATCH');
@@ -1002,24 +838,21 @@
                 let keyIndex2 = 0;
                 
                 for (let i = 0; i < inputText.length; i++) {
-                    const symbol = inputText[i];
+                    const char = inputText[i];
                     
-                    // Find the character for this symbol
-                    const charFromSymbol = getCharForSymbol(symbol);
-                    
-                    // Skip characters not in symbols or multi-symbol mappings
-                    if (!charFromSymbol) {
-                        output += symbol; // Keep original character
+                    // Skip characters not in symbols
+                    if (!symbols.includes(char)) {
+                        output += char; // Keep original character
                         continue;
                     }
                     
                     // First layer: Reverse symbol mapping
                     const keyChar2 = key2[keyIndex2 % key2.length];
-                    const symbolIndex = alphabet.indexOf(charFromSymbol);
+                    const symbolIndex = symbols.indexOf(char);
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
                     let intermediateIndex = symbolIndex - keyIndexPos2;
-                    if (intermediateIndex < 0) intermediateIndex += alphabet.length;
-                    const intermediateChar = alphabet[intermediateIndex % alphabet.length];
+                    if (intermediateIndex < 0) intermediateIndex += symbols.length;
+                    const intermediateChar = alphabet[intermediateIndex];
                     
                     // Second layer: Reverse Vigenère
                     const keyChar1 = key1[keyIndex1 % key1.length];
@@ -1028,7 +861,7 @@
                     let originalIndex = intermediateCharIndex - keyIndexPos1;
                     if (originalIndex < 0) originalIndex += alphabet.length;
                     
-                    output += alphabet[originalIndex % alphabet.length];
+                    output += alphabet[originalIndex];
                     keyIndex1++;
                     keyIndex2++;
                 }
@@ -1077,7 +910,7 @@
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
                     const symbolIndex = (intermediateIndex + keyIndexPos2) % symbols.length;
                     
-                    encrypted += getSymbolForChar(intermediateChar, keyIndex2);
+                    encrypted += symbols[symbolIndex];
                     keyIndex1++;
                     keyIndex2++;
                 }
@@ -1088,20 +921,19 @@
                 keyIndex2 = 0;
                 
                 for (let i = 0; i < encrypted.length; i++) {
-                    const symbol = encrypted[i];
-                    const charFromSymbol = getCharForSymbol(symbol);
+                    const char = encrypted[i];
                     
-                    if (!charFromSymbol) {
-                        decrypted += symbol;
+                    if (!symbols.includes(char)) {
+                        decrypted += char;
                         continue;
                     }
                     
                     const keyChar2 = key2[keyIndex2 % key2.length];
-                    const symbolIndex = alphabet.indexOf(charFromSymbol);
+                    const symbolIndex = symbols.indexOf(char);
                     const keyIndexPos2 = alphabet.indexOf(keyChar2);
                     let intermediateIndex = symbolIndex - keyIndexPos2;
-                    if (intermediateIndex < 0) intermediateIndex += alphabet.length;
-                    const intermediateChar = alphabet[intermediateIndex % alphabet.length];
+                    if (intermediateIndex < 0) intermediateIndex += symbols.length;
+                    const intermediateChar = alphabet[intermediateIndex];
                     
                     const keyChar1 = key1[keyIndex1 % key1.length];
                     const intermediateCharIndex = alphabet.indexOf(intermediateChar);
@@ -1109,7 +941,7 @@
                     let originalIndex = intermediateCharIndex - keyIndexPos1;
                     if (originalIndex < 0) originalIndex += alphabet.length;
                     
-                    decrypted += alphabet[originalIndex % alphabet.length];
+                    decrypted += alphabet[originalIndex];
                     keyIndex1++;
                     keyIndex2++;
                 }
@@ -1143,7 +975,6 @@
             updateSecurityMetrics();
             updateMappingPreview();
             generateVigenereSquares();
-            initMultiSymbolMap();
             setSystemStatus('active', 'SYSTEM RESET');
         }
     </script>
