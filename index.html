@@ -2,2797 +2,1948 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="SpikeBrain Nano v4.1 PRO — Полностью рабочая SNN, исправлены баги, генерация текста, спайки">
-    <meta name="theme-color" content="#0a0a15">
-    <title>🧠 SpikeBrain Nano v4.1 PRO — ИСПРАВЛЕННАЯ ВЕРСИЯ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSwarm Enterprise — ВОЙНА КОЛОНИЙ</title>
     <style>
         :root {
-            --bg-dark: #05050a;
-            --bg-panel: #0f0f1a;
-            --bg-card: #121225;
-            --border: #2a2a45;
-            --border-light: #3a3a55;
-            --accent: #00f2ff;
-            --accent-dim: rgba(0, 242, 255, 0.15);
-            --accent-glow: rgba(0, 242, 255, 0.4);
-            --success: #00ff9d;
-            --success-dim: rgba(0, 255, 157, 0.15);
-            --danger: #ff4444;
-            --danger-dim: rgba(255, 68, 68, 0.15);
-            --warning: #ffaa00;
-            --purple: #b829dd;
-            --text-main: #e0e0ff;
-            --text-dim: #707090;
-            --text-muted: #505070;
-            --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            --font-mono: 'Courier New', 'Consolas', 'Monaco', monospace;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 14px;
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --accent-primary: #00ff88;
+            --accent-secondary: #00ccff;
+            --accent-danger: #ff3366;
+            --accent-warning: #ffaa00;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --border-color: #2a2a3a;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            --font-ui: 'Inter', 'Segoe UI', system-ui, sans-serif;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             outline: none;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            user-select: none;
         }
 
         ::selection {
-            background: var(--accent-dim);
-            color: var(--accent);
+            background: var(--accent-primary);
+            color: #000;
         }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: var(--bg-dark);
-            color: var(--text-main);
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
             font-family: var(--font-ui);
-            font-size: 14px;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
             line-height: 1.5;
         }
 
-        .app-container {
-            display: flex;
-            flex-direction: column;
+        #app {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            grid-template-rows: 60px 1fr 220px;
             height: 100vh;
             width: 100vw;
-            max-width: 1920px;
-            margin: 0 auto;
         }
 
-        .app-header {
-            height: 64px;
-            min-height: 64px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
+        /* HEADER */
+        header {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
-            flex-shrink: 0;
+            padding: 0 25px;
             z-index: 100;
         }
 
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .header-brand h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: var(--text-main);
-        }
-
-        .header-brand h1 span {
-            color: var(--accent);
-        }
-
-        .header-badge {
-            background: linear-gradient(135deg, #ff0066, #ff4444);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(255, 0, 102, 0.4);
-        }
-
-        .header-badge.pro {
-            background: linear-gradient(135deg, var(--accent), var(--purple));
-            box-shadow: 0 2px 8px var(--accent-glow);
-        }
-
-        .header-status {
-            display: flex;
-            align-items: center;
-            gap: 24px;
+        .logo {
             font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-dim);
-        }
-
-        .status-item {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 12px;
         }
 
-        .status-item b {
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .app-main {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 480px;
-            grid-template-rows: 1fr;
-            gap: 1px;
-            background: var(--border);
-            overflow: hidden;
-        }
-
-        .panel {
-            background: var(--bg-panel);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .panel-viz {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-            background: #000;
-            position: relative;
-        }
-
-        .panel-right {
-            grid-column: 2 / 3;
-            grid-row: 1 / 2;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid var(--border);
-            overflow: hidden;
-        }
-
-        .canvas-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        #brainCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            image-rendering: pixelated;
-        }
-
-        .viz-overlay {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .viz-badge {
-            background: rgba(10, 10, 20, 0.85);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: var(--radius-sm);
-            font-size: 0.7rem;
-            font-family: var(--font-mono);
-            color: var(--accent);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: var(--transition);
-        }
-
-        .viz-badge.active {
-            border-color: var(--success);
-            color: var(--success);
-            background: rgba(0, 255, 157, 0.1);
-        }
-
-        .viz-legend {
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            display: flex;
-            gap: 16px;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            pointer-events: none;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .legend-dot.active { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-        .legend-dot.spike { background: #ffff00; box-shadow: 0 0 6px #ffff00; }
-        .legend-dot.focus { border: 2px solid var(--accent); background: transparent; }
-
-        .right-panel-scroll {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .right-panel-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .right-panel-scroll::-webkit-scrollbar-thumb {
-            background: var(--border);
+        .logo-badge {
+            background: var(--accent-danger);
+            color: #fff;
+            font-size: 9px;
+            padding: 2px 6px;
             border-radius: 3px;
+            font-weight: 700;
         }
 
-        .chat-container {
-            height: 45%;
-            min-height: 300px;
+        .header-stats {
+            display: flex;
+            gap: 30px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .header-stat {
             display: flex;
             flex-direction: column;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-panel);
-        }
-
-        .chat-header {
-            height: 56px;
-            min-height: 56px;
-            padding: 0 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
             align-items: center;
-            justify-content: space-between;
-            background: var(--bg-card);
-            flex-shrink: 0;
         }
 
-        .chat-title {
-            font-size: 0.85rem;
-            font-weight: 600;
+        .header-stat-label {
+            color: var(--text-muted);
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-dim);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .chat-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            color: var(--success);
-        }
-
-        .chat-status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: var(--bg-dark);
-            scroll-behavior: smooth;
-            min-height: 0;
-        }
-
-        .chat-messages::-webkit-scrollbar { width: 6px; }
-        .chat-messages::-webkit-scrollbar-track { background: transparent; }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            animation: messageIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            word-wrap: break-word;
-            flex-shrink: 0;
-        }
-
-        @keyframes messageIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .message.user {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--accent-dim), rgba(0, 242, 255, 0.05));
-            border: 1px solid var(--accent);
-            color: var(--text-main);
-            border-bottom-right-radius: var(--radius-sm);
-        }
-
-        .message.bot {
-            align-self: flex-start;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            border-bottom-left-radius: var(--radius-sm);
-        }
-
-        .message.bot.thinking {
-            color: var(--text-muted);
-            font-style: italic;
-            opacity: 0.8;
-        }
-
-        .message-meta {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            margin-top: 6px;
-            text-align: right;
-            opacity: 0.7;
-        }
-
-        .message-metrics {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid var(--border);
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .message-metrics span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .message-metrics strong {
-            color: var(--success);
-        }
-
-        .chat-input-area {
-            padding: 16px 20px;
-            border-top: 1px solid var(--border);
-            background: var(--bg-card);
-            display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .chat-input {
-            flex: 1;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            font-family: var(--font-ui);
-            font-size: 0.95rem;
-            resize: none;
-            min-height: 48px;
-            max-height: 120px;
-            user-select: text;
-        }
-
-        .chat-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-dim);
-        }
-
-        .btn-send {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            width: 48px;
-            min-width: 48px;
-            height: 48px;
-            border-radius: var(--radius-md);
-            font-size: 1.2rem;
+        .header-stat-value {
+            color: var(--accent-primary);
             font-weight: 700;
-            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .controls {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            flex-shrink: 0;
-        }
-
-        .btn-send:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--accent-glow);
-        }
-
-        .btn-send:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn-send:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .training-panel {
-            height: 55%;
-            min-height: 400px;
-            background: var(--bg-panel);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .training-header {
-            padding: 12px 20px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-        }
-
-        .training-title {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-dim);
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
 
-        .training-content {
-            flex: 1;
-            padding: 16px 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .training-content::-webkit-scrollbar { width: 4px; }
-        .training-content::-webkit-scrollbar-thumb { background: var(--border); }
-
-        .dataset-info {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .dataset-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dataset-name {
-            font-weight: 600;
-            color: var(--text-main);
-            font-size: 0.9rem;
-        }
-
-        .dataset-stats {
-            display: flex;
-            gap: 16px;
-            font-size: 0.75rem;
-            color: var(--text-dim);
+        button {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
             font-family: var(--font-mono);
-        }
-
-        .dataset-stats span strong {
-            color: var(--accent);
-        }
-
-        .progress-container {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: var(--bg-dark);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--success));
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        .checkpoint-slots {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-        }
-
-        .checkpoint-slot {
-            background: var(--bg-card);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .checkpoint-slot:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
-
-        .checkpoint-slot.active {
-            border-color: var(--success);
-            background: var(--success-dim);
-        }
-
-        .checkpoint-slot .slot-number {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-bottom: 4px;
-        }
-
-        .checkpoint-slot .slot-info {
-            font-size: 0.65rem;
-            color: var(--text-main);
-            font-family: var(--font-mono);
-        }
-
-        .checkpoint-slot .slot-date {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .training-controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 10px 14px;
-            border-radius: var(--radius-md);
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            white-space: nowrap;
-            user-select: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-radius: 4px;
         }
 
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn.primary {
-            background: var(--accent);
+        button:hover {
+            background: var(--accent-primary);
             color: #000;
-            border-color: var(--accent);
+            border-color: var(--accent-primary);
         }
 
-        .btn.success {
-            background: var(--success);
+        button.danger:hover {
+            background: var(--accent-danger);
+            border-color: var(--accent-danger);
+            color: #fff;
+        }
+
+        button.active {
+            background: var(--accent-primary);
             color: #000;
-            border-color: var(--success);
+            border-color: var(--accent-primary);
         }
 
-        .btn.danger {
-            background: transparent;
-            border-color: var(--danger);
-            color: var(--danger);
-        }
-
-        .btn.purple {
-            background: var(--purple);
-            color: white;
-            border-color: var(--purple);
-        }
-
-        .btn.full-width { grid-column: 1 / -1; }
-
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
-        }
-
-        .controls-panel {
+        /* SIDEBARS */
+        .sidebar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             padding: 20px;
-            border-top: 1px solid var(--border);
-            background: var(--bg-card);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            flex-shrink: 0;
+            overflow-y: auto;
+            z-index: 50;
         }
 
-        .control-section {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        #sidebar-left {
+            grid-column: 1;
+            grid-row: 2;
+            border-right: 1px solid var(--border-color);
         }
 
-        .control-section h3 {
-            font-size: 0.75rem;
+        #sidebar-right {
+            grid-column: 3;
+            grid-row: 2;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+        }
+
+        .panel-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-dim);
-            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .stat-card {
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 14px 10px;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
         .stat-value {
             font-family: var(--font-mono);
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--success);
-            line-height: 1.2;
+            font-size: 13px;
+            color: var(--accent-primary);
+            font-weight: 600;
         }
 
-        .stat-label {
-            font-size: 0.65rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 6px;
+        .colony-green {
+            color: #00ff88;
         }
 
-        .slider-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .colony-red {
+            color: #ff3366;
         }
 
-        .slider-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 5px;
         }
 
-        .slider-label {
-            font-size: 0.8rem;
-            color: var(--text-main);
-            font-weight: 500;
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 2px;
+            transition: width 0.3s ease;
         }
 
-        .slider-value {
+        /* VIEWPORT */
+        #viewport {
+            grid-column: 2;
+            grid-row: 2;
+            position: relative;
+            background: radial-gradient(ellipse at center, #0d0d15 0%, #050508 100%);
+            overflow: hidden;
+        }
+
+        #sim-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #viewport-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--accent);
-            background: var(--accent-dim);
-            padding: 2px 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* BRAIN VISUALIZER */
+        #brain-container {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        #brain-canvas {
+            width: 100%;
+            height: 280px;
+            background: #000;
             border-radius: 4px;
         }
 
-        .slider-control {
-            width: 100%;
-            height: 6px;
-            background: var(--bg-dark);
-            border-radius: 3px;
-            appearance: none;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .slider-control::-webkit-slider-thumb {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--accent);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 10px var(--accent-glow);
-            transition: var(--transition);
-        }
-
-        .slider-control::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-        }
-
-        .button-grid {
+        .brain-info {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
+            margin-top: 12px;
+            font-family: var(--font-mono);
+            font-size: 10px;
         }
 
-        .log-container {
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            overflow: hidden;
+        .brain-metric {
+            background: var(--bg-primary);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .brain-metric-label {
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .brain-metric-value {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        /* CONSOLE */
+        #console-panel {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            z-index: 100;
         }
 
-        .log-header {
-            padding: 10px 14px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .log-clear {
-            cursor: pointer;
-            color: var(--text-dim);
-            transition: var(--transition);
-            user-select: none;
-        }
-
-        .log-clear:hover {
-            color: var(--danger);
-        }
-
-        .log-content {
-            height: 140px;
-            overflow-y: auto;
-            padding: 12px;
+        #terminal {
+            flex: 1;
+            padding: 15px;
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            background: var(--bg-dark);
+            font-size: 12px;
+            overflow-y: auto;
+            color: var(--text-secondary);
+            line-height: 1.6;
         }
-
-        .log-content::-webkit-scrollbar { width: 4px; }
-        .log-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
         .log-entry {
-            padding: 3px 0;
-            border-bottom: 1px solid rgba(42, 42, 69, 0.3);
-            display: flex;
-            gap: 8px;
+            margin: 3px 0;
+            padding: 2px 0;
         }
 
-        .log-entry:last-child { border-bottom: none; }
-        .log-entry.info { color: var(--accent); }
-        .log-entry.success { color: var(--success); }
-        .log-entry.error { color: var(--danger); }
-        .log-entry.warn { color: var(--warning); }
+        .log-sys { color: var(--accent-primary); }
+        .log-cmd { color: var(--text-primary); }
+        .log-warn { color: var(--accent-warning); }
+        .log-error { color: var(--accent-danger); }
+        .log-info { color: var(--accent-secondary); }
+        .log-green { color: #00ff88; }
+        .log-red { color: #ff3366; }
 
-        .log-timestamp { color: var(--text-muted); flex-shrink: 0; }
-
-        .test-output {
-            background: var(--bg-dark);
-            border-left: 3px solid var(--border);
-            padding: 12px;
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            font-size: 0.8rem;
-            font-family: var(--font-mono);
-            display: none;
-            margin-top: 8px;
-        }
-
-        .test-output.pass { border-left-color: var(--success); background: var(--success-dim); }
-        .test-output.fail { border-left-color: var(--danger); background: var(--danger-dim); }
-
-        .app-footer {
-            height: 40px;
-            min-height: 40px;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border);
+        #command-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            flex-shrink: 0;
+            padding: 12px 15px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-primary);
         }
 
-        @media (max-width: 1200px) { .app-main { grid-template-columns: 1fr 420px; } }
-        @media (max-width: 900px) {
-            .app-main { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
-            .panel-viz { grid-column: 1; grid-row: 1; }
-            .panel-right { grid-column: 1; grid-row: 2; border-left: none; border-top: 1px solid var(--border); }
-            .chat-container { height: 40%; min-height: 250px; }
-            .training-panel { height: 60%; min-height: 350px; }
-            .header-status { gap: 12px; font-size: 0.7rem; }
+        #prompt {
+            color: var(--accent-primary);
+            margin-right: 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
         }
-        @media (max-width: 600px) {
-            .app-header { padding: 0 16px; }
-            .header-brand h1 { font-size: 1.1rem; }
-            .header-status { gap: 8px; }
-            .status-item span { display: none; }
-            .status-item b { display: inline; }
-            .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-            .stat-card { padding: 10px 6px; }
-            .stat-value { font-size: 1.1rem; }
-            .stat-label { font-size: 0.6rem; }
-            .button-grid { grid-template-columns: repeat(2, 1fr); }
-            .chat-input-area { padding: 12px 16px; }
-            .chat-input { font-size: 0.9rem; padding: 10px 12px; }
-            .btn-send { width: 44px; height: 44px; }
-            .checkpoint-slots { grid-template-columns: repeat(5, 1fr); }
-            .training-controls { grid-template-columns: 1fr; }
+
+        #cmd-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
         }
-        @media print {
-            .app-header, .app-footer, .controls-panel, .chat-input-area { display: none; }
-            .panel-viz { grid-column: 1 / -1; grid-row: 1 / -1; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        @media (prefers-reduced-motion: reduce) {
-            * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* CHART */
+        #fitness-chart {
+            width: 100%;
+            height: 100px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        /* MENTAL MAP */
+        #mental-canvas {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        /* NETWORK TOPOLOGY */
+        .network-topology {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .topology-node {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .topology-node-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .topology-node-value {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent-primary);
+        }
+
+        /* LOADING */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="app-header">
-            <div class="header-brand">
-                <h1>🧠 SPIKE<span>BRAIN</span> NANO</h1>
-                <span class="header-badge pro">v4.1 PRO • 65K NEURONS</span>
+    <div id="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Initializing Neural Engine...</div>
+    </div>
+
+    <div id="app">
+        <header>
+            <div class="logo">
+                NEUROSWARM
+                <span class="logo-badge">WAR EDITION</span>
             </div>
-            <div class="header-status">
-                <div class="status-item"><span>FPS:</span><b id="fpsDisplay">0</b></div>
-                <div class="status-item"><span>STEP:</span><b id="stepDisplay">0</b></div>
-                <div class="status-item"><div class="status-indicator"></div><span>ONLINE</span></div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="header-stat-label">Generation</span>
+                    <span class="header-stat-value" id="stat-generation">1</span>
+                </div>
+                <div class="header-stat">
+                    <span class="header-stat-label">Population</span>
+                    <span class="header-stat-value" id="stat-population">0</span>
+                </div>
+                <div class="header-stat">
+                    <span class="header-stat-label">Green/Red</span>
+                    <span class="header-stat-value" id="stat-colonies">0/0</span>
+                </div>
+                <div class="header-stat">
+                    <span class="header-stat-label">FPS</span>
+                    <span class="header-stat-value" id="stat-fps">60</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="btn-pause">Pause</button>
+                <button id="btn-evolve" class="danger">Force Evolve</button>
+                <button id="btn-reset" class="danger">Reset</button>
             </div>
         </header>
 
-        <main class="app-main">
-            <div class="panel panel-viz">
-                <div class="canvas-container">
-                    <canvas id="brainCanvas"></canvas>
+        <aside id="sidebar-left" class="sidebar">
+            <div class="panel-section">
+                <div class="panel-title">GREEN COLONY <span style="color:#0f0;">●</span></div>
+                <div class="stat-item">
+                    <span class="stat-label">Alive</span>
+                    <span class="stat-value" id="stat-green-alive">0</span>
                 </div>
-                <div class="viz-overlay">
-                    <div class="viz-badge" id="vizInput"><span>📥</span><span>INPUT: IDLE</span></div>
-                    <div class="viz-badge" id="vizOutput"><span>📤</span><span>OUTPUT: IDLE</span></div>
-                    <div class="viz-badge" id="vizLearning"><span>🎓</span><span>LEARNING: OFF</span></div>
+                <div class="stat-item">
+                    <span class="stat-label">Resources</span>
+                    <span class="stat-value" id="stat-green-res">0</span>
                 </div>
-                <div class="viz-legend">
-                    <div class="legend-item"><div class="legend-dot active"></div><span>Активные нейроны</span></div>
-                    <div class="legend-item"><div class="legend-dot spike"></div><span>Спайки</span></div>
-                    <div class="legend-item"><div class="legend-dot focus"></div><span>Фокус внимания</span></div>
+                <div class="stat-item">
+                    <span class="stat-label">Warriors</span>
+                    <span class="stat-value" id="stat-green-war">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Workers</span>
+                    <span class="stat-value" id="stat-green-worker">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Builders</span>
+                    <span class="stat-value" id="stat-green-builder">0</span>
                 </div>
             </div>
 
-            <div class="panel panel-right">
-                <div class="right-panel-scroll">
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <div class="chat-title"><span>💬</span><span>Neural Interface</span></div>
-                            <div class="chat-status"><div class="chat-status-dot"></div><span id="chatStatusText">READY</span></div>
-                        </div>
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="message bot">
-                                <div>🧠 SpikeBrain Nano v4.1 PRO — ИСПРАВЛЕННАЯ ВЕРСИЯ. Теперь мозг отвечает своими предсказаниями, спайки отображаются, обучение работает.</div>
-                                <div class="message-meta">SYSTEM • <span class="msg-time"></span></div>
-                            </div>
-                        </div>
-                        <div class="chat-input-area">
-                            <textarea class="chat-input" id="chatInput" placeholder="Введите сообщение... (Enter — отправить, Shift+Enter — новая строка)" rows="2"></textarea>
-                            <button class="btn-send" id="btnSend" title="Отправить">➤</button>
-                        </div>
-                    </div>
-
-                    <div class="training-panel">
-                        <div class="training-header">
-                            <div class="training-title">📚 Обучение на датасетах</div>
-                            <div style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);" id="trainingStatus">Готов</div>
-                        </div>
-                        <div class="training-content">
-                            <div class="dataset-info">
-                                <div class="dataset-header">
-                                    <div class="dataset-name" id="datasetName">Нет загруженного датасета</div>
-                                    <div class="dataset-stats">
-                                        <span>Пар: <strong id="datasetPairs">0</strong></span>
-                                        <span>Эпох: <strong id="datasetEpochs">0</strong></span>
-                                    </div>
-                                </div>
-                                <div class="file-input-wrapper">
-                                    <button class="btn primary" style="width: 100%;" onclick="document.getElementById('fileInput').click()">
-                                        📁 Загрузить JSON датасет
-                                    </button>
-                                    <input type="file" id="fileInput" accept=".json" onchange="app.loadDataset(this)">
-                                </div>
-                            </div>
-
-                            <div class="progress-container">
-                                <div class="progress-header">
-                                    <span>Прогресс обучения</span>
-                                    <span id="progressText">0%</span>
-                                </div>
-                                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
-                                <div class="stats-grid" style="margin-top: 8px;">
-                                    <div class="stat-card"><div class="stat-value" id="statLoss">0.00</div><div class="stat-label">Loss</div></div>
-                                    <div class="stat-card"><div class="stat-value" id="statAccuracy">0%</div><div class="stat-label">Accuracy</div></div>
-                                    <div class="stat-card"><div class="stat-value" id="statEpoch">0</div><div class="stat-label">Эпоха</div></div>
-                                </div>
-                            </div>
-
-                            <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">Чекпоинты (клик для загрузки)</div>
-                            <div class="checkpoint-slots" id="checkpointSlots"></div>
-
-                            <div class="training-controls">
-                                <button class="btn success" id="btnTrain" onclick="app.startTraining()" disabled>🎓 Начать обучение</button>
-                                <button class="btn danger" id="btnStopTrain" onclick="app.stopTraining()" disabled>⏹ Остановить</button>
-                                <button class="btn purple" onclick="app.exportModel()">💾 Экспорт модели</button>
-                                <button class="btn" onclick="document.getElementById('importModelInput').click()">📂 Импорт модели</button>
-                                <input type="file" id="importModelInput" accept=".json" style="display: none;" onchange="app.importModel(this)">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="controls-panel">
-                        <div class="control-section">
-                            <h3>📊 Состояние мозга</h3>
-                            <div class="stats-grid">
-                                <div class="stat-card"><div class="stat-value" id="statNeurons">65,536</div><div class="stat-label">Нейронов</div></div>
-                                <div class="stat-card"><div class="stat-value" id="statSynapses">0</div><div class="stat-label">Синапсов</div></div>
-                                <div class="stat-card"><div class="stat-value" id="statActivity">0%</div><div class="stat-label">Активность</div></div>
-                            </div>
-                        </div>
-
-                        <div class="control-section">
-                            <h3>⚙️ Параметры обучения</h3>
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span class="slider-label">Скорость обучения (LR)</span>
-                                    <span class="slider-value" id="lrValue">0.010</span>
-                                </div>
-                                <input type="range" class="slider-control" id="learningRate" min="0.001" max="0.05" step="0.001" value="0.01">
-                            </div>
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span class="slider-label">STDP окно (ms)</span>
-                                    <span class="slider-value" id="stdpValue">20</span>
-                                </div>
-                                <input type="range" class="slider-control" id="stdpWindow" min="5" max="40" step="1" value="20">
-                            </div>
-                            <div class="slider-group">
-                                <div class="slider-header">
-                                    <span class="slider-label">Радиус внимания</span>
-                                    <span class="slider-value" id="focusValue">32</span>
-                                </div>
-                                <input type="range" class="slider-control" id="focusRadius" min="8" max="64" step="4" value="32">
-                            </div>
-                        </div>
-
-                        <div class="control-section">
-                            <h3>🎮 Управление</h3>
-                            <div class="button-grid">
-                                <button class="btn primary" id="btnStart">▶ Старт</button>
-                                <button class="btn" id="btnPause" disabled>⏸ Пауза</button>
-                                <button class="btn danger" id="btnReset">🔄 Сброс</button>
-                                <button class="btn" id="btnStep">⏭ Шаг</button>
-                                <button class="btn primary full-width" id="btnTrainManual">🎓 Обучить (Текст)</button>
-                                <button class="btn success" id="btnTest">🧪 Тесты</button>
-                                <button class="btn" id="btnPredict">🔮 Предсказать</button>
-                                <button class="btn" id="btnSave">💾 Сохранить</button>
-                            </div>
-                            <div style="margin-top: 10px;">
-                                <button class="btn" id="btnToggleLearning" onclick="app.toggleLearning()" style="width: 100%;">🎓 Режим обучения: ВЫКЛ</button>
-                            </div>
-                        </div>
-
-                        <div class="control-section">
-                            <h3>📋 Лог событий</h3>
-                            <div class="log-container">
-                                <div class="log-header"><span>Системный лог</span><span class="log-clear" id="clearLog">✕ Очистить</span></div>
-                                <div class="log-content" id="logContent"></div>
-                            </div>
-                            <div class="test-output" id="testOutput"></div>
-                        </div>
-                    </div>
+            <div class="panel-section">
+                <div class="panel-title">RED COLONY <span style="color:#f33;">●</span></div>
+                <div class="stat-item">
+                    <span class="stat-label">Alive</span>
+                    <span class="stat-value" id="stat-red-alive">0</span>
                 </div>
+                <div class="stat-item">
+                    <span class="stat-label">Resources</span>
+                    <span class="stat-value" id="stat-red-res">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Warriors</span>
+                    <span class="stat-value" id="stat-red-war">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Workers</span>
+                    <span class="stat-value" id="stat-red-worker">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Builders</span>
+                    <span class="stat-value" id="stat-red-builder">0</span>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Performance Metrics</div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Kills</span>
+                    <span class="stat-value" id="stat-kills">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Resources Gathered</span>
+                    <span class="stat-value" id="stat-gathered">0</span>
+                </div>
+            </div>
+        </aside>
+
+        <main id="viewport">
+            <canvas id="sim-canvas"></canvas>
+            <div id="viewport-overlay">
+                <div>TIME SCALE: <span id="overlay-timescale">1x</span></div>
+                <div>ENTITIES: <span id="overlay-entities">0</span></div>
             </div>
         </main>
 
-        <footer class="app-footer">
-            <span>🧠 SpikeBrain Nano v4.1 PRO — ПОЛНОСТЬЮ РАБОЧАЯ ВЕРСИЯ, спайки, обучение, генерация текста</span>
-            <span>Память: ~320KB | Синапсов: <span id="footerSynapses">0</span>/65K</span>
+        <aside id="sidebar-right" class="sidebar">
+            <div class="panel-section">
+                <div class="panel-title">Neural Activity Monitor</div>
+                <div id="brain-container">
+                    <canvas id="brain-canvas"></canvas>
+                    <div class="brain-info">
+                        <div class="brain-metric">
+                            <div class="brain-metric-label">Unit ID</div>
+                            <div class="brain-metric-value" id="brain-unit-id">--</div>
+                        </div>
+                        <div class="brain-metric">
+                            <div class="brain-metric-label">Colony</div>
+                            <div class="brain-metric-value" id="brain-colony">--</div>
+                        </div>
+                        <div class="brain-metric">
+                            <div class="brain-metric-label">Role</div>
+                            <div class="brain-metric-value" id="brain-role">--</div>
+                        </div>
+                        <div class="brain-metric">
+                            <div class="brain-metric-label">Age</div>
+                            <div class="brain-metric-value" id="brain-age">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Mental Map</div>
+                <canvas id="mental-canvas"></canvas>
+                <div style="display: flex; gap: 10px; justify-content: space-around;">
+                    <span style="color:#f33;">●</span> Threats
+                    <span style="color:#0f0;">●</span> Food
+                    <span style="color:#ff0;">●</span> Resources
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">Genetic Parameters</div>
+                <div class="stat-item">
+                    <span class="stat-label">Mutation Rate</span>
+                    <span class="stat-value" id="stat-mutation">5.0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Elite Count</span>
+                    <span class="stat-value" id="stat-elite">2</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Population</span>
+                    <span class="stat-value" id="stat-pop-size">50</span>
+                </div>
+            </div>
+        </aside>
+
+        <footer id="console-panel">
+            <div id="terminal"></div>
+            <div id="command-row">
+                <span id="prompt">root@neuroswarm:~#</span>
+                <input type="text" id="cmd-input" placeholder="Enter command..." autocomplete="off" spellcheck="false">
+            </div>
         </footer>
     </div>
 
-    <script>
-    (function() {
-        // ═══════════════════════════════════════════════════════════════
-        // КОНФИГУРАЦИЯ
-        // ═══════════════════════════════════════════════════════════════
-        const Config = {
-            defaults: {
-                width: { min: 64, max: 512, default: 256 },
-                height: { min: 64, max: 512, default: 256 },
-                maxSynapses: { min: 1000, max: 200000, default: 65536 },
-                learningRate: { min: 0, max: 1, default: 0.01 },
-                stdpWindow: { min: 1, max: 100, default: 20 },
-                focusRadius: { min: 8, max: 128, default: 32 }
-            },
+<script>
+/**
+ * NEUROSWARM ENTERPRISE - WAR EDITION
+ * Доработанная версия с двумя колониями, ресурсами и ментальной картой
+ */
 
-            validate(key, value) {
-                const spec = this.defaults[key];
-                if (!spec) throw new Error(`Unknown config key: ${key}`);
-                if (typeof value !== 'number' || isNaN(value)) {
-                    throw new TypeError(`${key} must be a number`);
-                }
-                if (value < spec.min || value > spec.max) {
-                    throw new RangeError(`${key} must be between ${spec.min} and ${spec.max}`);
-                }
-                return true;
-            },
+'use strict';
 
-            create(userConfig = {}) {
-                const config = {};
-                for (const [key, spec] of Object.entries(this.defaults)) {
-                    const value = userConfig[key] !== undefined ? userConfig[key] : spec.default;
-                    this.validate(key, value);
-                    config[key] = value;
-                }
-                return config;
-            }
-        };
-
-        // ═══════════════════════════════════════════════════════════════
-        // EVENT EMITTER
-        // ═══════════════════════════════════════════════════════════════
-        class EventEmitter {
-            constructor() {
-                this._events = new Map();
-            }
-
-            on(event, callback) {
-                if (!this._events.has(event)) this._events.set(event, new Set());
-                this._events.get(event).add(callback);
-                return () => this._events.get(event)?.delete(callback);
-            }
-
-            once(event, callback) {
-                const wrapper = (...args) => {
-                    this.off(event, wrapper);
-                    callback(...args);
-                };
-                return this.on(event, wrapper);
-            }
-
-            off(event, callback) {
-                this._events.get(event)?.delete(callback);
-            }
-
-            emit(event, data) {
-                const handlers = this._events.get(event);
-                if (!handlers) return;
-                for (const handler of handlers) {
-                    try { handler(data); }
-                    catch (e) { console.error(`[EventEmitter.${event}] Handler error:`, e); }
-                }
-            }
-
-            clear() { this._events.clear(); }
+// ============================================
+// MATH LIBRARY (без изменений)
+// ============================================
+const Math3D = {
+    Vec2: class {
+        constructor(x = 0, y = 0) {
+            this.x = x;
+            this.y = y;
         }
+        add(v) { this.x += v.x; this.y += v.y; return this; }
+        sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+        mult(n) { this.x *= n; this.y *= n; return this; }
+        div(n) { if (n !== 0) { this.x /= n; this.y /= n; } return this; }
+        mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+        normalize() { const m = this.mag(); if (m > 0.0001) this.div(m); return this; }
+        limit(max) { if (this.mag() > max) { this.normalize(); this.mult(max); } return this; }
+        dist(v) { const dx = this.x - v.x; const dy = this.y - v.y; return Math.sqrt(dx*dx + dy*dy); }
+        copy() { return new Math3D.Vec2(this.x, this.y); }
+        static random2D() { const angle = Math.random() * Math.PI * 2; return new Math3D.Vec2(Math.cos(angle), Math.sin(angle)); }
+        static sub(v1, v2) { return new Math3D.Vec2(v1.x - v2.x, v1.y - v2.y); }
+        static dot(v1, v2) { return v1.x * v2.x + v1.y * v2.y; }
+    },
+    Matrix: class {
+        constructor(rows, cols) { this.rows = rows; this.cols = cols; this.data = new Float64Array(rows * cols); }
+        static fromArray(arr) { const m = new Math3D.Matrix(arr.length, 1); for (let i=0; i<arr.length; i++) m.data[i] = arr[i]; return m; }
+        toArray() { const arr = []; for (let i=0; i<this.data.length; i++) arr.push(this.data[i]); return arr; }
+        randomize() { for (let i=0; i<this.data.length; i++) this.data[i] = Math.random() * 2 - 1; }
+        map(func) { for (let i=0; i<this.data.length; i++) this.data[i] = func(this.data[i]); }
+        static multiply(a, b) { if (a.cols !== b.rows) return null; const result = new Math3D.Matrix(a.rows, b.cols); for (let i=0; i<a.rows; i++) { for (let j=0; j<b.cols; j++) { let sum = 0; for (let k=0; k<a.cols; k++) sum += a.data[i*a.cols + k] * b.data[k*b.cols + j]; result.data[i*result.cols + j] = sum; } } return result; }
+        copy() { const m = new Math3D.Matrix(this.rows, this.cols); m.data.set(this.data); return m; }
+        mutate(rate) { for (let i=0; i<this.data.length; i++) if (Math.random() < rate) this.data[i] += (Math.random() * 0.4 - 0.2); }
+    }
+};
 
-        // ═══════════════════════════════════════════════════════════════
-        // УТИЛИТЫ
-        // ═══════════════════════════════════════════════════════════════
-        const Utils = {
-            clamp(value, min, max) {
-                return Math.max(min, Math.min(max, value));
-            },
-
-            distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); },
-
-            timestamp() {
-                const d = new Date();
-                return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
-            },
-
-            messageTime() {
-                return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            },
-
-            formatHex(num) { return num.toString(16).padStart(2, '0').toUpperCase(); },
-
-            generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); },
-
-            debounce(func, wait) {
-                let timeout;
-                return function executedFunction(...args) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func(...args), wait);
-                };
-            },
-
-            throttle(func, limit) {
-                let inThrottle;
-                return function(...args) {
-                    if (!inThrottle) {
-                        func.apply(this, args);
-                        inThrottle = true;
-                        setTimeout(() => inThrottle = false, limit);
-                    }
-                };
-            },
-
-            deepClone(obj) { return JSON.parse(JSON.stringify(obj)); },
-
-            isEmpty(value) { return value === null || value === undefined || value === ''; },
-
-            normalizeText(text) {
-                if (!text || typeof text !== 'string') return '';
-                return text.toLowerCase()
-                    .replace(/[^\w\sа-яё]/gi, ' ')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-            },
-
-            escapeHtml(str) {
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
-            },
-
-            similarity(a, b) {
-                if (!a || !b) return 0;
-                a = a.toLowerCase();
-                b = b.toLowerCase();
-                if (a === b) return 1;
-                
-                const wordsA = new Set(a.split(/\s+/));
-                const wordsB = new Set(b.split(/\s+/));
-                const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
-                const union = new Set([...wordsA, ...wordsB]);
-                
-                return intersection.size / union.size;
-            }
-        };
-
-        // ═══════════════════════════════════════════════════════════════
-        // BPE КОДИРОВЩИК
-        // ═══════════════════════════════════════════════════════════════
-        const BPE = {
-            encode(text) {
-                if (!text || typeof text !== 'string') return [];
-                try {
-                    const encoder = typeof TextEncoder !== 'undefined' 
-                        ? new TextEncoder() 
-                        : { encode: (s) => new Uint8Array(s.split('').map(c => c.charCodeAt(0))) };
-                    
-                    const bytes = encoder.encode(text);
-                    const bigrams = [];
-                    for (let i = 0; i < bytes.length; i += 2) {
-                        bigrams.push({
-                            x: bytes[i],
-                            y: (i + 1 < bytes.length) ? bytes[i + 1] : 0
-                        });
-                    }
-                    return bigrams;
-                } catch (e) {
-                    console.error('[BPE.encode] Error:', e);
-                    return [];
-                }
-            },
-
-            decode(bigrams) {
-                if (!bigrams || !Array.isArray(bigrams) || bigrams.length === 0) return null;
-                try {
-                    const bytes = [];
-                    for (const bg of bigrams) {
-                        if (typeof bg.x === 'number') bytes.push(bg.x & 0xFF);
-                        if (typeof bg.y === 'number' && bg.y !== 0) bytes.push(bg.y & 0xFF);
-                    }
-                    const decoder = typeof TextDecoder !== 'undefined'
-                        ? new TextDecoder()
-                        : { decode: (arr) => String.fromCharCode(...arr) };
-                    return decoder.decode(new Uint8Array(bytes));
-                } catch (e) {
-                    console.error('[BPE.decode] Error:', e);
-                    return null;
-                }
-            },
-
-            getCategory(text) {
-                if (!text) return 3;
-                const lower = text.toLowerCase();
-                if (lower.match(/кот|собак|животн|кош|пёс|зверь/)) return 0;
-                if (lower.match(/мяу|гав|звук|шум|вопль/)) return 1;
-                if (lower.match(/спит|ест|бег|действ|движ/)) return 2;
-                return 3;
-            },
-
-            extractKeywords(text) {
-                if (!text) return [];
-                const stopwords = new Set(['и','в','на','не','что','как','для','это','ты','я','мы','он','она','а','но','да','же','ли','бы','то','из','от','до','по','с','к','у','о','за','под','над','при','через','после','перед','между','без','во','ко','со','про','сквозь']);
-                return (text.toLowerCase().match(/[\wа-яё]{3,}/gi) || [])
-                    .filter(word => !stopwords.has(word));
-            }
-        };
-
-        // ═══════════════════════════════════════════════════════════════
-        // КОЛЬЦЕВОЙ БУФЕР
-        // ═══════════════════════════════════════════════════════════════
-        class RingBuffer {
-            constructor(capacity, maxAge = null) {
-                this.capacity = capacity;
-                this.maxAge = maxAge;
-                this._buffer = new Array(capacity);
-                this._head = 0;
-                this._size = 0;
-                this._globalStep = 0;
-            }
-
-            push(value, step = null) {
-                if (step !== null) this._globalStep = step;
-                const entry = { value, timestamp: this._globalStep };
-                
-                if (this.maxAge !== null) {
-                    this._buffer = this._buffer.filter(e => 
-                        e && (this._globalStep - e.timestamp) <= this.maxAge
-                    );
-                    this._size = this._buffer.length;
-                    this._head = this._size % this.capacity;
-                }
-                
-                this._buffer[this._head] = entry;
-                this._head = (this._head + 1) % this.capacity;
-                if (this._size < this.capacity) this._size++;
-            }
-
-            toArray() {
-                const result = [];
-                for (let i = 0; i < this._size; i++) {
-                    const idx = (this._head - this._size + i + this.capacity) % this.capacity;
-                    if (this._buffer[idx]) result.push(this._buffer[idx].value);
-                }
-                return result;
-            }
-
-            get size() { return this._size; }
-
-            clear() {
-                this._buffer.fill(null);
-                this._head = 0;
-                this._size = 0;
-            }
-
-            getRecent(steps) {
-                return this._buffer
-                    .filter(e => e && (this._globalStep - e.timestamp) <= steps)
-                    .map(e => e.value);
-            }
+// ============================================
+// NEURAL NETWORK (без изменений)
+// ============================================
+class NeuralNetwork {
+    constructor(inputNodes, hiddenLayers, outputNodes) {
+        this.inputNodes = inputNodes;
+        this.outputNodes = outputNodes;
+        this.layers = [];
+        this.layerSizes = [inputNodes, ...hiddenLayers, outputNodes];
+        this.biases = [];
+        for (let i = 0; i < hiddenLayers.length; i++) {
+            this.layers.push(new Math3D.Matrix(hiddenLayers[i], this.layerSizes[i]));
+            this.biases.push(new Math3D.Matrix(hiddenLayers[i], 1));
         }
-
-        // ═══════════════════════════════════════════════════════════════
-        // ЯДРО МОЗГА (SpikeBrain) — ПОЛНОСТЬЮ РАБОЧЕЕ
-        // ═══════════════════════════════════════════════════════════════
-        class SpikeBrain extends EventEmitter {
-            constructor(config = {}) {
-                super();
-                const cfg = Config.create(config);
-                
-                this.width = cfg.width;
-                this.height = cfg.height;
-                this.totalNeurons = this.width * this.height;
-                
-                this.neurons = new Uint8Array(this.totalNeurons * 4);
-                
-                this.maxSynapses = cfg.maxSynapses;
-                this.synapses = new Uint8Array(this.maxSynapses * 6);
-                this.synapseCount = 0;
-                
-                this._adjacencyList = new Map();
-                
-                this.spikeQueue = [];
-                this.maxQueueSize = 2048;
-                
-                this.spikeHistory = new RingBuffer(200, 50);
-                
-                this.attentionMap = new Float32Array(this.totalNeurons);
-                this.focusX = Math.floor(this.width / 2);
-                this.focusY = Math.floor(this.height / 2);
-                this.focusRadius = cfg.focusRadius;
-                
-                this.sensors = new Uint8Array(64);
-                this.motors = new Uint8Array(16);
-                
-                this.step = 0;
-                this.learningRate = cfg.learningRate;
-                this.stdpWindow = cfg.stdpWindow;
-                this.isRunning = false;
-                this.isLearning = false;
-                
-                this._needsRedraw = true;
-                
-                this.trainingMetrics = {
-                    totalLoss: 0, totalAccuracy: 0,
-                    samplesProcessed: 0, currentEpoch: 0
-                };
-
-                this._initNeurons();
-                this._initSynapses(2000);
-                this._updateAttentionMap();
-                
-                this.emit('init', { neurons: this.totalNeurons, synapses: this.synapseCount });
-                console.log('[SpikeBrain] Инициализировано:', {
-                    neurons: this.totalNeurons,
-                    synapses: this.synapseCount,
-                    learningRate: this.learningRate
-                });
-            }
-
-            _neuronId(x, y) { return y * this.width + x; }
-            _neuronIndex(x, y) { return this._neuronId(x, y) * 4; }
-
-            _initNeurons() {
-                for (let y = 0; y < this.height; y += 4) {
-                    for (let x = 0; x < this.width; x += 4) {
-                        const type = Math.random() < 0.1 ? 1 : 0;
-                        this.setNeuron(x, y, {
-                            potential: 0,
-                            threshold: 80 + Math.floor(Math.random() * 60),
-                            refractory: 0,
-                            type: type
-                        });
-                    }
-                }
-            }
-
-            _initSynapses(count) {
-                for (let i = 0; i < count && this.synapseCount < this.maxSynapses; i++) {
-                    const fromX = Math.floor(Math.random() * this.width);
-                    const fromY = Math.floor(Math.random() * this.height);
-                    const toX = (fromX + Math.floor(Math.random() * 40) - 20 + this.width) % this.width;
-                    const toY = (fromY + Math.floor(Math.random() * 40) - 20 + this.height) % this.height;
-                    if (fromX === toX && fromY === toY) continue;
-                    this.addSynapse(fromX, fromY, toX, toY, 80 + Math.floor(Math.random() * 80), Math.floor(Math.random() * 3));
-                }
-            }
-
-            _updateAttentionMap() {
-                for (let y = 0; y < this.height; y += 8) {
-                    for (let x = 0; x < this.width; x += 8) {
-                        const idx = y * this.width + x;
-                        const dx = x - this.focusX, dy = y - this.focusY;
-                        const dist = Math.hypot(dx, dy);
-                        this.attentionMap[idx] = dist > this.focusRadius * 2 
-                            ? 0.5 
-                            : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
-                    }
-                }
-                this._needsRedraw = true;
-            }
-
-            _getAttentionMod(x, y) {
-                const dx = x - this.focusX, dy = y - this.focusY;
-                const dist = Math.hypot(dx, dy);
-                return dist > this.focusRadius * 2 
-                    ? 0.5 
-                    : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
-            }
-
-            _propagateSpikes(spikes) {
-                for (const spike of spikes) {
-                    const fromId = this._neuronId(spike.x, spike.y);
-                    const synapseIndices = this._adjacencyList.get(fromId);
-                    if (!synapseIndices) continue;
-                    
-                    for (const synIdx of synapseIndices) {
-                        const base = synIdx * 6;
-                        const toX = this.synapses[base + 2];
-                        const toY = this.synapses[base + 3];
-                        const weight = this.synapses[base + 4];
-                        const delay = this.synapses[base + 5];
-                        
-                        if (this.spikeQueue.length < this.maxQueueSize) {
-                            this.spikeQueue.push({
-                                x: toX, y: toY, weight, delay,
-                                deliverAt: this.step + delay
-                            });
-                        }
-                    }
-                }
-            }
-
-            _checkSpikes() {
-                const spikes = [];
-                for (let y = 0; y < this.height; y += 4) {
-                    for (let x = 0; x < this.width; x += 4) {
-                        const neuron = this.getNeuron(x, y);
-                        if (neuron.potential > neuron.threshold && neuron.refractory === 0) {
-                            spikes.push({ x, y, time: this.step });
-                            this.setNeuron(x, y, { ...neuron, refractory: 8, potential: 0 });
-                            this.spikeHistory.push({ x, y, time: this.step }, this.step);
-                            this._needsRedraw = true;
-                            this.emit('spike', { x, y, time: this.step });
-                        }
-                    }
-                }
-                return spikes;
-            }
-
-            _deliverSpikes() {
-                const toDeliver = this.spikeQueue.filter(s => s.deliverAt <= this.step);
-                this.spikeQueue = this.spikeQueue.filter(s => s.deliverAt > this.step);
-                
-                for (const spike of toDeliver) {
-                    const neuron = this.getNeuron(spike.x, spike.y);
-                    const attentionMod = this._getAttentionMod(spike.x, spike.y);
-                    const effectiveWeight = Math.floor(spike.weight * attentionMod);
-                    let delta = effectiveWeight;
-                    if (neuron.type === 1) delta = -delta;
-                    
-                    this.setNeuron(spike.x, spike.y, {
-                        ...neuron,
-                        potential: Utils.clamp(neuron.potential + delta, 0, 255)
-                    });
-                }
-                if (toDeliver.length > 0) this._needsRedraw = true;
-            }
-
-            _decay() {
-                let changed = false;
-                for (let y = 0; y < this.height; y += 4) {
-                    for (let x = 0; x < this.width; x += 4) {
-                        const idx = this._neuronIndex(x, y);
-                        let refractory = this.neurons[idx + 2];
-                        let potential = this.neurons[idx];
-                        
-                        if (refractory > 0) {
-                            this.neurons[idx + 2] = refractory - 1;
-                            changed = true;
-                        } else if (potential > 0) {
-                            this.neurons[idx] = potential - 1;
-                            changed = true;
-                        }
-                    }
-                }
-                if (changed) this._needsRedraw = true;
-            }
-
-            _applySTDP(reward = 0.5) {
-                const recentSpikes = this.spikeHistory.getRecent(this.stdpWindow);
-                if (recentSpikes.length < 2) return;
-                
-                for (let i = 0; i < this.synapseCount; i++) {
-                    const base = i * 6;
-                    const fromId = this._neuronId(this.synapses[base], this.synapses[base + 1]);
-                    const toId = this._neuronId(this.synapses[base + 2], this.synapses[base + 3]);
-                    
-                    const preSpike = recentSpikes.find(s => this._neuronId(s.x, s.y) === fromId);
-                    const postSpike = recentSpikes.find(s => this._neuronId(s.x, s.y) === toId);
-                    
-                    if (preSpike && postSpike) {
-                        const dt = postSpike.time - preSpike.time;
-                        let delta = 0;
-                        if (dt > 0 && dt < this.stdpWindow) {
-                            delta = Math.floor(15 * Math.exp(-dt / 10) * reward * this.learningRate * 100);
-                        } else if (dt < 0 && dt > -this.stdpWindow) {
-                            delta = Math.floor(-10 * Math.exp(dt / 10) * reward * this.learningRate * 100);
-                        }
-                        if (delta !== 0) {
-                            const newWeight = Utils.clamp(this.synapses[base + 4] + delta, 0, 255);
-                            if (newWeight !== this.synapses[base + 4]) {
-                                this.synapses[base + 4] = newWeight;
-                                this.emit('synapseUpdate', { index: i, newWeight });
-                            }
-                        }
-                    }
-                }
-            }
-
-            _loadSensors(sensors) {
-                if (!sensors) return;
-                let changed = false;
-                for (let i = 0; i < 64 && i < sensors.length; i++) {
-                    const val = sensors[i];
-                    if (val === 0) continue;
-                    const baseX = (i % 8) * 32, baseY = Math.floor(i / 8) * 32;
-                    for (let dy = 0; dy < 16; dy += 4) {
-                        for (let dx = 0; dx < 16; dx += 4) {
-                            const x = (baseX + dx) % this.width;
-                            const y = (baseY + dy) % this.height;
-                            const neuron = this.getNeuron(x, y);
-                            if (neuron.potential !== Utils.clamp(neuron.potential + val, 0, 255)) {
-                                this.inject(x, y, val);
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-                if (changed) this._needsRedraw = true;
-            }
-
-            _readMotors() {
-                for (let i = 0; i < 16; i++) {
-                    const baseX = 128 + (i % 4) * 32;
-                    const baseY = 128 + Math.floor(i / 4) * 32;
-                    let activity = 0, count = 0;
-                    for (let dy = 0; dy < 16; dy += 4) {
-                        for (let dx = 0; dx < 16; dx += 4) {
-                            const x = (baseX + dx) % this.width;
-                            const y = (baseY + dy) % this.height;
-                            const neuron = this.getNeuron(x, y);
-                            if (neuron.potential > neuron.threshold * 0.8) {
-                                activity += neuron.potential;
-                                count++;
-                            }
-                        }
-                    }
-                    this.motors[i] = count > 0 ? Math.min(255, (activity / count) * 2) : 0;
-                }
-            }
-
-            _getMostActiveRegion() {
-                let maxActivity = 0, bestX = 0, bestY = 0;
-                for (let y = 0; y < this.height; y += 16) {
-                    for (let x = 0; x < this.width; x += 16) {
-                        let activity = 0;
-                        for (let dy = 0; dy < 16; dy += 4) {
-                            for (let dx = 0; dx < 16; dx += 4) {
-                                const n = this.getNeuron(x + dx, y + dy);
-                                activity += n.potential;
-                            }
-                        }
-                        if (activity > maxActivity) {
-                            maxActivity = activity;
-                            bestX = x; bestY = y;
-                        }
-                    }
-                }
-                return { x: bestX, y: bestY };
-            }
-
-            getNeuron(x, y) {
-                const idx = this._neuronIndex(x, y);
-                return {
-                    potential: this.neurons[idx],
-                    threshold: this.neurons[idx + 1],
-                    refractory: this.neurons[idx + 2],
-                    type: this.neurons[idx + 3]
-                };
-            }
-
-            setNeuron(x, y, data) {
-                const idx = this._neuronIndex(x, y);
-                this.neurons[idx] = Utils.clamp(data.potential, 0, 255);
-                this.neurons[idx + 1] = Utils.clamp(data.threshold, 1, 255);
-                this.neurons[idx + 2] = Utils.clamp(data.refractory, 0, 255);
-                this.neurons[idx + 3] = data.type & 0xFF;
-            }
-
-            addSynapse(fromX, fromY, toX, toY, weight = 128, delay = 0) {
-                if (this.synapseCount >= this.maxSynapses) return false;
-                const idx = this.synapseCount * 6;
-                
-                this.synapses[idx] = fromX & 0xFF;
-                this.synapses[idx + 1] = fromY & 0xFF;
-                this.synapses[idx + 2] = toX & 0xFF;
-                this.synapses[idx + 3] = toY & 0xFF;
-                this.synapses[idx + 4] = Utils.clamp(weight, 0, 255);
-                this.synapses[idx + 5] = Utils.clamp(delay, 0, 5) & 0xFF;
-                
-                const fromId = this._neuronId(fromX, fromY);
-                if (!this._adjacencyList.has(fromId)) {
-                    this._adjacencyList.set(fromId, []);
-                }
-                this._adjacencyList.get(fromId).push(this.synapseCount);
-                
-                this.synapseCount++;
-                this.emit('synapseAdded', { from: {x:fromX,y:fromY}, to: {x:toX,y:toY}, weight });
-                return true;
-            }
-
-            setFocus(x, y, radius = null) {
-                this.focusX = Utils.clamp(x, 0, this.width - 1);
-                this.focusY = Utils.clamp(y, 0, this.height - 1);
-                if (radius !== null) {
-                    this.focusRadius = Utils.clamp(radius, 8, 128);
-                }
-                this._updateAttentionMap();
-                this.emit('focusChanged', { x: this.focusX, y: this.focusY, radius: this.focusRadius });
-            }
-
-            inject(x, y, strength) {
-                const neuron = this.getNeuron(x, y);
-                this.setNeuron(x, y, {
-                    ...neuron,
-                    potential: Utils.clamp(neuron.potential + strength, 0, 255)
-                });
-            }
-
-            forward(sensors = null, reward = 0) {
-                this.step++;
-                if (sensors) this._loadSensors(sensors);
-                
-                const spikes = this._checkSpikes();
-                this._propagateSpikes(spikes);
-                this._deliverSpikes();
-                this._decay();
-                this._readMotors();
-                
-                if (this.isLearning && Math.abs(reward) > 0.01) {
-                    this._applySTDP(reward);
-                }
-                
-                return { spikes: spikes.length, motors: this.motors.slice() };
-            }
-
-            processText(text, reward = 0) {
-                if (!text || typeof text !== 'string') return null;
-                const bigrams = BPE.encode(text);
-                if (bigrams.length === 0) return null;
-                
-                const category = BPE.getCategory(text);
-                this.setFocus(category * 64 + 32, 128);
-                
-                const results = [];
-                for (const bg of bigrams) {
-                    const sensors = new Uint8Array(64);
-                    sensors[bg.x % 64] = bg.x;
-                    if (bg.y > 0) sensors[bg.y % 64] = bg.y;
-                    const out = this.forward(sensors, reward);
-                    const prediction = this._getMostActiveRegion();
-                    results.push({ input: bg, prediction, spikes: out.spikes });
-                }
-                return { bigrams, category, results };
-            }
-
-            predictNext(text) {
-                const result = this.processText(text, 0);
-                if (!result || result.results.length === 0) {
-                    return { text: '?', raw: '00 00', x: 0, y: 0 };
-                }
-                const last = result.results[result.results.length - 1];
-                const pred = last.prediction;
-                return {
-                    x: pred.x, y: pred.y,
-                    text: BPE.decode([{ x: pred.x, y: pred.y }]),
-                    raw: `${Utils.formatHex(pred.x)} ${Utils.formatHex(pred.y)}`
-                };
-            }
-
-            /**
-             * ГЕНЕРАЦИЯ ОСМЫСЛЕННОГО ОТВЕТА (НОВЫЙ МЕТОД)
-             */
-            generateResponse(text) {
-                if (!text) return '...';
-                
-                try {
-                    // Получаем предсказание следующего токена
-                    const pred = this.predictNext(text);
-                    if (!pred || !pred.text || pred.text === '?' || pred.text.length === 0) {
-                        return '...';
-                    }
-                    
-                    // Начинаем строить ответ
-                    let response = pred.text;
-                    let current = pred.text;
-                    
-                    // Продолжаем генерацию до 5 токенов или пока есть предсказания
-                    for (let i = 0; i < 5; i++) {
-                        const nextPred = this.predictNext(current);
-                        if (!nextPred || !nextPred.text || nextPred.text === '?' || nextPred.text.length === 0) {
-                            break;
-                        }
-                        // Избегаем зацикливания
-                        if (nextPred.text === current) break;
-                        
-                        response += nextPred.text;
-                        current = nextPred.text;
-                        
-                        // Ограничиваем длину
-                        if (response.length > 50) break;
-                    }
-                    
-                    return response;
-                } catch (e) {
-                    console.error('Error in generateResponse:', e);
-                    return '...';
-                }
-            }
-
-            async trainOnDataset(dataset, epochs = 10, onProgress = null, signal = null) {
-                if (!Array.isArray(dataset)) {
-                    throw new TypeError('Dataset must be an array');
-                }
-                for (let i = 0; i < dataset.length; i++) {
-                    const item = dataset[i];
-                    if (!item || typeof item.input !== 'string') {
-                        throw new Error(`Invalid dataset item at index ${i}: missing input string`);
-                    }
-                }
-                
-                this.isLearning = true;
-                this.trainingMetrics = { totalLoss: 0, totalAccuracy: 0, samplesProcessed: 0, currentEpoch: 0 };
-                this.emit('trainingStart', { epochs, datasetSize: dataset.length });
-                
-                for (let epoch = 0; epoch < epochs; epoch++) {
-                    if (signal?.aborted) {
-                        this.emit('trainingAborted', { epoch });
-                        throw new DOMException('Training aborted', 'AbortError');
-                    }
-                    
-                    this.trainingMetrics.currentEpoch = epoch + 1;
-                    let epochLoss = 0, epochCorrect = 0;
-
-                    for (let i = 0; i < dataset.length; i++) {
-                        if (signal?.aborted) {
-                            this.emit('trainingAborted', { epoch, sample: i });
-                            throw new DOMException('Training aborted', 'AbortError');
-                        }
-                        
-                        const sample = dataset[i];
-                        const result = this.processText(sample.input, 0.3);
-                        
-                        // Простая метрика: если есть спайки, считаем успехом
-                        const actualSpikes = result?.results?.reduce((sum, r) => sum + (r.spikes || 0), 0) || 0;
-                        const expectedLen = sample.output?.length || 1;
-                        const loss = Math.abs(expectedLen - actualSpikes) / (expectedLen || 1);
-                        epochLoss += loss;
-                        if (actualSpikes > 0) epochCorrect++;
-                        
-                        this.trainingMetrics.samplesProcessed++;
-                        
-                        if (onProgress && i % 10 === 0) {
-                            onProgress({
-                                epoch: epoch + 1, totalEpochs: epochs,
-                                sample: i + 1, totalSamples: dataset.length,
-                                loss: epochLoss / (i + 1),
-                                accuracy: (epochCorrect / (i + 1)) * 100
-                            });
-                            await new Promise(r => setTimeout(r, 10));
-                        }
-                    }
-
-                    this.trainingMetrics.totalLoss = epochLoss / dataset.length;
-                    this.trainingMetrics.totalAccuracy = (epochCorrect / dataset.length) * 100;
-                    this.emit('epochEnd', { epoch: epoch + 1, ...this.trainingMetrics });
-                }
-
-                this.isLearning = false;
-                this.emit('trainingComplete', this.trainingMetrics);
-                return this.trainingMetrics;
-            }
-
-            reset() {
-                this.neurons.fill(0);
-                this.synapseCount = 0;
-                this.spikeQueue = [];
-                this.spikeHistory.clear();
-                this._adjacencyList.clear();
-                this.step = 0;
-                this.isRunning = false;
-                this.isLearning = false;
-                this._needsRedraw = true;
-                
-                this._initNeurons();
-                this._initSynapses(2000);
-                this._updateAttentionMap();
-                this.emit('reset');
-            }
-
-            getMetrics() {
-                const recentSpikes = this.spikeHistory.getRecent(20).length;
-                const activityPercent = Math.min(100, Math.floor(recentSpikes / 50));
-                let avgWeight = 0;
-                for (let i = 0; i < this.synapseCount; i++) {
-                    avgWeight += this.synapses[i * 6 + 4];
-                }
-                avgWeight = this.synapseCount > 0 ? avgWeight / this.synapseCount : 0;
-                return {
-                    neurons: this.totalNeurons,
-                    synapses: this.synapseCount,
-                    spikes: this.spikeHistory.size,
-                    activity: activityPercent,
-                    avgWeight: Math.floor(avgWeight),
-                    step: this.step,
-                    isRunning: this.isRunning,
-                    isLearning: this.isLearning,
-                    needsRedraw: this._needsRedraw
-                };
-            }
-
-            save() {
-                return {
-                    neurons: Array.from(this.neurons),
-                    synapses: Array.from(this.synapses.slice(0, this.synapseCount * 6)),
-                    synapseCount: this.synapseCount,
-                    focusX: this.focusX, focusY: this.focusY, focusRadius: this.focusRadius,
-                    step: this.step, learningRate: this.learningRate, stdpWindow: this.stdpWindow,
-                    trainingMetrics: { ...this.trainingMetrics },
-                    timestamp: Date.now(),
-                    version: '4.1-pro'
-                };
-            }
-
-            load(data) {
-                if (!data || typeof data !== 'object') return false;
-                try {
-                    if (data.neurons && Array.isArray(data.neurons)) {
-                        this.neurons.set(data.neurons);
-                    }
-                    if (data.synapses && Array.isArray(data.synapses)) {
-                        const arr = new Uint8Array(data.synapses);
-                        this.synapses.set(arr);
-                        this.synapseCount = data.synapseCount || Math.floor(arr.length / 6);
-                        this._adjacencyList.clear();
-                        for (let i = 0; i < this.synapseCount; i++) {
-                            const base = i * 6;
-                            const fromId = this._neuronId(this.synapses[base], this.synapses[base + 1]);
-                            if (!this._adjacencyList.has(fromId)) {
-                                this._adjacencyList.set(fromId, []);
-                            }
-                            this._adjacencyList.get(fromId).push(i);
-                        }
-                    }
-                    if (data.focusX !== undefined) this.focusX = data.focusX;
-                    if (data.focusY !== undefined) this.focusY = data.focusY;
-                    if (data.focusRadius !== undefined) this.focusRadius = data.focusRadius;
-                    if (data.step !== undefined) this.step = data.step;
-                    if (data.learningRate !== undefined) this.learningRate = data.learningRate;
-                    if (data.stdpWindow !== undefined) this.stdpWindow = data.stdpWindow;
-                    if (data.trainingMetrics) this.trainingMetrics = { ...data.trainingMetrics };
-                    
-                    this._updateAttentionMap();
-                    this.emit('loaded', { version: data.version });
-                    return true;
-                } catch (e) {
-                    console.error('[SpikeBrain.load] Error:', e);
-                    this.emit('loadError', e);
-                    return false;
-                }
-            }
-
-            draw(ctx, width, height) {
-                if (!this._needsRedraw && this.spikeQueue.length === 0 && this.spikeHistory.size === 0) {
-                    return;
-                }
-                this._needsRedraw = false;
-                
-                const imgData = ctx.createImageData(width, height);
-                for (let py = 0; py < height; py++) {
-                    for (let px = 0; px < width; px++) {
-                        const nx = Math.floor(px * this.width / width);
-                        const ny = Math.floor(py * this.height / height);
-                        const n = this.getNeuron(nx, ny);
-                        const idx = (py * width + px) * 4;
-                        const act = n.potential / 255;
-                        
-                        if (act < 0.3) {
-                            imgData.data[idx] = 0;
-                            imgData.data[idx + 1] = Math.floor(act * 3 * 255);
-                            imgData.data[idx + 2] = 255;
-                        } else if (act < 0.6) {
-                            imgData.data[idx] = Math.floor((act - 0.3) * 3.33 * 255);
-                            imgData.data[idx + 1] = 255;
-                            imgData.data[idx + 2] = Math.floor((1 - (act - 0.3) * 3.33) * 255);
-                        } else {
-                            imgData.data[idx] = 255;
-                            imgData.data[idx + 1] = Math.floor((1 - (act - 0.6) * 2.5) * 255);
-                            imgData.data[idx + 2] = 0;
-                        }
-                        if (n.type === 1) {
-                            imgData.data[idx] = Math.floor(imgData.data[idx] * 0.7 + 100);
-                            imgData.data[idx + 2] = Math.floor(imgData.data[idx + 2] * 0.7 + 100);
-                        }
-                        imgData.data[idx + 3] = 255;
-                    }
-                }
-                ctx.putImageData(imgData, 0, 0);
-                
-                // Рендер спайков — ИСПРАВЛЕНО
-                ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
-                const spikes = this.spikeHistory.toArray().slice(-30);
-                for (const spike of spikes) {
-                    if (!spike || spike.x === undefined || spike.y === undefined) continue;
-                    const x = (spike.x / this.width) * width;
-                    const y = (spike.y / this.height) * height;
-                    const age = (this.step - (spike.time || 0)) / 10;
-                    if (age > 1) continue;
-                    ctx.globalAlpha = 1 - age;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3 + age * 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.globalAlpha = 1;
-                
-                // Рендер фокуса внимания
-                ctx.globalAlpha = 0.3;
-                ctx.strokeStyle = '#00ffff';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(
-                    (this.focusX / this.width) * width,
-                    (this.focusY / this.height) * height,
-                    (this.focusRadius / this.width) * width,
-                    0, Math.PI * 2
-                );
-                ctx.stroke();
-                ctx.globalAlpha = 1;
-            }
-
-            markClean() { this._needsRedraw = false; }
-            markDirty() { this._needsRedraw = true; }
+        this.layers.push(new Math3D.Matrix(outputNodes, this.layerSizes[hiddenLayers.length]));
+        this.biases.push(new Math3D.Matrix(outputNodes, 1));
+        this.randomize();
+        this.lastInputs = new Float64Array(inputNodes);
+        this.lastActivations = [];
+        this.lastOutputs = [];
+    }
+    randomize() { this.layers.forEach(l => l.randomize()); this.biases.forEach(b => b.randomize()); }
+    predict(inputArray) {
+        this.lastInputs.set(inputArray);
+        let current = Math3D.Matrix.fromArray(inputArray);
+        this.lastActivations = [current.toArray()];
+        for (let i = 0; i < this.layers.length; i++) {
+            let weighted = Math3D.Matrix.multiply(this.layers[i], current);
+            if (!weighted) break;
+            for (let j = 0; j < weighted.rows; j++) weighted.data[j] += this.biases[i].data[j];
+            weighted.map(x => Math.tanh(x));
+            current = weighted;
+            this.lastActivations.push(current.toArray());
         }
+        this.lastOutputs = current ? current.toArray() : new Array(this.outputNodes).fill(0);
+        return this.lastOutputs;
+    }
+    copy() { const newNet = new NeuralNetwork(this.inputNodes, this.layerSizes.slice(1, -1), this.outputNodes); for (let i=0; i<this.layers.length; i++) { newNet.layers[i] = this.layers[i].copy(); newNet.biases[i] = this.biases[i].copy(); } return newNet; }
+    mutate(rate) { this.layers.forEach(l => l.mutate(rate)); this.biases.forEach(b => b.mutate(rate)); }
+    getTotalNeurons() { return this.layerSizes.reduce((a,b)=>a+b,0); }
+    getTotalConnections() { let total=0; for (let l of this.layers) total += l.data.length; return total; }
+}
 
-        // ═══════════════════════════════════════════════════════════════
-        // МЕНЕДЖЕР ЧАТА — ИСПРАВЛЕННЫЙ, БЕЗ ШАБЛОНОВ
-        // ═══════════════════════════════════════════════════════════════
-        class ChatManager {
-            constructor(brain, config = {}) {
-                this.brain = brain;
-                this.messagesEl = config.messagesEl || document.getElementById('chatMessages');
-                this.inputEl = config.inputEl || document.getElementById('chatInput');
-                this.sendBtn = config.sendBtn || document.getElementById('btnSend');
-                this.statusText = config.statusText || document.getElementById('chatStatusText');
-                this.vizBadges = {
-                    input: document.getElementById('vizInput'),
-                    output: document.getElementById('vizOutput'),
-                    learning: document.getElementById('vizLearning')
-                };
-                this.isProcessing = false;
-                this.conversationHistory = [];
-                this.maxHistory = 50;
-                
-                this._bindEvents();
-                this._updateStatus('READY');
-            }
+// ============================================
+// ATTENTION MECHANISM (без изменений)
+// ============================================
+class AttentionHead {
+    constructor(size) {
+        this.size = size;
+        this.queryWeights = new Math3D.Matrix(size, size);
+        this.keyWeights = new Math3D.Matrix(size, size);
+        this.valueWeights = new Math3D.Matrix(size, size);
+        this.queryWeights.randomize();
+        this.keyWeights.randomize();
+        this.valueWeights.randomize();
+    }
+    attend(input) {
+        const query = Math3D.Matrix.multiply(this.queryWeights, Math3D.Matrix.fromArray(input));
+        const key = Math3D.Matrix.multiply(this.keyWeights, Math3D.Matrix.fromArray(input));
+        const value = Math3D.Matrix.multiply(this.valueWeights, Math3D.Matrix.fromArray(input));
+        const score = Math3D.Matrix.multiply(query, key);
+        if (score) score.map(x => Math.max(0, x));
+        return value ? value.toArray() : input;
+    }
+    copy() { const newHead = new AttentionHead(this.size); newHead.queryWeights = this.queryWeights.copy(); newHead.keyWeights = this.keyWeights.copy(); newHead.valueWeights = this.valueWeights.copy(); return newHead; }
+    mutate(rate) { this.queryWeights.mutate(rate); this.keyWeights.mutate(rate); this.valueWeights.mutate(rate); }
+}
 
-            _bindEvents() {
-                this.sendBtn.addEventListener('click', () => this._sendMessage());
-                this.inputEl.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        this._sendMessage();
-                    }
-                });
-            }
-
-            async _sendMessage() {
-                const text = this.inputEl.value.trim();
-                if (!text || this.isProcessing) return;
-                
-                this.inputEl.value = '';
-                this._addMessage(text, 'user');
-                await this._processMessage(text);
-            }
-
-            async _processMessage(text) {
-                this.isProcessing = true;
-                this._updateStatus('PROCESSING');
-                this._setVizBadge('input', true);
-                
-                const thinkingMsg = this._addMessage('⚡', 'bot', true);
-                
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                const normalized = Utils.normalizeText(text);
-                
-                // Обрабатываем через мозг с обучением
-                const reward = this.brain.isLearning ? 0.3 : 0;
-                const result = this.brain.processText(normalized, reward);
-                
-                // Генерируем ответ
-                let responseText = '...';
-                try {
-                    responseText = this.brain.generateResponse(normalized) || '...';
-                } catch (e) {
-                    console.error('Error generating response:', e);
-                    responseText = '...';
-                }
-                
-                if (thinkingMsg) thinkingMsg.remove();
-                
-                this._addMessage(responseText, 'bot', false, {
-                    confidence: 0.7,
-                    spikes: result?.results?.reduce((sum, r) => sum + (r.spikes || 0), 0) || 0,
-                    neurons: this.brain.getMetrics().activity + '%'
-                });
-                
-                this.conversationHistory.push({ role: 'user', text, timestamp: Date.now() });
-                this.conversationHistory.push({ role: 'bot', text: responseText, timestamp: Date.now() });
-                
-                if (this.conversationHistory.length > this.maxHistory) {
-                    this.conversationHistory = this.conversationHistory.slice(-this.maxHistory);
-                }
-                
-                this.isProcessing = false;
-                this._updateStatus('READY');
-                this._setVizBadge('input', false);
-                this._setVizBadge('output', true);
-                
-                setTimeout(() => this._setVizBadge('output', false), 1000);
-                this.inputEl.focus();
-            }
-
-            _addMessage(text, role, isThinking = false, metrics = null) {
-                const msg = document.createElement('div');
-                msg.className = `message ${role}${isThinking ? ' thinking' : ''}`;
-                
-                const content = document.createElement('div');
-                content.textContent = text;
-                
-                const meta = document.createElement('div');
-                meta.className = 'message-meta';
-                meta.innerHTML = `${role === 'user' ? 'ВЫ' : 'SPIKEBRAIN'} • ${Utils.messageTime()}`;
-                
-                msg.appendChild(content);
-                msg.appendChild(meta);
-                
-                if (metrics && !isThinking) {
-                    const metricsEl = document.createElement('div');
-                    metricsEl.className = 'message-metrics';
-                    
-                    let metricsHtml = `<span>Уверенность: <strong>${Math.round(metrics.confidence * 100)}%</strong></span>`;
-                    if (metrics.spikes) metricsHtml += `<span>Спайков: <strong>${metrics.spikes}</strong></span>`;
-                    if (metrics.neurons) metricsHtml += `<span>Активность: <strong>${metrics.neurons}</strong></span>`;
-                    
-                    metricsEl.innerHTML = metricsHtml;
-                    msg.appendChild(metricsEl);
-                }
-                
-                this.messagesEl.appendChild(msg);
-                this.messagesEl.scrollTo({ top: this.messagesEl.scrollHeight, behavior: 'smooth' });
-                return msg;
-            }
-
-            _updateStatus(status) {
-                const statusMap = {
-                    'READY': { text: 'READY', color: 'var(--success)' },
-                    'PROCESSING': { text: 'PROCESSING', color: 'var(--warning)' },
-                    'ERROR': { text: 'ERROR', color: 'var(--danger)' }
-                };
-                const config = statusMap[status] || statusMap['READY'];
-                if (this.statusText) {
-                    this.statusText.textContent = config.text;
-                    this.statusText.style.color = config.color;
-                }
-            }
-
-            _setVizBadge(type, active) {
-                const badge = this.vizBadges[type];
-                if (!badge) return;
-                badge.classList.toggle('active', active);
-            }
-
-            clear() {
-                if (!this.messagesEl) return;
-                this.messagesEl.innerHTML = '';
-                this.conversationHistory = [];
-                this._addMessage('🧠 Чат очищен. Готов к новому диалогу.', 'bot');
-            }
-
-            getHistory() { 
-                return [...this.conversationHistory]; 
-            }
+// ============================================
+// ENTITY BASE CLASS
+// ============================================
+class Entity {
+    constructor(x, y) {
+        this.pos = new Math3D.Vec2(x, y);
+        this.vel = Math3D.Vec2.random2D();
+        this.acc = new Math3D.Vec2(0, 0);
+        this.maxSpeed = 0;
+        this.maxForce = 0;
+        this.r = 5;
+        this.dead = false;
+        this.color = '#fff';
+        this.id = Math.random().toString(36).substr(2, 9);
+    }
+    update() {
+        this.vel.add(this.acc);
+        this.vel.limit(this.maxSpeed);
+        this.pos.add(this.vel);
+        this.acc.mult(0);
+        this.boundaries();
+    }
+    boundaries() {
+        const margin = 10;
+        const w = Simulation.width;
+        const h = Simulation.height;
+        let desired = null;
+        if (this.pos.x < margin) desired = new Math3D.Vec2(this.maxSpeed, this.vel.y);
+        else if (this.pos.x > w - margin) desired = new Math3D.Vec2(-this.maxSpeed, this.vel.y);
+        if (this.pos.y < margin) desired = new Math3D.Vec2(this.vel.x, this.maxSpeed);
+        else if (this.pos.y > h - margin) desired = new Math3D.Vec2(this.vel.x, -this.maxSpeed);
+        if (desired) {
+            desired.normalize();
+            desired.mult(this.maxSpeed);
+            const steer = Math3D.Vec2.sub(desired, this.vel.copy());
+            steer.limit(this.maxForce);
+            this.acc.add(steer);
         }
+    }
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(this.r, 0);
+        ctx.lineTo(-this.r, -this.r / 1.5);
+        ctx.lineTo(-this.r, this.r / 1.5);
+        ctx.fill();
+        ctx.restore();
+    }
+}
 
-        // ═══════════════════════════════════════════════════════════════
-        // LOGGER
-        // ═══════════════════════════════════════════════════════════════
-        const Logger = {
-            element: null,
-            maxEntries: 100,
+// ============================================
+// RESOURCE CLASS (НОВОЕ)
+// ============================================
+class Resource extends Entity {
+    constructor(x, y, type) {
+        super(x, y);
+        this.type = type; // 'food', 'wood', 'stone'
+        this.amount = type === 'food' ? 5 : 3;
+        this.carried = false;
+        this.vel = new Math3D.Vec2(0, 0);
+        this.r = 4;
+        if (type === 'food') this.color = '#00ff88';
+        else if (type === 'wood') this.color = '#8B4513';
+        else this.color = '#808080';
+    }
+    draw(ctx) {
+        if (this.carried) return;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.pos.x, this.pos.y, this.r, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
 
-            init(elementId = 'logContent') {
-                this.element = document.getElementById(elementId);
-                return this;
-            },
+// ============================================
+// MENTAL MAP (НОВОЕ)
+// ============================================
+class MentalMap {
+    constructor(colonyId) {
+        this.colonyId = colonyId;
+        this.threats = [];
+        this.foodSpots = [];
+        this.resourceSpots = [];
+    }
+    addThreat(x, y, count, strength) {
+        this.threats.push({ x, y, count, strength, time: Date.now() });
+        if (this.threats.length > 20) this.threats = this.threats.slice(-20);
+    }
+    addFood(x, y, amount) {
+        this.foodSpots.push({ x, y, amount, time: Date.now() });
+        if (this.foodSpots.length > 20) this.foodSpots = this.foodSpots.slice(-20);
+    }
+    addResource(x, y, type) {
+        this.resourceSpots.push({ x, y, type, time: Date.now() });
+        if (this.resourceSpots.length > 20) this.resourceSpots = this.resourceSpots.slice(-20);
+    }
+    getNearbyThreats(x, y, radius = 200) {
+        return this.threats.filter(t => {
+            const dx = t.x - x;
+            const dy = t.y - y;
+            return Math.sqrt(dx*dx + dy*dy) < radius;
+        });
+    }
+    cleanup() {
+        const now = Date.now();
+        this.threats = this.threats.filter(t => now - t.time < 30000);
+        this.foodSpots = this.foodSpots.filter(f => now - f.time < 30000);
+        this.resourceSpots = this.resourceSpots.filter(r => now - r.time < 30000);
+    }
+}
 
-            log(message, type = 'info') {
-                if (!this.element) return;
-                const entry = document.createElement('div');
-                entry.className = `log-entry ${type}`;
-                entry.innerHTML = `
-                    <span class="log-timestamp">[${Utils.timestamp()}]</span>
-                    <span>${Utils.escapeHtml(message)}</span>
-                `;
-                this.element.insertBefore(entry, this.element.firstChild);
-                while (this.element.children.length > this.maxEntries) {
-                    this.element.removeChild(this.element.lastChild);
-                }
-            },
-
-            clear() { if (this.element) this.element.innerHTML = ''; },
-            info(msg) { this.log(msg, 'info'); },
-            success(msg) { this.log(msg, 'success'); },
-            error(msg) { this.log(msg, 'error'); },
-            warn(msg) { this.log(msg, 'warn'); }
-        };
-
-        // ═══════════════════════════════════════════════════════════════
-        // TESTS
-        // ═══════════════════════════════════════════════════════════════
-        const Tests = {
-            runAll(brain, logger) {
-                const results = [];
-                results.push(this.testEncoding(logger));
-                results.push(this.testSpikes(brain, logger));
-                results.push(this.testSynapses(brain, logger));
-                results.push(this.testText(brain, logger));
-                results.push(this.testSaveLoad(brain, logger));
-                results.push(this.testConfigValidation(logger));
-                results.push(this.testAdjacencyList(brain, logger));
-                results.push(this.testRingBuffer(logger));
-                results.push(this.testBrainResponse(brain, logger));
-                
-                const passed = results.filter(r => r.passed).length;
-                return { passed, total: results.length, results };
-            },
-
-            testEncoding(logger) {
-                const text = 'кот';
-                const bigrams = BPE.encode(text);
-                const decoded = BPE.decode(bigrams);
-                const passed = decoded === text;
-                logger.log(passed ? `✓ Кодирование: "${text}" → ${bigrams.length} биграмм` : `✗ Ошибка кодирования`, passed ? 'success' : 'error');
-                return { name: 'BPE Encoding', passed, message: passed ? 'OK' : 'Failed' };
-            },
-
-            testSpikes(brain, logger) {
-                const before = brain.spikeHistory.size;
-                brain.inject(100, 100, 200);
-                brain.forward(null, 0);
-                const after = brain.spikeHistory.size;
-                const passed = after > before;
-                logger.log(passed ? `✓ Спайки: ${after - before} новых` : `✗ Нет спайков`, passed ? 'success' : 'error');
-                return { name: 'Spike Generation', passed, message: passed ? 'OK' : 'Failed' };
-            },
-
-            testSynapses(brain, logger) {
-                const passed = brain.synapseCount > 0;
-                logger.log(passed ? `✓ Синапсов: ${brain.synapseCount}` : `✗ Нет синапсов`, passed ? 'success' : 'error');
-                return { name: 'Synapses', passed, message: passed ? 'OK' : 'Failed' };
-            },
-
-            testText(brain, logger) {
-                try {
-                    const result = brain.processText('кот', 0.1);
-                    const passed = result && result.bigrams?.length > 0;
-                    logger.log(passed ? `✓ Текст обработан: ${result.bigrams.length} биграмм` : `✗ Ошибка обработки`, passed ? 'success' : 'error');
-                    return { name: 'Text Processing', passed, message: passed ? 'OK' : 'Failed' };
-                } catch (e) {
-                    logger.log(`✗ Ошибка: ${e.message}`, 'error');
-                    return { name: 'Text Processing', passed: false, message: 'Exception' };
-                }
-            },
-
-            testSaveLoad(brain, logger) {
-                try {
-                    const saved = brain.save();
-                    const loaded = brain.load(saved);
-                    const passed = loaded && brain.step === saved.step;
-                    logger.log(passed ? `✓ Сохранение/загрузка: OK` : `✗ Ошибка сохранения`, passed ? 'success' : 'error');
-                    return { name: 'Save/Load', passed, message: passed ? 'OK' : 'Failed' };
-                } catch (e) {
-                    logger.log(`✗ Ошибка: ${e.message}`, 'error');
-                    return { name: 'Save/Load', passed: false, message: 'Exception' };
-                }
-            },
-
-            testConfigValidation(logger) {
-                try {
-                    Config.validate('learningRate', 0.05);
-                    let caught = false;
-                    try { Config.validate('learningRate', 2.0); }
-                    catch (e) { caught = e instanceof RangeError; }
-                    const passed = caught;
-                    logger.log(passed ? '✓ Валидация конфигурации: работает' : '✗ Валидация не ловит ошибки', passed ? 'success' : 'error');
-                    return { name: 'Config Validation', passed, message: passed ? 'OK' : 'Failed' };
-                } catch (e) {
-                    logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
-                    return { name: 'Config Validation', passed: false, message: 'Exception' };
-                }
-            },
-
-            testAdjacencyList(brain, logger) {
-                const fromId = brain._neuronId(10, 10);
-                const synapses = brain._adjacencyList.get(fromId);
-                const passed = synapses === undefined || Array.isArray(synapses);
-                logger.log(passed ? '✓ Adjacency list: структура корректна' : '✗ Adjacency list: ошибка структуры', passed ? 'success' : 'error');
-                return { name: 'Adjacency List', passed, message: passed ? 'OK' : 'Failed' };
-            },
-
-            testRingBuffer(logger) {
-                const rb = new RingBuffer(5, 3);
-                rb.push('a', 1); rb.push('b', 2); rb.push('c', 3); rb.push('d', 4);
-                const recent = rb.getRecent(2);
-                const passed = recent.includes('c') && recent.includes('d') && !recent.includes('a');
-                logger.log(passed ? '✓ RingBuffer: age-based фильтрация работает' : '✗ RingBuffer: ошибка фильтрации', passed ? 'success' : 'error');
-                return { name: 'Ring Buffer', passed, message: passed ? 'OK' : 'Failed' };
-            },
-
-            testBrainResponse(brain, logger) {
-                try {
-                    const response = brain.generateResponse('привет');
-                    const passed = response && response !== '...';
-                    logger.log(passed ? `✓ Мозг отвечает: "${response}"` : `✗ Мозг не отвечает`, passed ? 'success' : 'error');
-                    return { name: 'Brain Response', passed, message: passed ? 'OK' : 'Failed' };
-                } catch (e) {
-                    logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
-                    return { name: 'Brain Response', passed: false, message: 'Exception' };
-                }
-            }
-        };
-
-        // ═══════════════════════════════════════════════════════════════
-        // APP
-        // ═══════════════════════════════════════════════════════════════
-        class App {
-            constructor() {
-                this.brain = new SpikeBrain({
-                    width: 256, height: 256,
-                    maxSynapses: 65536,
-                    learningRate: 0.01, stdpWindow: 20
-                });
-                
-                this.chat = new ChatManager(this.brain, {
-                    messagesEl: document.getElementById('chatMessages'),
-                    inputEl: document.getElementById('chatInput'),
-                    sendBtn: document.getElementById('btnSend'),
-                    statusText: document.getElementById('chatStatusText')
-                });
-                
-                this.canvas = document.getElementById('brainCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.running = false;
-                this.fps = 0;
-                this.frameCount = 0;
-                this.lastTime = performance.now();
-                this.dataset = null;
-                this.isTraining = false;
-                this.trainAbortController = null;
-                this.checkpoints = JSON.parse(localStorage.getItem('sb_checkpoints') || '[]');
-                
-                Logger.init();
-                this._initUI();
-                this._resizeCanvas();
-                this._updateStats();
-                this._renderCheckpoints();
-                
-                this.brain.on('spike', (data) => {
-                    if (this.running && Math.random() < 0.01) {
-                        Logger.info(`Спайк @(${data.x},${data.y}) шаг ${data.time}`);
-                    }
-                });
-                this.brain.on('trainingComplete', (metrics) => {
-                    Logger.success(`Обучение завершено: Loss=${metrics.totalLoss.toFixed(3)}, Acc=${Math.round(metrics.totalAccuracy)}%`);
-                });
-                this.brain.on('loadError', (err) => {
-                    Logger.error(`Ошибка загрузки: ${err.message}`);
-                });
-                
-                window.addEventListener('resize', () => this._resizeCanvas());
-                requestAnimationFrame((t) => this._loop(t));
-                
-                Logger.success('🧠 SpikeBrain Nano v4.1 PRO инициализирован');
-                Logger.info(`📊 Нейронов: ${this.brain.totalNeurons.toLocaleString()} | Синапсов: ${this.brain.synapseCount.toLocaleString()}`);
-                Logger.info('🔥 Режим обучения в реальном времени: ВЫКЛ');
-            }
-
-            _initUI() {
-                document.getElementById('btnStart').onclick = () => this.start();
-                document.getElementById('btnPause').onclick = () => this.pause();
-                document.getElementById('btnReset').onclick = () => this.reset();
-                document.getElementById('btnStep').onclick = () => this.step();
-                document.getElementById('btnTrainManual').onclick = () => this.train();
-                document.getElementById('btnTest').onclick = () => this.runTests();
-                document.getElementById('btnPredict').onclick = () => this.predict();
-                document.getElementById('btnSave').onclick = () => this.save();
-                document.getElementById('clearLog').onclick = () => Logger.clear();
-
-                document.getElementById('learningRate').oninput = (e) => {
-                    const val = parseFloat(e.target.value);
-                    try { Config.validate('learningRate', val);
-                        this.brain.learningRate = val;
-                        document.getElementById('lrValue').innerText = val.toFixed(3);
-                    } catch (err) { Logger.error(err.message); }
-                };
-                document.getElementById('stdpWindow').oninput = (e) => {
-                    const val = parseInt(e.target.value);
-                    try { Config.validate('stdpWindow', val);
-                        this.brain.stdpWindow = val;
-                        document.getElementById('stdpValue').innerText = val;
-                    } catch (err) { Logger.error(err.message); }
-                };
-                document.getElementById('focusRadius').oninput = (e) => {
-                    const val = parseInt(e.target.value);
-                    try { Config.validate('focusRadius', val);
-                        this.brain.setFocus(this.brain.focusX, this.brain.focusY, val);
-                        document.getElementById('focusValue').innerText = val;
-                    } catch (err) { Logger.error(err.message); }
-                };
-            }
-
-            toggleLearning() {
-                this.brain.isLearning = !this.brain.isLearning;
-                const btn = document.getElementById('btnToggleLearning');
-                btn.textContent = `🎓 Режим обучения: ${this.brain.isLearning ? 'ВКЛ' : 'ВЫКЛ'}`;
-                btn.style.background = this.brain.isLearning ? 'var(--success)' : 'var(--bg-card)';
-                btn.style.color = this.brain.isLearning ? '#000' : 'var(--text-main)';
-                Logger.info(`Режим обучения ${this.brain.isLearning ? 'включён' : 'выключен'}`);
-            }
-
-            _resizeCanvas() {
-                const container = this.canvas.parentElement;
-                this.canvas.width = container.clientWidth;
-                this.canvas.height = container.clientHeight;
-                this.brain.markDirty();
-            }
-
-            start() {
-                this.running = true;
-                this.brain.isRunning = true;
-                document.getElementById('btnStart').disabled = true;
-                document.getElementById('btnPause').disabled = false;
-                document.getElementById('vizLearning').classList.add('active');
-                Logger.info('▶ Запуск симуляции');
-            }
-
-            pause() {
-                this.running = false;
-                this.brain.isRunning = false;
-                document.getElementById('btnStart').disabled = false;
-                document.getElementById('btnPause').disabled = true;
-                document.getElementById('vizLearning').classList.remove('active');
-                Logger.warn('⏸ Пауза');
-            }
-
-            reset() {
-                this.pause();
-                this.brain.reset();
-                this.chat.clear();
-                this._updateStats();
-                Logger.warn('🔄 Полный сброс');
-            }
-
-            step() {
-                this.brain.forward(null, 0);
-                this._updateStats();
-            }
-
-            train() {
-                const text = 'кот мяу кот спит кот ест';
-                Logger.info(`🎓 Обучение на: "${text}"`);
-                this.brain.isLearning = true;
-                const result = this.brain.processText(text, 0.3);
-                this.brain.isLearning = false;
-                Logger.success(`✅ Обработано ${result?.bigrams?.length || 0} биграмм`);
-                this._updateStats();
-            }
-
-            predict() {
-                const text = document.getElementById('chatInput').value.trim();
-                if (!text) { Logger.error('❌ Введите текст для предсказания'); return; }
-                const pred = this.brain.predictNext(text);
-                Logger.info(`🔮 После "${text}" → ${pred.text || '?'} (${pred.raw})`);
-                const output = document.getElementById('testOutput');
-                output.style.display = 'block';
-                output.innerHTML = `Предсказание: <strong>${Utils.escapeHtml(pred.text || '?')}</strong> (${pred.raw})`;
-                output.className = 'test-output pass';
-            }
-
-            runTests() {
-                Logger.info('🧪 Запуск тестов...');
-                const results = Tests.runAll(this.brain, Logger);
-                const output = document.getElementById('testOutput');
-                output.style.display = 'block';
-                let html = `<strong>Тесты: ${results.passed}/${results.total}</strong><br>`;
-                results.results.forEach(r => {
-                    html += `<div style="margin-top:4px; color:${r.passed ? 'var(--success)' : 'var(--danger)'}">${r.message}</div>`;
-                });
-                output.innerHTML = html;
-                output.className = results.passed === results.total ? 'test-output pass' : 'test-output fail';
-                this._updateStats();
-            }
-
-            save() {
-                const data = this.brain.save();
-                try {
-                    localStorage.setItem('spikebrain_v4', JSON.stringify(data));
-                    Logger.success('💾 Сохранено в localStorage');
-                } catch (e) {
-                    Logger.error('❌ Ошибка сохранения: ' + e.message);
+// ============================================
+// ANT CLASS (ДОРАБОТАН)
+// ============================================
+class Ant extends Entity {
+    constructor(x, y, colony, role = 'worker', brain = null) {
+        super(x, y);
+        this.colony = colony; // 'green' или 'red'
+        this.role = role; // 'warrior', 'worker', 'builder'
+        this.color = colony === 'green' ? '#00ff88' : '#ff3366';
+        
+        // Stats
+        this.health = 100;
+        this.maxHealth = 100;
+        this.energy = 100;
+        this.maxEnergy = 100;
+        this.fitness = 0;
+        this.age = 0;
+        this.kills = 0;
+        this.resourcesGathered = 0;
+        
+        // Movement
+        this.maxSpeed = role === 'worker' ? 3 : (role === 'warrior' ? 2.5 : 2.8);
+        this.maxForce = 0.15;
+        this.r = 6;
+        this.damage = role === 'warrior' ? 25 : 10;
+        
+        // Brain
+        if (brain) {
+            this.brain = brain.copy();
+            this.brain.mutate(Simulation.config.mutationRate);
+        } else {
+            this.brain = new NeuralNetwork(24, [64, 32, 16], 5);
+        }
+        
+        // Attention heads
+        this.attentionHeads = [
+            new AttentionHead(8),
+            new AttentionHead(8)
+        ];
+        
+        // Sensors
+        this.rayCount = 6;
+        this.rayLen = 120;
+        this.rayAngle = Math.PI / 2;
+        this.attackCooldown = 0;
+        this.state = 'IDLE';
+        
+        // Colony specific
+        this.carrying = null;
+        this.mentalMap = colony === 'green' ? greenMentalMap : redMentalMap;
+        this.basePos = colony === 'green' ? 
+            new Math3D.Vec2(100, Simulation.height/2) : 
+            new Math3D.Vec2(Simulation.width - 100, Simulation.height/2);
+    }
+    
+    think(foods, enemies, allies, resources) {
+        if (this.dead) return;
+        
+        const inputs = [];
+        const angle = Math.atan2(this.vel.y, this.vel.x);
+        
+        // Food sensors
+        for (let i = 0; i < this.rayCount; i++) {
+            const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
+            inputs.push(this.castRay(rayAngle, foods));
+        }
+        
+        // Enemy sensors (только чужие)
+        const enemyAnts = allies.filter(a => a.colony !== this.colony && !a.dead);
+        for (let i = 0; i < this.rayCount; i++) {
+            const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
+            inputs.push(this.castRay(rayAngle, enemyAnts));
+        }
+        
+        // Resource sensors
+        for (let i = 0; i < this.rayCount; i++) {
+            const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
+            inputs.push(this.castRay(rayAngle, resources.filter(r => !r.carried)));
+        }
+        
+        // Internal state
+        inputs.push(this.health / this.maxHealth);
+        inputs.push(this.energy / this.maxEnergy);
+        inputs.push(this.age / 1000);
+        inputs.push(this.attackCooldown / 30);
+        inputs.push(this.carrying ? 1 : 0);
+        inputs.push(1); // Bias
+        
+        // Mental map inputs (ближайшие угрозы)
+        const nearbyThreats = this.mentalMap.getNearbyThreats(this.pos.x, this.pos.y);
+        inputs.push(nearbyThreats.length > 0 ? 1 : 0);
+        
+        // Attention
+        let processedInputs = inputs.slice(0, 8);
+        for (let head of this.attentionHeads) {
+            processedInputs = head.attend(processedInputs);
+        }
+        
+        // Neural processing
+        const outputs = this.brain.predict(inputs);
+        
+        // Actuators
+        const steerX = outputs[0] * this.maxForce;
+        const steerY = outputs[1] * this.maxForce;
+        const speedMod = (outputs[2] + 1) / 2;
+        const attackIntent = outputs[3];
+        const gatherIntent = outputs[4];
+        
+        this.acc.add(new Math3D.Vec2(steerX, steerY));
+        this.maxSpeed = (this.role === 'worker' ? 3 : (this.role === 'warrior' ? 2.5 : 2.8)) * (0.5 + speedMod * 0.5);
+        
+        // Поведение в зависимости от роли
+        if (this.role === 'warrior') {
+            this.warriorBehavior(enemyAnts, attackIntent);
+        } else if (this.role === 'builder') {
+            this.builderBehavior(resources, gatherIntent);
+        } else {
+            this.workerBehavior(foods, resources, gatherIntent);
+        }
+        
+        // Энергия тратится ТОЛЬКО при движении, но НЕ убивает
+        if (this.vel.mag() > 0.1) {
+            this.energy -= 0.02;
+            if (this.energy < 0) this.energy = 0;
+        }
+        
+        this.age++;
+        if (this.attackCooldown > 0) this.attackCooldown--;
+    }
+    
+    warriorBehavior(enemies, attackIntent) {
+        if (attackIntent > 0.3 && enemies.length > 0) {
+            // Атакуем ближайшего врага
+            let closest = null;
+            let closestDist = Infinity;
+            for (let e of enemies) {
+                const d = this.pos.dist(e.pos);
+                if (d < closestDist && !e.dead) {
+                    closestDist = d;
+                    closest = e;
                 }
             }
-
-            load() {
-                try {
-                    const data = JSON.parse(localStorage.getItem('spikebrain_v4'));
-                    if (data && this.brain.load(data)) {
-                        Logger.success('📂 Загружено из localStorage');
-                        this._updateStats();
-                    }
-                } catch (e) {
-                    Logger.error('❌ Ошибка загрузки: ' + e.message);
-                }
-            }
-
-            loadDataset(input) {
-                const file = input.files?.[0];
-                if (!file) return;
+            if (closest) {
+                // Отмечаем на ментальной карте
+                this.mentalMap.addThreat(closest.pos.x, closest.pos.y, 1, 10);
                 
-                if (!file.name.endsWith('.json')) {
-                    Logger.error('❌ Ожидался JSON файл');
-                    alert('Пожалуйста, выберите файл с расширением .json');
-                    input.value = '';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        const isValid = Array.isArray(data.dialogs) || Array.isArray(data);
-                        if (!isValid) {
-                            throw new Error('Датасет должен быть массивом или объектом с полем "dialogs"');
-                        }
-                        
-                        const dataset = Array.isArray(data.dialogs) ? data.dialogs : data;
-                        
-                        for (let i = 0; i < Math.min(10, dataset.length); i++) {
-                            const item = dataset[i];
-                            if (!item || typeof item.input !== 'string') {
-                                throw new Error(`Элемент ${i}: поле "input" должно быть строкой`);
-                            }
-                        }
-                        
-                        this.dataset = dataset;
-                        document.getElementById('datasetName').textContent = file.name;
-                        document.getElementById('datasetPairs').textContent = this.dataset.length;
-                        document.getElementById('datasetEpochs').textContent = '10';
-                        document.getElementById('btnTrain').disabled = false;
-                        
-                        this.chat._addMessage(`📚 Датасет загружен: ${this.dataset.length} пар диалога`, 'bot');
-                        Logger.success(`📊 Датасет "${file.name}": ${dataset.length} образцов`);
-                        
-                    } catch (err) {
-                        Logger.error('❌ Ошибка датасета: ' + err.message);
-                        alert('Ошибка чтения датасета: ' + err.message);
-                    }
-                };
-                reader.onerror = () => {
-                    Logger.error('❌ Ошибка чтения файла');
-                    alert('Не удалось прочитать файл');
-                };
-                reader.readAsText(file);
-                input.value = '';
-            }
-
-            async startTraining() {
-                if (!this.dataset || this.isTraining) return;
-                
-                this.isTraining = true;
-                this.brain.isLearning = true;
-                this.trainAbortController = new AbortController();
-                
-                document.getElementById('btnTrain').disabled = true;
-                document.getElementById('btnStopTrain').disabled = false;
-                document.getElementById('vizLearning').classList.add('active');
-                document.getElementById('trainingStatus').textContent = 'Обучение...';
-                
-                const epochs = 10;
-                try {
-                    await this.brain.trainOnDataset(
-                        this.dataset, epochs, 
-                        (progress) => {
-                            const pct = ((progress.epoch - 1) * 100 + (progress.sample / progress.totalSamples) * 100) / epochs;
-                            document.getElementById('progressFill').style.width = pct + '%';
-                            document.getElementById('progressText').textContent = Math.round(pct) + '%';
-                            document.getElementById('statLoss').textContent = progress.loss.toFixed(3);
-                            document.getElementById('statAccuracy').textContent = Math.round(progress.accuracy) + '%';
-                            document.getElementById('statEpoch').textContent = progress.epoch;
-                        },
-                        this.trainAbortController.signal
-                    );
+                if (closestDist < 35) {
+                    // Атака
+                    closest.health -= this.damage;
+                    this.fitness += 5;
+                    this.kills++;
+                    this.attackCooldown = 20;
                     
-                    this._saveCheckpoint();
-                    this.chat._addMessage(`✅ Обучение завершено! Loss: ${this.brain.trainingMetrics.totalLoss.toFixed(3)}, Accuracy: ${Math.round(this.brain.trainingMetrics.totalAccuracy)}%`, 'bot');
+                    // Отбрасывание
+                    const push = Math3D.Vec2.sub(this.pos, closest.pos);
+                    push.normalize();
+                    push.mult(5);
+                    closest.pos.add(push);
                     
-                } catch (err) {
-                    if (err.name === 'AbortError') {
-                        Logger.warn('⏹ Обучение остановлено пользователем');
-                        this.chat._addMessage('⏹ Обучение остановлено', 'bot');
-                    } else {
-                        console.error('Training error:', err);
-                        Logger.error('❌ Ошибка обучения: ' + err.message);
-                        this.chat._addMessage('❌ Ошибка обучения: ' + err.message, 'bot');
+                    if (closest.health <= 0) {
+                        closest.dead = true;
+                        this.fitness += 20;
+                        Simulation.spawnParticles(closest.pos.x, closest.pos.y, this.colony === 'green' ? '#ff3366' : '#00ff88', 8);
                     }
-                } finally {
-                    this.isTraining = false;
-                    this.brain.isLearning = false;
-                    this.trainAbortController = null;
-                    document.getElementById('btnTrain').disabled = !this.dataset;
-                    document.getElementById('btnStopTrain').disabled = true;
-                    document.getElementById('vizLearning').classList.remove('active');
-                    document.getElementById('trainingStatus').textContent = 'Готов';
-                }
-            }
-
-            stopTraining() {
-                if (this.trainAbortController) {
-                    this.trainAbortController.abort();
-                    Logger.warn('⏹ Остановка обучения...');
-                }
-            }
-
-            _saveCheckpoint() {
-                const checkpoint = {
-                    id: Date.now(),
-                    date: new Date().toLocaleString('ru-RU'),
-                    data: this.brain.save(),
-                    metrics: { ...this.brain.trainingMetrics }
-                };
-                this.checkpoints.push(checkpoint);
-                if (this.checkpoints.length > 5) this.checkpoints.shift();
-                try {
-                    localStorage.setItem('sb_checkpoints', JSON.stringify(this.checkpoints));
-                } catch (e) {
-                    Logger.warn('⚠ Не удалось сохранить чекпоинты: ' + e.message);
-                }
-                this._renderCheckpoints();
-            }
-
-            _renderCheckpoints() {
-                const container = document.getElementById('checkpointSlots');
-                if (!container) return;
-                container.innerHTML = '';
-                for (let i = 0; i < 5; i++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'checkpoint-slot';
-                    if (this.checkpoints[i]) {
-                        const cp = this.checkpoints[i];
-                        slot.classList.add('active');
-                        slot.innerHTML = `
-                            <div class="slot-number">Слот ${i+1}</div>
-                            <div class="slot-info">Эпоха: ${cp.metrics.currentEpoch}</div>
-                            <div class="slot-date">${cp.date}</div>
-                        `;
-                        slot.onclick = () => this._loadCheckpoint(i);
-                    } else {
-                        slot.innerHTML = `<div class="slot-number">Слот ${i+1}</div><div class="slot-info">Пусто</div>`;
-                    }
-                    container.appendChild(slot);
-                }
-            }
-
-            _loadCheckpoint(index) {
-                if (!this.checkpoints[index]) return;
-                const cp = this.checkpoints[index];
-                if (this.brain.load(cp.data)) {
-                    this.chat._addMessage(`📂 Загружен чекпоинт #${index+1} от ${cp.date}`, 'bot');
-                    document.getElementById('statEpoch').textContent = cp.metrics.currentEpoch;
-                    document.getElementById('statLoss').textContent = cp.metrics.totalLoss.toFixed(3);
-                    document.getElementById('statAccuracy').textContent = Math.round(cp.metrics.totalAccuracy) + '%';
-                    Logger.success(`📂 Чекпоинт #${index+1} загружен`);
                 } else {
-                    Logger.error('❌ Ошибка загрузки чекпоинта');
+                    // Движение к врагу
+                    const desired = Math3D.Vec2.sub(closest.pos, this.pos);
+                    desired.normalize();
+                    desired.mult(this.maxSpeed);
+                    const steer = Math3D.Vec2.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.acc.add(steer);
                 }
             }
-
-            exportModel() {
-                const data = {
-                    brain: this.brain.save(),
-                    dataset: this.dataset,
-                    checkpoints: this.checkpoints,
-                    exportedAt: new Date().toISOString(),
-                    version: '4.1-pro'
-                };
-                try {
-                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `spikebrain_model_${Date.now()}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    this.chat._addMessage('💾 Модель экспортирована', 'bot');
-                    Logger.success('💾 Экспорт завершён');
-                } catch (e) {
-                    Logger.error('❌ Ошибка экспорта: ' + e.message);
+        } else {
+            // Патруль или идем к угрозам с ментальной карты
+            const threats = this.mentalMap.getNearbyThreats(this.pos.x, this.pos.y);
+            if (threats.length > 0) {
+                const threat = threats[0];
+                const desired = Math3D.Vec2.sub(new Math3D.Vec2(threat.x, threat.y), this.pos);
+                if (desired.mag() > 10) {
+                    desired.normalize();
+                    desired.mult(this.maxSpeed);
+                    const steer = Math3D.Vec2.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.acc.add(steer);
+                }
+            } else {
+                // Рандомное движение
+                if (Math.random() < 0.01) {
+                    this.acc.add(Math3D.Vec2.random2D().mult(this.maxForce * 0.5));
                 }
             }
-
-            importModel(input) {
-                const file = input.files?.[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        if (!data.brain || typeof data.brain !== 'object') {
-                            throw new Error('Неверный формат модели: отсутствует поле "brain"');
-                        }
-                        
-                        if (this.brain.load(data.brain)) {
-                            if (data.dataset && Array.isArray(data.dataset)) {
-                                this.dataset = data.dataset;
-                                document.getElementById('datasetPairs').textContent = this.dataset.length;
-                                document.getElementById('btnTrain').disabled = false;
-                            }
-                            if (data.checkpoints && Array.isArray(data.checkpoints)) {
-                                this.checkpoints = data.checkpoints;
-                                this._renderCheckpoints();
-                            }
-                            this.chat._addMessage('📂 Модель импортирована успешно', 'bot');
-                            Logger.success(`📂 Импорт модели ${data.version || 'unknown'} завершён`);
-                            this._updateStats();
-                        } else {
-                            throw new Error('Не удалось загрузить состояние мозга');
-                        }
-                    } catch (err) {
-                        Logger.error('❌ Ошибка импорта: ' + err.message);
-                        alert('Ошибка импорта модели: ' + err.message);
+        }
+    }
+    
+    workerBehavior(foods, resources, gatherIntent) {
+        if (this.carrying) {
+            // Несем в базу
+            const desired = Math3D.Vec2.sub(this.basePos, this.pos);
+            const dist = desired.mag();
+            if (dist < 20) {
+                // Сдали ресурс
+                if (this.colony === 'green') {
+                    greenResources += this.carrying.type === 'food' ? 5 : 3;
+                } else {
+                    redResources += this.carrying.type === 'food' ? 5 : 3;
+                }
+                this.resourcesGathered++;
+                this.fitness += 2;
+                this.carrying = null;
+            } else {
+                desired.normalize();
+                desired.mult(this.maxSpeed);
+                const steer = Math3D.Vec2.sub(desired, this.vel);
+                steer.limit(this.maxForce);
+                this.acc.add(steer);
+            }
+        } else if (gatherIntent > 0.3) {
+            // Ищем еду
+            const foodItems = foods.filter(f => !f.dead);
+            if (foodItems.length > 0) {
+                let closest = null;
+                let closestDist = Infinity;
+                for (let f of foodItems) {
+                    const d = this.pos.dist(f.pos);
+                    if (d < closestDist) {
+                        closestDist = d;
+                        closest = f;
                     }
-                };
-                reader.onerror = () => {
-                    Logger.error('❌ Ошибка чтения файла модели');
-                    alert('Не удалось прочитать файл модели');
-                };
-                reader.readAsText(file);
-                input.value = '';
+                }
+                if (closest && closestDist < 30) {
+                    // Берем еду
+                    this.carrying = { type: 'food', amount: 5 };
+                    foods.splice(foods.indexOf(closest), 1);
+                    this.mentalMap.addFood(closest.pos.x, closest.pos.y, 5);
+                    Simulation.spawnParticles(this.pos.x, this.pos.y, '#00ff88', 5);
+                } else if (closest) {
+                    // Идем к еде
+                    const desired = Math3D.Vec2.sub(closest.pos, this.pos);
+                    desired.normalize();
+                    desired.mult(this.maxSpeed);
+                    const steer = Math3D.Vec2.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.acc.add(steer);
+                }
+            }
+        } else {
+            // Ищем ресурсы по ментальной карте
+            const foodSpots = this.mentalMap.foodSpots;
+            if (foodSpots.length > 0) {
+                const spot = foodSpots[0];
+                const desired = Math3D.Vec2.sub(new Math3D.Vec2(spot.x, spot.y), this.pos);
+                if (desired.mag() > 10) {
+                    desired.normalize();
+                    desired.mult(this.maxSpeed);
+                    const steer = Math3D.Vec2.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.acc.add(steer);
+                }
+            }
+        }
+    }
+    
+    builderBehavior(resources, gatherIntent) {
+        if (this.carrying) {
+            // Несем в базу
+            const desired = Math3D.Vec2.sub(this.basePos, this.pos);
+            const dist = desired.mag();
+            if (dist < 20) {
+                // Сдали ресурс
+                if (this.colony === 'green') {
+                    greenResources += 3;
+                } else {
+                    redResources += 3;
+                }
+                this.resourcesGathered++;
+                this.fitness += 2;
+                this.carrying = null;
+            } else {
+                desired.normalize();
+                desired.mult(this.maxSpeed);
+                const steer = Math3D.Vec2.sub(desired, this.vel);
+                steer.limit(this.maxForce);
+                this.acc.add(steer);
+            }
+        } else if (gatherIntent > 0.2) {
+            // Ищем стройматериалы
+            const buildResources = resources.filter(r => !r.carried && r.type !== 'food');
+            if (buildResources.length > 0) {
+                let closest = null;
+                let closestDist = Infinity;
+                for (let r of buildResources) {
+                    const d = this.pos.dist(r.pos);
+                    if (d < closestDist) {
+                        closestDist = d;
+                        closest = r;
+                    }
+                }
+                if (closest && closestDist < 30) {
+                    // Берем ресурс
+                    this.carrying = { type: closest.type, amount: 3 };
+                    closest.carried = true;
+                    this.mentalMap.addResource(closest.pos.x, closest.pos.y, closest.type);
+                    resources.splice(resources.indexOf(closest), 1);
+                    Simulation.spawnParticles(this.pos.x, this.pos.y, '#ffaa00', 5);
+                } else if (closest) {
+                    // Идем к ресурсу
+                    const desired = Math3D.Vec2.sub(closest.pos, this.pos);
+                    desired.normalize();
+                    desired.mult(this.maxSpeed);
+                    const steer = Math3D.Vec2.sub(desired, this.vel);
+                    steer.limit(this.maxForce);
+                    this.acc.add(steer);
+                }
+            }
+        }
+    }
+    
+    castRay(angle, targets) {
+        let closest = 1.0;
+        for (let t of targets) {
+            if (!t || t.dead) continue;
+            const d = this.pos.dist(t.pos);
+            if (d < this.rayLen) {
+                const angleToTarget = Math.atan2(t.pos.y - this.pos.y, t.pos.x - this.pos.x);
+                let diff = angleToTarget - angle;
+                while (diff <= -Math.PI) diff += Math.PI*2;
+                while (diff > Math.PI) diff -= Math.PI*2;
+                if (Math.abs(diff) < 0.3) {
+                    const norm = d / this.rayLen;
+                    if (norm < closest) closest = norm;
+                }
+            }
+        }
+        return 1 - closest;
+    }
+    
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
+        
+        // Glow
+        ctx.shadowBlur = this.state === 'ATTACK' ? 15 : 8;
+        ctx.shadowColor = this.color;
+        
+        // Body
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(8, 0);
+        ctx.lineTo(-6, -5);
+        ctx.lineTo(-6, 5);
+        ctx.fill();
+        
+        // Role icon
+        ctx.fillStyle = '#fff';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.shadowBlur = 0;
+        if (this.role === 'warrior') ctx.fillText('⚔️', 0, -10);
+        else if (this.role === 'builder') ctx.fillText('🏗️', 0, -10);
+        else ctx.fillText('🌾', 0, -10);
+        
+        // Health bar
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-8, -15, 16, 2);
+        ctx.fillStyle = this.health > 60 ? '#0f0' : (this.health > 30 ? '#ff0' : '#f00');
+        ctx.fillRect(-8, -15, 16 * (this.health/100), 2);
+        
+        // Carrying
+        if (this.carrying) {
+            ctx.fillStyle = '#ffaa00';
+            ctx.beginPath();
+            ctx.arc(0, -5, 2, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+        ctx.restore();
+    }
+}
+
+// ============================================
+// ENEMY CLASS (теперь это просто другой цвет, удаляем)
+// ============================================
+// Враги не нужны, используем красную колонию
+
+// ============================================
+// FOOD CLASS (заменено на Resource)
+// ============================================
+
+// ============================================
+// PARTICLE CLASS (без изменений)
+// ============================================
+class Particle {
+    constructor(x, y, color) {
+        this.pos = new Math3D.Vec2(x, y);
+        this.vel = Math3D.Vec2.random2D().mult(Math.random() * 3);
+        this.life = 1.0;
+        this.decay = Math.random() * 0.04 + 0.02;
+        this.color = color;
+        this.size = Math.random() * 3 + 1;
+    }
+    update() {
+        this.pos.add(this.vel);
+        this.vel.mult(0.95);
+        this.life -= this.decay;
+    }
+    draw(ctx) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+    }
+}
+
+// ============================================
+// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+// ============================================
+let greenBase = { x: 100, y: 300 };
+let redBase = { x: 700, y: 300 };
+let greenMentalMap = new MentalMap('green');
+let redMentalMap = new MentalMap('red');
+let greenResources = 50;
+let redResources = 50;
+
+// ============================================
+// SIMULATION MANAGER (ДОРАБОТАН)
+// ============================================
+const Simulation = {
+    canvas: null,
+    ctx: null,
+    width: 0,
+    height: 0,
+    
+    ants: [],
+    resources: [],
+    particles: [],
+    
+    generation: 1,
+    paused: false,
+    timeScale: 1,
+    bestFitnessHistory: [],
+    
+    config: {
+        popSize: 40,
+        mutationRate: 0.05,
+        eliteCount: 2
+    },
+
+    stats: {
+        totalKills: 0,
+        totalGathered: 0
+    },
+
+    init() {
+        this.canvas = document.getElementById('sim-canvas');
+        this.ctx = this.canvas.getContext('2d', { alpha: false });
+        this.resize();
+        
+        window.addEventListener('resize', () => this.resize());
+        
+        this.hardReset();
+        UI.init();
+        
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            loading.style.opacity = '0';
+            setTimeout(() => loading.remove(), 500);
+        }, 1000);
+
+        this.loop();
+        UI.log('NeuroSwarm War Edition initialized', 'sys');
+    },
+
+    resize() {
+        const parent = document.getElementById('viewport');
+        this.width = parent.clientWidth;
+        this.height = parent.clientHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        
+        // Обновляем базы
+        greenBase = { x: 100, y: this.height / 2 };
+        redBase = { x: this.width - 100, y: this.height / 2 };
+    },
+
+    hardReset() {
+        this.ants = [];
+        this.resources = [];
+        this.particles = [];
+        this.generation = 1;
+        this.bestFitnessHistory = [];
+        this.stats = { totalKills: 0, totalGathered: 0 };
+
+        greenMentalMap = new MentalMap('green');
+        redMentalMap = new MentalMap('red');
+        greenResources = 50;
+        redResources = 50;
+
+        // Создаем муравьев для зеленой колонии
+        for (let i = 0; i < 15; i++) {
+            const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
+            this.ants.push(new Ant(
+                100 + Math.random() * 50,
+                this.height/2 - 50 + Math.random() * 100,
+                'green',
+                role
+            ));
+        }
+
+        // Создаем муравьев для красной колонии
+        for (let i = 0; i < 15; i++) {
+            const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
+            this.ants.push(new Ant(
+                this.width - 150 + Math.random() * 50,
+                this.height/2 - 50 + Math.random() * 100,
+                'red',
+                role
+            ));
+        }
+
+        // Спавним ресурсы
+        this.spawnResources(40);
+        
+        UI.updateStats();
+        UI.log('System reset complete. Two colonies created.', 'sys');
+    },
+
+    spawnResources(count) {
+        for (let i = 0; i < count; i++) {
+            const type = Math.random() < 0.5 ? 'food' : (Math.random() < 0.5 ? 'wood' : 'stone');
+            this.resources.push(new Resource(
+                200 + Math.random() * (this.width - 400),
+                50 + Math.random() * (this.height - 100),
+                type
+            ));
+        }
+    },
+
+    spawnParticles(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+            this.particles.push(new Particle(x, y, color));
+        }
+    },
+
+    evolve() {
+        // Сортируем по фитнесу
+        this.ants.sort((a, b) => b.fitness - a.fitness);
+
+        const best = this.ants[0];
+        this.bestFitnessHistory.push(best.fitness);
+        if (this.bestFitnessHistory.length > 100) {
+            this.bestFitnessHistory.shift();
+        }
+
+        UI.log(`Generation ${this.generation} complete. Best fitness: ${Math.floor(best.fitness)}`, 'sys');
+        
+        // Отдельно эволюционируем для каждой колонии
+        const greenAnts = this.ants.filter(a => a.colony === 'green');
+        const redAnts = this.ants.filter(a => a.colony === 'red');
+        
+        const newAnts = [];
+
+        // Элитизм для зеленых
+        greenAnts.sort((a, b) => b.fitness - a.fitness);
+        for (let i = 0; i < this.config.eliteCount && i < greenAnts.length; i++) {
+            const champion = new Ant(
+                greenBase.x + Math.random() * 50,
+                greenBase.y + Math.random() * 50,
+                'green',
+                greenAnts[i].role,
+                greenAnts[i].brain
+            );
+            champion.fitness = 0;
+            champion.health = 100;
+            champion.energy = 100;
+            newAnts.push(champion);
+        }
+
+        // Остальные зеленые
+        for (let i = this.config.eliteCount; i < 15; i++) {
+            const parent = greenAnts[Math.floor(Math.random() * Math.min(5, greenAnts.length))];
+            const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+            const child = new Ant(
+                greenBase.x + Math.random() * 50,
+                greenBase.y + Math.random() * 50,
+                'green',
+                role,
+                parent.brain
+            );
+            newAnts.push(child);
+        }
+
+        // Элитизм для красных
+        redAnts.sort((a, b) => b.fitness - a.fitness);
+        for (let i = 0; i < this.config.eliteCount && i < redAnts.length; i++) {
+            const champion = new Ant(
+                redBase.x - 50 + Math.random() * 50,
+                redBase.y + Math.random() * 50,
+                'red',
+                redAnts[i].role,
+                redAnts[i].brain
+            );
+            champion.fitness = 0;
+            champion.health = 100;
+            champion.energy = 100;
+            newAnts.push(champion);
+        }
+
+        // Остальные красные
+        for (let i = this.config.eliteCount; i < 15; i++) {
+            const parent = redAnts[Math.floor(Math.random() * Math.min(5, redAnts.length))];
+            const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+            const child = new Ant(
+                redBase.x - 50 + Math.random() * 50,
+                redBase.y + Math.random() * 50,
+                'red',
+                role,
+                parent.brain
+            );
+            newAnts.push(child);
+        }
+
+        this.ants = newAnts;
+        this.generation++;
+        this.spawnResources(20);
+        
+        UI.updateStats();
+    },
+
+    togglePause() {
+        this.paused = !this.paused;
+        document.getElementById('btn-pause').textContent = this.paused ? 'Resume' : 'Pause';
+    },
+
+    forceEvolution() {
+        this.evolve();
+    },
+
+    loop() {
+        if (!this.paused) {
+            // Clear canvas
+            this.ctx.fillStyle = '#0a0a0f';
+            this.ctx.fillRect(0, 0, this.width, this.height);
+
+            // Grid
+            this.ctx.strokeStyle = '#1a1a2a';
+            this.ctx.lineWidth = 1;
+            for (let x = 0; x < this.width; x += 50) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, 0);
+                this.ctx.lineTo(x, this.height);
+                this.ctx.stroke();
+            }
+            for (let y = 0; y < this.height; y += 50) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(this.width, y);
+                this.ctx.stroke();
             }
 
-            _updateStats() {
-                const m = this.brain.getMetrics();
-                document.getElementById('statNeurons').innerText = m.neurons.toLocaleString();
-                document.getElementById('statSynapses').innerText = m.synapses.toLocaleString();
-                document.getElementById('statActivity').innerText = m.activity + '%';
-                document.getElementById('stepDisplay').innerText = m.step.toLocaleString();
-                document.getElementById('footerSynapses').innerText = m.synapses.toLocaleString();
-            }
+            // Draw bases
+            this.ctx.fillStyle = '#00ff88';
+            this.ctx.beginPath();
+            this.ctx.moveTo(greenBase.x - 20, greenBase.y - 20);
+            this.ctx.lineTo(greenBase.x + 20, greenBase.y);
+            this.ctx.lineTo(greenBase.x - 20, greenBase.y + 20);
+            this.ctx.fill();
 
-            _draw() {
-                if (this.running || this.brain._needsRedraw) {
-                    this.brain.draw(this.ctx, this.canvas.width, this.canvas.height);
+            this.ctx.fillStyle = '#ff3366';
+            this.ctx.beginPath();
+            this.ctx.moveTo(redBase.x + 20, redBase.y - 20);
+            this.ctx.lineTo(redBase.x - 20, redBase.y);
+            this.ctx.lineTo(redBase.x + 20, redBase.y + 20);
+            this.ctx.fill();
+
+            // Обновление
+            for (let t = 0; t < this.timeScale; t++) {
+                for (let ant of this.ants) {
+                    if (!ant.dead) {
+                        ant.think(
+                            this.resources.filter(r => r.type === 'food'), 
+                            [], 
+                            this.ants,
+                            this.resources
+                        );
+                        
+                        // Обновляем статистику
+                        if (ant.kills > 0) this.stats.totalKills++;
+                        if (ant.resourcesGathered > 0) this.stats.totalGathered++;
+                    }
+                }
+
+                // Проверка на смерть
+                this.ants = this.ants.filter(a => {
+                    if (a.health <= 0) {
+                        this.spawnParticles(a.pos.x, a.pos.y, a.color, 10);
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Очистка ментальных карт
+                greenMentalMap.cleanup();
+                redMentalMap.cleanup();
+                
+                // Спавн новых муравьев если есть ресурсы
+                const greenCount = this.ants.filter(a => a.colony === 'green').length;
+                const redCount = this.ants.filter(a => a.colony === 'red').length;
+                
+                if (greenResources >= 30 && greenCount < 20) {
+                    const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+                    this.ants.push(new Ant(
+                        greenBase.x + Math.random() * 50,
+                        greenBase.y + Math.random() * 50,
+                        'green',
+                        role
+                    ));
+                    greenResources -= 30;
+                }
+                
+                if (redResources >= 30 && redCount < 20) {
+                    const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+                    this.ants.push(new Ant(
+                        redBase.x - 50 + Math.random() * 50,
+                        redBase.y + Math.random() * 50,
+                        'red',
+                        role
+                    ));
+                    redResources -= 30;
+                }
+                
+                // Спавн ресурсов
+                if (this.resources.length < 30 && Math.random() < 0.01) {
+                    const type = Math.random() < 0.5 ? 'food' : (Math.random() < 0.5 ? 'wood' : 'stone');
+                    this.resources.push(new Resource(
+                        200 + Math.random() * (this.width - 400),
+                        50 + Math.random() * (this.height - 100),
+                        type
+                    ));
                 }
             }
 
-            _loop(now) {
-                this.frameCount++;
-                if (now - this.lastTime >= 1000) {
-                    this.fps = this.frameCount;
-                    this.frameCount = 0;
-                    this.lastTime = now;
-                    document.getElementById('fpsDisplay').innerText = this.fps;
+            // Отрисовка
+            this.resources.forEach(r => r.draw(this.ctx));
+            this.ants.forEach(a => a.draw(this.ctx));
+            
+            for (let i = this.particles.length - 1; i >= 0; i--) {
+                this.particles[i].update();
+                this.particles[i].draw(this.ctx);
+                if (this.particles[i].life <= 0) {
+                    this.particles.splice(i, 1);
                 }
-                if (this.running) {
-                    this.brain.forward(null, 0);
-                    this._updateStats();
+            }
+
+            UI.updateRuntimeStats();
+            UI.updateOverlay();
+        }
+
+        UI.drawChart();
+        UI.drawMentalMap();
+        UI.updateFPS();
+        requestAnimationFrame(() => this.loop());
+    }
+};
+
+// ============================================
+// UI MANAGER (ДОРАБОТАН)
+// ============================================
+const UI = {
+    terminal: null,
+    cmdInput: null,
+    fps: 0,
+    lastTime: 0,
+    frameCount: 0,
+
+    init() {
+        this.terminal = document.getElementById('terminal');
+        this.cmdInput = document.getElementById('cmd-input');
+
+        document.getElementById('btn-pause').addEventListener('click', () => Simulation.togglePause());
+        document.getElementById('btn-evolve').addEventListener('click', () => Simulation.forceEvolution());
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            Simulation.hardReset();
+            this.log('System hard reset complete', 'sys');
+        });
+
+        this.cmdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = this.cmdInput.value.trim();
+                if (cmd) {
+                    this.log(`root@neuroswarm:~# ${cmd}`, 'cmd');
+                    this.parseCommand(cmd);
+                    this.cmdInput.value = '';
                 }
-                this._draw();
-                requestAnimationFrame((t) => this._loop(t));
+            }
+        });
+    },
+
+    log(msg, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `log-entry log-${type}`;
+        const timestamp = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+        div.textContent = `[${timestamp}] ${msg}`;
+        this.terminal.appendChild(div);
+        this.terminal.scrollTop = this.terminal.scrollHeight;
+        while (this.terminal.children.length > 200) {
+            this.terminal.removeChild(this.terminal.firstChild);
+        }
+    },
+
+    updateStats() {
+        document.getElementById('stat-generation').textContent = Simulation.generation;
+        document.getElementById('stat-pop-size').textContent = Simulation.ants.length;
+        document.getElementById('stat-mutation').textContent = (Simulation.config.mutationRate * 100).toFixed(1) + '%';
+        document.getElementById('stat-elite').textContent = Simulation.config.eliteCount;
+    },
+
+    updateRuntimeStats() {
+        const green = Simulation.ants.filter(a => a.colony === 'green');
+        const red = Simulation.ants.filter(a => a.colony === 'red');
+        
+        document.getElementById('stat-green-alive').textContent = green.length;
+        document.getElementById('stat-red-alive').textContent = red.length;
+        document.getElementById('stat-colonies').textContent = `${green.length}/${red.length}`;
+        
+        document.getElementById('stat-green-res').textContent = Math.floor(greenResources);
+        document.getElementById('stat-red-res').textContent = Math.floor(redResources);
+        
+        document.getElementById('stat-green-war').textContent = green.filter(a => a.role === 'warrior').length;
+        document.getElementById('stat-green-worker').textContent = green.filter(a => a.role === 'worker').length;
+        document.getElementById('stat-green-builder').textContent = green.filter(a => a.role === 'builder').length;
+        
+        document.getElementById('stat-red-war').textContent = red.filter(a => a.role === 'warrior').length;
+        document.getElementById('stat-red-worker').textContent = red.filter(a => a.role === 'worker').length;
+        document.getElementById('stat-red-builder').textContent = red.filter(a => a.role === 'builder').length;
+        
+        document.getElementById('stat-population').textContent = Simulation.ants.length;
+        document.getElementById('stat-kills').textContent = Simulation.stats.totalKills;
+        document.getElementById('stat-gathered').textContent = Simulation.stats.totalGathered;
+    },
+
+    updateOverlay() {
+        document.getElementById('overlay-timescale').textContent = Simulation.timeScale + 'x';
+        document.getElementById('overlay-entities').textContent = Simulation.ants.length + Simulation.resources.length;
+    },
+
+    updateFPS() {
+        const now = performance.now();
+        this.frameCount++;
+        if (now - this.lastTime >= 1000) {
+            this.fps = this.frameCount;
+            this.frameCount = 0;
+            this.lastTime = now;
+            document.getElementById('stat-fps').textContent = this.fps;
+        }
+    },
+
+    drawBrain(ant) {
+        if (!ant) return;
+        const canvas = document.getElementById('brain-canvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width = canvas.offsetWidth;
+        const h = canvas.height = canvas.offsetHeight;
+
+        document.getElementById('brain-unit-id').textContent = ant.id.substr(0, 6);
+        document.getElementById('brain-colony').textContent = ant.colony === 'green' ? 'GREEN' : 'RED';
+        document.getElementById('brain-role').textContent = ant.role.toUpperCase();
+        document.getElementById('brain-age').textContent = ant.age;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, h);
+
+        const layers = ant.brain.layers;
+        const layerSizes = ant.brain.layerSizes;
+        const xGap = w / (layers.length + 1);
+        const maxNodes = Math.max(...layerSizes);
+        const yGap = (h - 40) / maxNodes;
+
+        // Draw connections
+        for (let l = 0; l < layers.length; l++) {
+            const matrix = layers[l];
+            const x1 = l * xGap + 20;
+            const x2 = (l + 1) * xGap + 20;
+
+            for (let i = 0; i < matrix.rows; i++) {
+                for (let j = 0; j < matrix.cols; j++) {
+                    const weight = matrix.data[i * matrix.cols + j];
+                    if (Math.abs(weight) > 0.1) {
+                        const alpha = Math.min(Math.abs(weight), 1);
+                        ctx.strokeStyle = weight > 0 
+                            ? `rgba(0, 255, 136, ${alpha * 0.5})` 
+                            : `rgba(255, 51, 102, ${alpha * 0.5})`;
+                        ctx.lineWidth = Math.abs(weight) * 2;
+                        ctx.beginPath();
+                        const y1 = 20 + j * yGap;
+                        const y2 = 20 + i * yGap;
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                    }
+                }
             }
         }
 
-        window.app = new App();
-        console.log('[App] SpikeBrain Nano v4.1 PRO готов к работе');
-    })();
-    </script>
+        // Draw neurons
+        const activations = ant.brain.lastActivations;
+        for (let l = 0; l < activations.length && l < layerSizes.length; l++) {
+            const x = l * xGap + 20;
+            const nodes = activations[l];
+            const size = layerSizes[l];
+
+            for (let n = 0; n < nodes.length; n++) {
+                const val = (nodes[n] + 1) / 2;
+                const y = 20 + n * yGap;
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = `rgba(0, 255, 136, ${val})`;
+                ctx.fillStyle = `rgba(0, 255, 136, ${val})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI*2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+    },
+
+    drawMentalMap() {
+        const canvas = document.getElementById('mental-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Рисуем угрозы зеленых
+        ctx.fillStyle = '#00ff88';
+        greenMentalMap.threats.forEach(t => {
+            const x = (t.x / Simulation.width) * canvas.width;
+            const y = (t.y / Simulation.height) * canvas.height;
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Рисуем угрозы красных
+        ctx.fillStyle = '#ff3366';
+        redMentalMap.threats.forEach(t => {
+            const x = (t.x / Simulation.width) * canvas.width;
+            const y = (t.y / Simulation.height) * canvas.height;
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        // Рисуем еду
+        ctx.fillStyle = '#00ff88';
+        greenMentalMap.foodSpots.concat(redMentalMap.foodSpots).forEach(f => {
+            const x = (f.x / Simulation.width) * canvas.width;
+            const y = (f.y / Simulation.height) * canvas.height;
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI*2);
+            ctx.fill();
+        });
+    },
+
+    drawChart() {
+        const canvas = document.getElementById('fitness-chart');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width = canvas.offsetWidth;
+        const h = canvas.height = canvas.offsetHeight;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, w, h);
+
+        if (Simulation.bestFitnessHistory.length < 2) return;
+
+        const maxFit = Math.max(...Simulation.bestFitnessHistory, 1);
+        const xStep = w / (Simulation.bestFitnessHistory.length - 1);
+
+        ctx.strokeStyle = '#1a1a2a';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 5; i++) {
+            const y = (h / 5) * i;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#00ff88';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        Simulation.bestFitnessHistory.forEach((fit, i) => {
+            const y = h - (fit / maxFit) * (h - 10);
+            if (i === 0) ctx.moveTo(0, y);
+            else ctx.lineTo(i * xStep, y);
+        });
+        ctx.stroke();
+    },
+
+    parseCommand(cmd) {
+        const parts = cmd.toLowerCase().split(/\s+/);
+        const action = parts[0];
+
+        switch (action) {
+            case 'help':
+                this.log('Available commands:', 'sys');
+                this.log('  speed [1-20]     - Set time scale', 'info');
+                this.log('  spawn food [n]    - Add food', 'info');
+                this.log('  spawn wood [n]    - Add wood', 'info');
+                this.log('  spawn stone [n]   - Add stone', 'info');
+                this.log('  mutation [0-1]    - Set mutation rate', 'info');
+                this.log('  reset             - Hard reset', 'info');
+                break;
+
+            case 'speed':
+                const s = parseInt(parts[1]);
+                if (s >= 1 && s <= 20) {
+                    Simulation.timeScale = s;
+                    this.log(`Time scale set to ${s}x`, 'sys');
+                } else {
+                    this.log('Invalid speed. Use 1-20', 'error');
+                }
+                break;
+
+            case 'spawn':
+                const type = parts[1];
+                const count = parseInt(parts[2]) || 10;
+                if (type === 'food' || type === 'wood' || type === 'stone') {
+                    for (let i = 0; i < count; i++) {
+                        Simulation.resources.push(new Resource(
+                            200 + Math.random() * (Simulation.width - 400),
+                            50 + Math.random() * (Simulation.height - 100),
+                            type
+                        ));
+                    }
+                    this.log(`Spawned ${count} ${type}`, 'sys');
+                } else {
+                    this.log('Unknown resource type. Use: food, wood, stone', 'error');
+                }
+                break;
+
+            case 'mutation':
+                const mut = parseFloat(parts[1]);
+                if (mut >= 0 && mut <= 1) {
+                    Simulation.config.mutationRate = mut;
+                    this.log(`Mutation rate set to ${(mut * 100).toFixed(1)}%`, 'sys');
+                    UI.updateStats();
+                } else {
+                    this.log('Invalid mutation rate. Use 0-1', 'error');
+                }
+                break;
+
+            case 'reset':
+                Simulation.hardReset();
+                this.log('Simulation reset complete', 'sys');
+                break;
+
+            case 'pause':
+                Simulation.togglePause();
+                this.log(Simulation.paused ? 'Simulation paused' : 'Simulation resumed', 'sys');
+                break;
+
+            case 'evolve':
+                Simulation.forceEvolution();
+                break;
+
+            default:
+                this.log(`Unknown command: ${action}. Type 'help' for commands.`, 'error');
+        }
+    }
+};
+
+// ============================================
+// INITIALIZATION
+// ============================================
+window.addEventListener('DOMContentLoaded', () => {
+    try {
+        Simulation.init();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        document.getElementById('loading').innerHTML = 
+            '<div style="color: #ff3366; font-family: monospace;">FATAL ERROR<br>' + error.message + '</div>';
+    }
+});
+</script>
 </body>
-                                    </html>
+</html>
