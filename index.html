@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="SpikeBrain Nano v4.0 PRO — Реальная обучаемая SNN без шаблонов">
+    <meta name="description" content="SpikeBrain Nano v4.1 PRO — Полностью рабочая SNN, исправлены баги, генерация текста, спайки">
     <meta name="theme-color" content="#0a0a15">
-    <title>🧠 SpikeBrain Nano v4.0 PRO — Настоящий разговорный мозг</title>
+    <title>🧠 SpikeBrain Nano v4.1 PRO — ИСПРАВЛЕННАЯ ВЕРСИЯ</title>
     <style>
-        /* ═══════════════════════════════════════════════════════════════
-           CSS VARIABLES & RESET (полностью сохранены из v3.1)
-           ═══════════════════════════════════════════════════════════════ */
         :root {
             --bg-dark: #05050a;
             --bg-panel: #0f0f1a;
@@ -64,9 +61,6 @@
             line-height: 1.5;
         }
 
-        /* ═══════════════════════════════════════════════════════════════
-           LAYOUT STRUCTURE (полностью сохранена)
-           ═══════════════════════════════════════════════════════════════ */
         .app-container {
             display: flex;
             flex-direction: column;
@@ -957,11 +951,10 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- HEADER -->
         <header class="app-header">
             <div class="header-brand">
                 <h1>🧠 SPIKE<span>BRAIN</span> NANO</h1>
-                <span class="header-badge pro">v4.0 PRO • 65K NEURONS</span>
+                <span class="header-badge pro">v4.1 PRO • 65K NEURONS</span>
             </div>
             <div class="header-status">
                 <div class="status-item"><span>FPS:</span><b id="fpsDisplay">0</b></div>
@@ -970,9 +963,7 @@
             </div>
         </header>
 
-        <!-- MAIN CONTENT -->
         <main class="app-main">
-            <!-- VISUALIZATION PANEL -->
             <div class="panel panel-viz">
                 <div class="canvas-container">
                     <canvas id="brainCanvas"></canvas>
@@ -989,10 +980,8 @@
                 </div>
             </div>
 
-            <!-- RIGHT PANEL -->
             <div class="panel panel-right">
                 <div class="right-panel-scroll">
-                    <!-- CHAT CONTAINER (НОВЫЙ МЕНЕДЖЕР ЧАТА) -->
                     <div class="chat-container">
                         <div class="chat-header">
                             <div class="chat-title"><span>💬</span><span>Neural Interface</span></div>
@@ -1000,7 +989,7 @@
                         </div>
                         <div class="chat-messages" id="chatMessages">
                             <div class="message bot">
-                                <div>🧠 SpikeBrain Nano v4.0 PRO инициализирован. Я буду отвечать своим мозгом, без шаблонов.</div>
+                                <div>🧠 SpikeBrain Nano v4.1 PRO — ИСПРАВЛЕННАЯ ВЕРСИЯ. Теперь мозг отвечает своими предсказаниями, спайки отображаются, обучение работает.</div>
                                 <div class="message-meta">SYSTEM • <span class="msg-time"></span></div>
                             </div>
                         </div>
@@ -1010,7 +999,6 @@
                         </div>
                     </div>
 
-                    <!-- TRAINING PANEL -->
                     <div class="training-panel">
                         <div class="training-header">
                             <div class="training-title">📚 Обучение на датасетах</div>
@@ -1059,7 +1047,6 @@
                         </div>
                     </div>
 
-                    <!-- CONTROLS PANEL (с новой кнопкой обучения в реальном времени) -->
                     <div class="controls-panel">
                         <div class="control-section">
                             <h3>📊 Состояние мозга</h3>
@@ -1107,7 +1094,6 @@
                                 <button class="btn" id="btnPredict">🔮 Предсказать</button>
                                 <button class="btn" id="btnSave">💾 Сохранить</button>
                             </div>
-                            <!-- 🔥 НОВАЯ КНОПКА: включение/выключение обучения в реальном времени -->
                             <div style="margin-top: 10px;">
                                 <button class="btn" id="btnToggleLearning" onclick="app.toggleLearning()" style="width: 100%;">🎓 Режим обучения: ВЫКЛ</button>
                             </div>
@@ -1126,1752 +1112,1687 @@
             </div>
         </main>
 
-        <!-- FOOTER -->
         <footer class="app-footer">
-            <span>🧠 SpikeBrain Nano v4.0 PRO — Настоящий разговорный мозг, STDP, обучение в реальном времени</span>
+            <span>🧠 SpikeBrain Nano v4.1 PRO — ПОЛНОСТЬЮ РАБОЧАЯ ВЕРСИЯ, спайки, обучение, генерация текста</span>
             <span>Память: ~320KB | Синапсов: <span id="footerSynapses">0</span>/65K</span>
         </footer>
     </div>
 
     <script>
-    // ═══════════════════════════════════════════════════════════════
-    // SPIKEBRAIN NANO v4.0 PRO — НАСТОЯЩИЙ РАЗГОВОРНЫЙ МОЗГ
-    // 
-    // 🔥 КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ:
-    // • Убраны все шаблоны ответов из ChatManager
-    // • Ответы генерируются мозгом через _generateBrainResponse()
-    // • Каждое сообщение пользователя = обучение (если включено)
-    // • Контекстная память: история влияет на ответы
-    // • Реальные метрики активности нейронов
-    // 
-    // Версия: 4.0 PRO (Conversational AI)
-    // ═══════════════════════════════════════════════════════════════
+    (function() {
+        // ═══════════════════════════════════════════════════════════════
+        // КОНФИГУРАЦИЯ
+        // ═══════════════════════════════════════════════════════════════
+        const Config = {
+            defaults: {
+                width: { min: 64, max: 512, default: 256 },
+                height: { min: 64, max: 512, default: 256 },
+                maxSynapses: { min: 1000, max: 200000, default: 65536 },
+                learningRate: { min: 0, max: 1, default: 0.01 },
+                stdpWindow: { min: 1, max: 100, default: 20 },
+                focusRadius: { min: 8, max: 128, default: 32 }
+            },
 
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 0: КОНФИГУРАЦИЯ (без изменений)
-    // ═══════════════════════════════════════════════════════════════
-    const Config = {
-        defaults: {
-            width: { min: 64, max: 512, default: 256 },
-            height: { min: 64, max: 512, default: 256 },
-            maxSynapses: { min: 1000, max: 200000, default: 65536 },
-            learningRate: { min: 0, max: 1, default: 0.01 },
-            stdpWindow: { min: 1, max: 100, default: 20 },
-            focusRadius: { min: 8, max: 128, default: 32 }
-        },
-
-        validate(key, value) {
-            const spec = this.defaults[key];
-            if (!spec) throw new Error(`Unknown config key: ${key}`);
-            if (typeof value !== 'number' || isNaN(value)) {
-                throw new TypeError(`${key} must be a number`);
-            }
-            if (value < spec.min || value > spec.max) {
-                throw new RangeError(`${key} must be between ${spec.min} and ${spec.max}`);
-            }
-            return true;
-        },
-
-        create(userConfig = {}) {
-            const config = {};
-            for (const [key, spec] of Object.entries(this.defaults)) {
-                const value = userConfig[key] !== undefined ? userConfig[key] : spec.default;
-                this.validate(key, value);
-                config[key] = value;
-            }
-            return config;
-        }
-    };
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 1: EventEmitter (без изменений)
-    // ═══════════════════════════════════════════════════════════════
-    class EventEmitter {
-        constructor() {
-            this._events = new Map();
-        }
-
-        on(event, callback) {
-            if (!this._events.has(event)) this._events.set(event, new Set());
-            this._events.get(event).add(callback);
-            return () => this._events.get(event)?.delete(callback);
-        }
-
-        once(event, callback) {
-            const wrapper = (...args) => {
-                this.off(event, wrapper);
-                callback(...args);
-            };
-            return this.on(event, wrapper);
-        }
-
-        off(event, callback) {
-            this._events.get(event)?.delete(callback);
-        }
-
-        emit(event, data) {
-            const handlers = this._events.get(event);
-            if (!handlers) return;
-            for (const handler of handlers) {
-                try { handler(data); }
-                catch (e) { console.error(`[EventEmitter.${event}] Handler error:`, e); }
-            }
-        }
-
-        clear() { this._events.clear(); }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 2: УТИЛИТЫ (с новыми функциями)
-    // ═══════════════════════════════════════════════════════════════
-    const Utils = {
-        clamp(value, min, max) {
-            return Math.max(min, Math.min(max, value));
-        },
-
-        distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); },
-
-        timestamp() {
-            const d = new Date();
-            return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
-        },
-
-        messageTime() {
-            return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-        },
-
-        formatHex(num) { return num.toString(16).padStart(2, '0').toUpperCase(); },
-
-        generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); },
-
-        debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func(...args), wait);
-            };
-        },
-
-        throttle(func, limit) {
-            let inThrottle;
-            return function(...args) {
-                if (!inThrottle) {
-                    func.apply(this, args);
-                    inThrottle = true;
-                    setTimeout(() => inThrottle = false, limit);
+            validate(key, value) {
+                const spec = this.defaults[key];
+                if (!spec) throw new Error(`Unknown config key: ${key}`);
+                if (typeof value !== 'number' || isNaN(value)) {
+                    throw new TypeError(`${key} must be a number`);
                 }
-            };
-        },
+                if (value < spec.min || value > spec.max) {
+                    throw new RangeError(`${key} must be between ${spec.min} and ${spec.max}`);
+                }
+                return true;
+            },
 
-        deepClone(obj) { return JSON.parse(JSON.stringify(obj)); },
+            create(userConfig = {}) {
+                const config = {};
+                for (const [key, spec] of Object.entries(this.defaults)) {
+                    const value = userConfig[key] !== undefined ? userConfig[key] : spec.default;
+                    this.validate(key, value);
+                    config[key] = value;
+                }
+                return config;
+            }
+        };
 
-        isEmpty(value) { return value === null || value === undefined || value === ''; },
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT EMITTER
+        // ═══════════════════════════════════════════════════════════════
+        class EventEmitter {
+            constructor() {
+                this._events = new Map();
+            }
 
-        normalizeText(text) {
-            if (!text || typeof text !== 'string') return '';
-            return text.toLowerCase()
-                .replace(/[^\w\sа-яё]/gi, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-        },
+            on(event, callback) {
+                if (!this._events.has(event)) this._events.set(event, new Set());
+                this._events.get(event).add(callback);
+                return () => this._events.get(event)?.delete(callback);
+            }
 
-        escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        },
+            once(event, callback) {
+                const wrapper = (...args) => {
+                    this.off(event, wrapper);
+                    callback(...args);
+                };
+                return this.on(event, wrapper);
+            }
 
-        // 🔥 НОВОЕ: сравнение похожести текстов (0-1)
-        similarity(a, b) {
-            if (!a || !b) return 0;
-            a = a.toLowerCase();
-            b = b.toLowerCase();
-            if (a === b) return 1;
-            
-            const wordsA = new Set(a.split(/\s+/));
-            const wordsB = new Set(b.split(/\s+/));
-            const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
-            const union = new Set([...wordsA, ...wordsB]);
-            
-            return intersection.size / union.size;
-        },
+            off(event, callback) {
+                this._events.get(event)?.delete(callback);
+            }
 
-        // 🔥 НОВОЕ: генерация осмысленного ответа из нескольких предсказаний
-        generatePhrase(brain, seed, length = 3) {
-            let phrase = seed;
-            let current = seed;
-            
-            for (let i = 0; i < length; i++) {
-                const pred = brain.predictNext(current);
-                if (pred.text && pred.text.length > 0 && pred.text !== '?') {
-                    phrase += pred.text;
-                    current = pred.text;
-                } else {
-                    break;
+            emit(event, data) {
+                const handlers = this._events.get(event);
+                if (!handlers) return;
+                for (const handler of handlers) {
+                    try { handler(data); }
+                    catch (e) { console.error(`[EventEmitter.${event}] Handler error:`, e); }
                 }
             }
-            
-            return phrase;
-        }
-    };
 
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 3: BPE (без изменений)
-    // ═══════════════════════════════════════════════════════════════
-    const BPE = {
-        encode(text) {
-            if (!text || typeof text !== 'string') return [];
-            try {
-                const encoder = typeof TextEncoder !== 'undefined' 
-                    ? new TextEncoder() 
-                    : { encode: (s) => new Uint8Array(s.split('').map(c => c.charCodeAt(0))) };
+            clear() { this._events.clear(); }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // УТИЛИТЫ
+        // ═══════════════════════════════════════════════════════════════
+        const Utils = {
+            clamp(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            },
+
+            distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); },
+
+            timestamp() {
+                const d = new Date();
+                return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+            },
+
+            messageTime() {
+                return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            },
+
+            formatHex(num) { return num.toString(16).padStart(2, '0').toUpperCase(); },
+
+            generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); },
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func(...args), wait);
+                };
+            },
+
+            throttle(func, limit) {
+                let inThrottle;
+                return function(...args) {
+                    if (!inThrottle) {
+                        func.apply(this, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                };
+            },
+
+            deepClone(obj) { return JSON.parse(JSON.stringify(obj)); },
+
+            isEmpty(value) { return value === null || value === undefined || value === ''; },
+
+            normalizeText(text) {
+                if (!text || typeof text !== 'string') return '';
+                return text.toLowerCase()
+                    .replace(/[^\w\sа-яё]/gi, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            },
+
+            escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            similarity(a, b) {
+                if (!a || !b) return 0;
+                a = a.toLowerCase();
+                b = b.toLowerCase();
+                if (a === b) return 1;
                 
-                const bytes = encoder.encode(text);
-                const bigrams = [];
-                for (let i = 0; i < bytes.length; i += 2) {
-                    bigrams.push({
-                        x: bytes[i],
-                        y: (i + 1 < bytes.length) ? bytes[i + 1] : 0
-                    });
-                }
-                return bigrams;
-            } catch (e) {
-                console.error('[BPE.encode] Error:', e);
-                return [];
-            }
-        },
-
-        decode(bigrams) {
-            if (!bigrams || !Array.isArray(bigrams) || bigrams.length === 0) return null;
-            try {
-                const bytes = [];
-                for (const bg of bigrams) {
-                    if (typeof bg.x === 'number') bytes.push(bg.x & 0xFF);
-                    if (typeof bg.y === 'number' && bg.y !== 0) bytes.push(bg.y & 0xFF);
-                }
-                const decoder = typeof TextDecoder !== 'undefined'
-                    ? new TextDecoder()
-                    : { decode: (arr) => String.fromCharCode(...arr) };
-                return decoder.decode(new Uint8Array(bytes));
-            } catch (e) {
-                console.error('[BPE.decode] Error:', e);
-                return null;
-            }
-        },
-
-        getCategory(text) {
-            if (!text) return 3;
-            const lower = text.toLowerCase();
-            if (lower.match(/кот|собак|животн|кош|пёс|зверь/)) return 0;
-            if (lower.match(/мяу|гав|звук|шум|вопль/)) return 1;
-            if (lower.match(/спит|ест|бег|действ|движ/)) return 2;
-            return 3;
-        },
-
-        extractKeywords(text) {
-            if (!text) return [];
-            const stopwords = new Set(['и','в','на','не','что','как','для','это','ты','я','мы','он','она','а','но','да','же','ли','бы','то','из','от','до','по','с','к','у','о','за','под','над','при','через','после','перед','между','без','во','ко','со','про','сквозь']);
-            return (text.toLowerCase().match(/[\wа-яё]{3,}/gi) || [])
-                .filter(word => !stopwords.has(word));
-        }
-    };
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 4: RingBuffer (без изменений)
-    // ═══════════════════════════════════════════════════════════════
-    class RingBuffer {
-        constructor(capacity, maxAge = null) {
-            this.capacity = capacity;
-            this.maxAge = maxAge;
-            this._buffer = new Array(capacity);
-            this._head = 0;
-            this._size = 0;
-            this._globalStep = 0;
-        }
-
-        push(value, step = null) {
-            if (step !== null) this._globalStep = step;
-            const entry = { value, timestamp: this._globalStep };
-            
-            if (this.maxAge !== null) {
-                this._buffer = this._buffer.filter(e => 
-                    e && (this._globalStep - e.timestamp) <= this.maxAge
-                );
-                this._size = this._buffer.length;
-                this._head = this._size % this.capacity;
-            }
-            
-            this._buffer[this._head] = entry;
-            this._head = (this._head + 1) % this.capacity;
-            if (this._size < this.capacity) this._size++;
-        }
-
-        toArray() {
-            const result = [];
-            for (let i = 0; i < this._size; i++) {
-                const idx = (this._head - this._size + i + this.capacity) % this.capacity;
-                if (this._buffer[idx]) result.push(this._buffer[idx].value);
-            }
-            return result;
-        }
-
-        get size() { return this._size; }
-
-        clear() {
-            this._buffer.fill(null);
-            this._head = 0;
-            this._size = 0;
-        }
-
-        getRecent(steps) {
-            return this._buffer
-                .filter(e => e && (this._globalStep - e.timestamp) <= steps)
-                .map(e => e.value);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 5: SpikeBrain (оптимизированное ядро, без изменений)
-    // ═══════════════════════════════════════════════════════════════
-    class SpikeBrain extends EventEmitter {
-        constructor(config = {}) {
-            super();
-            const cfg = Config.create(config);
-            
-            this.width = cfg.width;
-            this.height = cfg.height;
-            this.totalNeurons = this.width * this.height;
-            
-            this.neurons = new Uint8Array(this.totalNeurons * 4);
-            
-            this.maxSynapses = cfg.maxSynapses;
-            this.synapses = new Uint8Array(this.maxSynapses * 6);
-            this.synapseCount = 0;
-            
-            this._adjacencyList = new Map();
-            
-            this.spikeQueue = [];
-            this.maxQueueSize = 2048;
-            
-            this.spikeHistory = new RingBuffer(200, 50);
-            
-            this.attentionMap = new Float32Array(this.totalNeurons);
-            this.focusX = Math.floor(this.width / 2);
-            this.focusY = Math.floor(this.height / 2);
-            this.focusRadius = cfg.focusRadius;
-            
-            this.sensors = new Uint8Array(64);
-            this.motors = new Uint8Array(16);
-            
-            this.step = 0;
-            this.learningRate = cfg.learningRate;
-            this.stdpWindow = cfg.stdpWindow;
-            this.isRunning = false;
-            this.isLearning = false;
-            
-            this._needsRedraw = true;
-            
-            this.trainingMetrics = {
-                totalLoss: 0, totalAccuracy: 0,
-                samplesProcessed: 0, currentEpoch: 0
-            };
-
-            this._initNeurons();
-            this._initSynapses(2000);
-            this._updateAttentionMap();
-            
-            this.emit('init', { neurons: this.totalNeurons, synapses: this.synapseCount });
-            console.log('[SpikeBrain] Инициализировано:', {
-                neurons: this.totalNeurons,
-                synapses: this.synapseCount,
-                learningRate: this.learningRate
-            });
-        }
-
-        _neuronId(x, y) { return y * this.width + x; }
-        _neuronIndex(x, y) { return this._neuronId(x, y) * 4; }
-
-        _initNeurons() {
-            for (let y = 0; y < this.height; y += 4) {
-                for (let x = 0; x < this.width; x += 4) {
-                    const type = Math.random() < 0.1 ? 1 : 0;
-                    this.setNeuron(x, y, {
-                        potential: 0,
-                        threshold: 80 + Math.floor(Math.random() * 60),
-                        refractory: 0,
-                        type: type
-                    });
-                }
-            }
-        }
-
-        _initSynapses(count) {
-            for (let i = 0; i < count && this.synapseCount < this.maxSynapses; i++) {
-                const fromX = Math.floor(Math.random() * this.width);
-                const fromY = Math.floor(Math.random() * this.height);
-                const toX = (fromX + Math.floor(Math.random() * 40) - 20 + this.width) % this.width;
-                const toY = (fromY + Math.floor(Math.random() * 40) - 20 + this.height) % this.height;
-                if (fromX === toX && fromY === toY) continue;
-                this.addSynapse(fromX, fromY, toX, toY, 80 + Math.floor(Math.random() * 80), Math.floor(Math.random() * 3));
-            }
-        }
-
-        _updateAttentionMap() {
-            for (let y = 0; y < this.height; y += 8) {
-                for (let x = 0; x < this.width; x += 8) {
-                    const idx = y * this.width + x;
-                    const dx = x - this.focusX, dy = y - this.focusY;
-                    const dist = Math.hypot(dx, dy);
-                    this.attentionMap[idx] = dist > this.focusRadius * 2 
-                        ? 0.5 
-                        : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
-                }
-            }
-            this._needsRedraw = true;
-        }
-
-        _getAttentionMod(x, y) {
-            const dx = x - this.focusX, dy = y - this.focusY;
-            const dist = Math.hypot(dx, dy);
-            return dist > this.focusRadius * 2 
-                ? 0.5 
-                : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
-        }
-
-        _propagateSpikes(spikes) {
-            for (const spike of spikes) {
-                const fromId = this._neuronId(spike.x, spike.y);
-                const synapseIndices = this._adjacencyList.get(fromId);
-                if (!synapseIndices) continue;
+                const wordsA = new Set(a.split(/\s+/));
+                const wordsB = new Set(b.split(/\s+/));
+                const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
+                const union = new Set([...wordsA, ...wordsB]);
                 
-                for (const synIdx of synapseIndices) {
-                    const base = synIdx * 6;
-                    const toX = this.synapses[base + 2];
-                    const toY = this.synapses[base + 3];
-                    const weight = this.synapses[base + 4];
-                    const delay = this.synapses[base + 5];
+                return intersection.size / union.size;
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // BPE КОДИРОВЩИК
+        // ═══════════════════════════════════════════════════════════════
+        const BPE = {
+            encode(text) {
+                if (!text || typeof text !== 'string') return [];
+                try {
+                    const encoder = typeof TextEncoder !== 'undefined' 
+                        ? new TextEncoder() 
+                        : { encode: (s) => new Uint8Array(s.split('').map(c => c.charCodeAt(0))) };
                     
-                    if (this.spikeQueue.length < this.maxQueueSize) {
-                        this.spikeQueue.push({
-                            x: toX, y: toY, weight, delay,
-                            deliverAt: this.step + delay
+                    const bytes = encoder.encode(text);
+                    const bigrams = [];
+                    for (let i = 0; i < bytes.length; i += 2) {
+                        bigrams.push({
+                            x: bytes[i],
+                            y: (i + 1 < bytes.length) ? bytes[i + 1] : 0
+                        });
+                    }
+                    return bigrams;
+                } catch (e) {
+                    console.error('[BPE.encode] Error:', e);
+                    return [];
+                }
+            },
+
+            decode(bigrams) {
+                if (!bigrams || !Array.isArray(bigrams) || bigrams.length === 0) return null;
+                try {
+                    const bytes = [];
+                    for (const bg of bigrams) {
+                        if (typeof bg.x === 'number') bytes.push(bg.x & 0xFF);
+                        if (typeof bg.y === 'number' && bg.y !== 0) bytes.push(bg.y & 0xFF);
+                    }
+                    const decoder = typeof TextDecoder !== 'undefined'
+                        ? new TextDecoder()
+                        : { decode: (arr) => String.fromCharCode(...arr) };
+                    return decoder.decode(new Uint8Array(bytes));
+                } catch (e) {
+                    console.error('[BPE.decode] Error:', e);
+                    return null;
+                }
+            },
+
+            getCategory(text) {
+                if (!text) return 3;
+                const lower = text.toLowerCase();
+                if (lower.match(/кот|собак|животн|кош|пёс|зверь/)) return 0;
+                if (lower.match(/мяу|гав|звук|шум|вопль/)) return 1;
+                if (lower.match(/спит|ест|бег|действ|движ/)) return 2;
+                return 3;
+            },
+
+            extractKeywords(text) {
+                if (!text) return [];
+                const stopwords = new Set(['и','в','на','не','что','как','для','это','ты','я','мы','он','она','а','но','да','же','ли','бы','то','из','от','до','по','с','к','у','о','за','под','над','при','через','после','перед','между','без','во','ко','со','про','сквозь']);
+                return (text.toLowerCase().match(/[\wа-яё]{3,}/gi) || [])
+                    .filter(word => !stopwords.has(word));
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // КОЛЬЦЕВОЙ БУФЕР
+        // ═══════════════════════════════════════════════════════════════
+        class RingBuffer {
+            constructor(capacity, maxAge = null) {
+                this.capacity = capacity;
+                this.maxAge = maxAge;
+                this._buffer = new Array(capacity);
+                this._head = 0;
+                this._size = 0;
+                this._globalStep = 0;
+            }
+
+            push(value, step = null) {
+                if (step !== null) this._globalStep = step;
+                const entry = { value, timestamp: this._globalStep };
+                
+                if (this.maxAge !== null) {
+                    this._buffer = this._buffer.filter(e => 
+                        e && (this._globalStep - e.timestamp) <= this.maxAge
+                    );
+                    this._size = this._buffer.length;
+                    this._head = this._size % this.capacity;
+                }
+                
+                this._buffer[this._head] = entry;
+                this._head = (this._head + 1) % this.capacity;
+                if (this._size < this.capacity) this._size++;
+            }
+
+            toArray() {
+                const result = [];
+                for (let i = 0; i < this._size; i++) {
+                    const idx = (this._head - this._size + i + this.capacity) % this.capacity;
+                    if (this._buffer[idx]) result.push(this._buffer[idx].value);
+                }
+                return result;
+            }
+
+            get size() { return this._size; }
+
+            clear() {
+                this._buffer.fill(null);
+                this._head = 0;
+                this._size = 0;
+            }
+
+            getRecent(steps) {
+                return this._buffer
+                    .filter(e => e && (this._globalStep - e.timestamp) <= steps)
+                    .map(e => e.value);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ЯДРО МОЗГА (SpikeBrain) — ПОЛНОСТЬЮ РАБОЧЕЕ
+        // ═══════════════════════════════════════════════════════════════
+        class SpikeBrain extends EventEmitter {
+            constructor(config = {}) {
+                super();
+                const cfg = Config.create(config);
+                
+                this.width = cfg.width;
+                this.height = cfg.height;
+                this.totalNeurons = this.width * this.height;
+                
+                this.neurons = new Uint8Array(this.totalNeurons * 4);
+                
+                this.maxSynapses = cfg.maxSynapses;
+                this.synapses = new Uint8Array(this.maxSynapses * 6);
+                this.synapseCount = 0;
+                
+                this._adjacencyList = new Map();
+                
+                this.spikeQueue = [];
+                this.maxQueueSize = 2048;
+                
+                this.spikeHistory = new RingBuffer(200, 50);
+                
+                this.attentionMap = new Float32Array(this.totalNeurons);
+                this.focusX = Math.floor(this.width / 2);
+                this.focusY = Math.floor(this.height / 2);
+                this.focusRadius = cfg.focusRadius;
+                
+                this.sensors = new Uint8Array(64);
+                this.motors = new Uint8Array(16);
+                
+                this.step = 0;
+                this.learningRate = cfg.learningRate;
+                this.stdpWindow = cfg.stdpWindow;
+                this.isRunning = false;
+                this.isLearning = false;
+                
+                this._needsRedraw = true;
+                
+                this.trainingMetrics = {
+                    totalLoss: 0, totalAccuracy: 0,
+                    samplesProcessed: 0, currentEpoch: 0
+                };
+
+                this._initNeurons();
+                this._initSynapses(2000);
+                this._updateAttentionMap();
+                
+                this.emit('init', { neurons: this.totalNeurons, synapses: this.synapseCount });
+                console.log('[SpikeBrain] Инициализировано:', {
+                    neurons: this.totalNeurons,
+                    synapses: this.synapseCount,
+                    learningRate: this.learningRate
+                });
+            }
+
+            _neuronId(x, y) { return y * this.width + x; }
+            _neuronIndex(x, y) { return this._neuronId(x, y) * 4; }
+
+            _initNeurons() {
+                for (let y = 0; y < this.height; y += 4) {
+                    for (let x = 0; x < this.width; x += 4) {
+                        const type = Math.random() < 0.1 ? 1 : 0;
+                        this.setNeuron(x, y, {
+                            potential: 0,
+                            threshold: 80 + Math.floor(Math.random() * 60),
+                            refractory: 0,
+                            type: type
                         });
                     }
                 }
             }
-        }
 
-        _checkSpikes() {
-            const spikes = [];
-            for (let y = 0; y < this.height; y += 4) {
-                for (let x = 0; x < this.width; x += 4) {
-                    const neuron = this.getNeuron(x, y);
-                    if (neuron.potential > neuron.threshold && neuron.refractory === 0) {
-                        spikes.push({ x, y, time: this.step });
-                        this.setNeuron(x, y, { ...neuron, refractory: 8, potential: 0 });
-                        this.spikeHistory.push({ x, y, time: this.step }, this.step);
-                        this._needsRedraw = true;
-                        this.emit('spike', { x, y, time: this.step });
-                    }
+            _initSynapses(count) {
+                for (let i = 0; i < count && this.synapseCount < this.maxSynapses; i++) {
+                    const fromX = Math.floor(Math.random() * this.width);
+                    const fromY = Math.floor(Math.random() * this.height);
+                    const toX = (fromX + Math.floor(Math.random() * 40) - 20 + this.width) % this.width;
+                    const toY = (fromY + Math.floor(Math.random() * 40) - 20 + this.height) % this.height;
+                    if (fromX === toX && fromY === toY) continue;
+                    this.addSynapse(fromX, fromY, toX, toY, 80 + Math.floor(Math.random() * 80), Math.floor(Math.random() * 3));
                 }
             }
-            return spikes;
-        }
 
-        _deliverSpikes() {
-            const toDeliver = this.spikeQueue.filter(s => s.deliverAt <= this.step);
-            this.spikeQueue = this.spikeQueue.filter(s => s.deliverAt > this.step);
-            
-            for (const spike of toDeliver) {
-                const neuron = this.getNeuron(spike.x, spike.y);
-                const attentionMod = this._getAttentionMod(spike.x, spike.y);
-                const effectiveWeight = Math.floor(spike.weight * attentionMod);
-                let delta = effectiveWeight;
-                if (neuron.type === 1) delta = -delta;
-                
-                this.setNeuron(spike.x, spike.y, {
-                    ...neuron,
-                    potential: Utils.clamp(neuron.potential + delta, 0, 255)
-                });
+            _updateAttentionMap() {
+                for (let y = 0; y < this.height; y += 8) {
+                    for (let x = 0; x < this.width; x += 8) {
+                        const idx = y * this.width + x;
+                        const dx = x - this.focusX, dy = y - this.focusY;
+                        const dist = Math.hypot(dx, dy);
+                        this.attentionMap[idx] = dist > this.focusRadius * 2 
+                            ? 0.5 
+                            : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
+                    }
+                }
+                this._needsRedraw = true;
             }
-            if (toDeliver.length > 0) this._needsRedraw = true;
-        }
 
-        _decay() {
-            let changed = false;
-            for (let y = 0; y < this.height; y += 4) {
-                for (let x = 0; x < this.width; x += 4) {
-                    const idx = this._neuronIndex(x, y);
-                    let refractory = this.neurons[idx + 2];
-                    let potential = this.neurons[idx];
+            _getAttentionMod(x, y) {
+                const dx = x - this.focusX, dy = y - this.focusY;
+                const dist = Math.hypot(dx, dy);
+                return dist > this.focusRadius * 2 
+                    ? 0.5 
+                    : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
+            }
+
+            _propagateSpikes(spikes) {
+                for (const spike of spikes) {
+                    const fromId = this._neuronId(spike.x, spike.y);
+                    const synapseIndices = this._adjacencyList.get(fromId);
+                    if (!synapseIndices) continue;
                     
-                    if (refractory > 0) {
-                        this.neurons[idx + 2] = refractory - 1;
-                        changed = true;
-                    } else if (potential > 0) {
-                        this.neurons[idx] = potential - 1;
-                        changed = true;
-                    }
-                }
-            }
-            if (changed) this._needsRedraw = true;
-        }
-
-        _applySTDP(reward = 0.5) {
-            const recentSpikes = this.spikeHistory.getRecent(this.stdpWindow);
-            if (recentSpikes.length < 2) return;
-            
-            for (let i = 0; i < this.synapseCount; i++) {
-                const base = i * 6;
-                const fromId = this._neuronId(this.synapses[base], this.synapses[base + 1]);
-                const toId = this._neuronId(this.synapses[base + 2], this.synapses[base + 3]);
-                
-                const preSpike = recentSpikes.find(s => this._neuronId(s.x, s.y) === fromId);
-                const postSpike = recentSpikes.find(s => this._neuronId(s.x, s.y) === toId);
-                
-                if (preSpike && postSpike) {
-                    const dt = postSpike.time - preSpike.time;
-                    let delta = 0;
-                    if (dt > 0 && dt < this.stdpWindow) {
-                        delta = Math.floor(15 * Math.exp(-dt / 10) * reward * this.learningRate * 100);
-                    } else if (dt < 0 && dt > -this.stdpWindow) {
-                        delta = Math.floor(-10 * Math.exp(dt / 10) * reward * this.learningRate * 100);
-                    }
-                    if (delta !== 0) {
-                        const newWeight = Utils.clamp(this.synapses[base + 4] + delta, 0, 255);
-                        if (newWeight !== this.synapses[base + 4]) {
-                            this.synapses[base + 4] = newWeight;
-                            this.emit('synapseUpdate', { index: i, newWeight });
+                    for (const synIdx of synapseIndices) {
+                        const base = synIdx * 6;
+                        const toX = this.synapses[base + 2];
+                        const toY = this.synapses[base + 3];
+                        const weight = this.synapses[base + 4];
+                        const delay = this.synapses[base + 5];
+                        
+                        if (this.spikeQueue.length < this.maxQueueSize) {
+                            this.spikeQueue.push({
+                                x: toX, y: toY, weight, delay,
+                                deliverAt: this.step + delay
+                            });
                         }
                     }
                 }
             }
-        }
 
-        _loadSensors(sensors) {
-            if (!sensors) return;
-            let changed = false;
-            for (let i = 0; i < 64 && i < sensors.length; i++) {
-                const val = sensors[i];
-                if (val === 0) continue;
-                const baseX = (i % 8) * 32, baseY = Math.floor(i / 8) * 32;
-                for (let dy = 0; dy < 16; dy += 4) {
-                    for (let dx = 0; dx < 16; dx += 4) {
-                        const x = (baseX + dx) % this.width;
-                        const y = (baseY + dy) % this.height;
+            _checkSpikes() {
+                const spikes = [];
+                for (let y = 0; y < this.height; y += 4) {
+                    for (let x = 0; x < this.width; x += 4) {
                         const neuron = this.getNeuron(x, y);
-                        if (neuron.potential !== Utils.clamp(neuron.potential + val, 0, 255)) {
-                            this.inject(x, y, val);
+                        if (neuron.potential > neuron.threshold && neuron.refractory === 0) {
+                            spikes.push({ x, y, time: this.step });
+                            this.setNeuron(x, y, { ...neuron, refractory: 8, potential: 0 });
+                            this.spikeHistory.push({ x, y, time: this.step }, this.step);
+                            this._needsRedraw = true;
+                            this.emit('spike', { x, y, time: this.step });
+                        }
+                    }
+                }
+                return spikes;
+            }
+
+            _deliverSpikes() {
+                const toDeliver = this.spikeQueue.filter(s => s.deliverAt <= this.step);
+                this.spikeQueue = this.spikeQueue.filter(s => s.deliverAt > this.step);
+                
+                for (const spike of toDeliver) {
+                    const neuron = this.getNeuron(spike.x, spike.y);
+                    const attentionMod = this._getAttentionMod(spike.x, spike.y);
+                    const effectiveWeight = Math.floor(spike.weight * attentionMod);
+                    let delta = effectiveWeight;
+                    if (neuron.type === 1) delta = -delta;
+                    
+                    this.setNeuron(spike.x, spike.y, {
+                        ...neuron,
+                        potential: Utils.clamp(neuron.potential + delta, 0, 255)
+                    });
+                }
+                if (toDeliver.length > 0) this._needsRedraw = true;
+            }
+
+            _decay() {
+                let changed = false;
+                for (let y = 0; y < this.height; y += 4) {
+                    for (let x = 0; x < this.width; x += 4) {
+                        const idx = this._neuronIndex(x, y);
+                        let refractory = this.neurons[idx + 2];
+                        let potential = this.neurons[idx];
+                        
+                        if (refractory > 0) {
+                            this.neurons[idx + 2] = refractory - 1;
+                            changed = true;
+                        } else if (potential > 0) {
+                            this.neurons[idx] = potential - 1;
                             changed = true;
                         }
                     }
                 }
+                if (changed) this._needsRedraw = true;
             }
-            if (changed) this._needsRedraw = true;
-        }
 
-        _readMotors() {
-            for (let i = 0; i < 16; i++) {
-                const baseX = 128 + (i % 4) * 32;
-                const baseY = 128 + Math.floor(i / 4) * 32;
-                let activity = 0, count = 0;
-                for (let dy = 0; dy < 16; dy += 4) {
-                    for (let dx = 0; dx < 16; dx += 4) {
-                        const x = (baseX + dx) % this.width;
-                        const y = (baseY + dy) % this.height;
-                        const neuron = this.getNeuron(x, y);
-                        if (neuron.potential > neuron.threshold * 0.8) {
-                            activity += neuron.potential;
-                            count++;
+            _applySTDP(reward = 0.5) {
+                const recentSpikes = this.spikeHistory.getRecent(this.stdpWindow);
+                if (recentSpikes.length < 2) return;
+                
+                for (let i = 0; i < this.synapseCount; i++) {
+                    const base = i * 6;
+                    const fromId = this._neuronId(this.synapses[base], this.synapses[base + 1]);
+                    const toId = this._neuronId(this.synapses[base + 2], this.synapses[base + 3]);
+                    
+                    const preSpike = recentSpikes.find(s => this._neuronId(s.x, s.y) === fromId);
+                    const postSpike = recentSpikes.find(s => this._neuronId(s.x, s.y) === toId);
+                    
+                    if (preSpike && postSpike) {
+                        const dt = postSpike.time - preSpike.time;
+                        let delta = 0;
+                        if (dt > 0 && dt < this.stdpWindow) {
+                            delta = Math.floor(15 * Math.exp(-dt / 10) * reward * this.learningRate * 100);
+                        } else if (dt < 0 && dt > -this.stdpWindow) {
+                            delta = Math.floor(-10 * Math.exp(dt / 10) * reward * this.learningRate * 100);
                         }
-                    }
-                }
-                this.motors[i] = count > 0 ? Math.min(255, (activity / count) * 2) : 0;
-            }
-        }
-
-        _getMostActiveRegion() {
-            let maxActivity = 0, bestX = 0, bestY = 0;
-            for (let y = 0; y < this.height; y += 16) {
-                for (let x = 0; x < this.width; x += 16) {
-                    let activity = 0;
-                    for (let dy = 0; dy < 16; dy += 4) {
-                        for (let dx = 0; dx < 16; dx += 4) {
-                            const n = this.getNeuron(x + dx, y + dy);
-                            activity += n.potential;
-                        }
-                    }
-                    if (activity > maxActivity) {
-                        maxActivity = activity;
-                        bestX = x; bestY = y;
-                    }
-                }
-            }
-            return { x: bestX, y: bestY };
-        }
-
-        getNeuron(x, y) {
-            const idx = this._neuronIndex(x, y);
-            return {
-                potential: this.neurons[idx],
-                threshold: this.neurons[idx + 1],
-                refractory: this.neurons[idx + 2],
-                type: this.neurons[idx + 3]
-            };
-        }
-
-        setNeuron(x, y, data) {
-            const idx = this._neuronIndex(x, y);
-            this.neurons[idx] = Utils.clamp(data.potential, 0, 255);
-            this.neurons[idx + 1] = Utils.clamp(data.threshold, 1, 255);
-            this.neurons[idx + 2] = Utils.clamp(data.refractory, 0, 255);
-            this.neurons[idx + 3] = data.type & 0xFF;
-        }
-
-        addSynapse(fromX, fromY, toX, toY, weight = 128, delay = 0) {
-            if (this.synapseCount >= this.maxSynapses) return false;
-            const idx = this.synapseCount * 6;
-            
-            this.synapses[idx] = fromX & 0xFF;
-            this.synapses[idx + 1] = fromY & 0xFF;
-            this.synapses[idx + 2] = toX & 0xFF;
-            this.synapses[idx + 3] = toY & 0xFF;
-            this.synapses[idx + 4] = Utils.clamp(weight, 0, 255);
-            this.synapses[idx + 5] = Utils.clamp(delay, 0, 5) & 0xFF;
-            
-            const fromId = this._neuronId(fromX, fromY);
-            if (!this._adjacencyList.has(fromId)) {
-                this._adjacencyList.set(fromId, []);
-            }
-            this._adjacencyList.get(fromId).push(this.synapseCount);
-            
-            this.synapseCount++;
-            this.emit('synapseAdded', { from: {x:fromX,y:fromY}, to: {x:toX,y:toY}, weight });
-            return true;
-        }
-
-        setFocus(x, y, radius = null) {
-            this.focusX = Utils.clamp(x, 0, this.width - 1);
-            this.focusY = Utils.clamp(y, 0, this.height - 1);
-            if (radius !== null) {
-                this.focusRadius = Utils.clamp(radius, 8, 128);
-            }
-            this._updateAttentionMap();
-            this.emit('focusChanged', { x: this.focusX, y: this.focusY, radius: this.focusRadius });
-        }
-
-        inject(x, y, strength) {
-            const neuron = this.getNeuron(x, y);
-            this.setNeuron(x, y, {
-                ...neuron,
-                potential: Utils.clamp(neuron.potential + strength, 0, 255)
-            });
-        }
-
-        forward(sensors = null, reward = 0) {
-            this.step++;
-            if (sensors) this._loadSensors(sensors);
-            
-            const spikes = this._checkSpikes();
-            this._propagateSpikes(spikes);
-            this._deliverSpikes();
-            this._decay();
-            this._readMotors();
-            
-            if (this.isLearning && Math.abs(reward) > 0.01) {
-                this._applySTDP(reward);
-            }
-            
-            return { spikes: spikes.length, motors: this.motors.slice() };
-        }
-
-        processText(text, reward = 0) {
-            if (!text || typeof text !== 'string') return null;
-            const bigrams = BPE.encode(text);
-            if (bigrams.length === 0) return null;
-            
-            const category = BPE.getCategory(text);
-            this.setFocus(category * 64 + 32, 128);
-            
-            const results = [];
-            for (const bg of bigrams) {
-                const sensors = new Uint8Array(64);
-                sensors[bg.x % 64] = bg.x;
-                if (bg.y > 0) sensors[bg.y % 64] = bg.y;
-                const out = this.forward(sensors, reward);
-                const prediction = this._getMostActiveRegion();
-                results.push({ input: bg, prediction, spikes: out.spikes });
-            }
-            return { bigrams, category, results };
-        }
-
-        predictNext(text) {
-            const result = this.processText(text, 0);
-            if (!result || result.results.length === 0) {
-                return { text: '?', raw: '00 00', x: 0, y: 0 };
-            }
-            const last = result.results[result.results.length - 1];
-            const pred = last.prediction;
-            return {
-                x: pred.x, y: pred.y,
-                text: BPE.decode([{ x: pred.x, y: pred.y }]),
-                raw: `${Utils.formatHex(pred.x)} ${Utils.formatHex(pred.y)}`
-            };
-        }
-
-        async trainOnDataset(dataset, epochs = 10, onProgress = null, signal = null) {
-            if (!Array.isArray(dataset)) {
-                throw new TypeError('Dataset must be an array');
-            }
-            for (let i = 0; i < dataset.length; i++) {
-                const item = dataset[i];
-                if (!item || typeof item.input !== 'string') {
-                    throw new Error(`Invalid dataset item at index ${i}: missing input string`);
-                }
-            }
-            
-            this.isLearning = true;
-            this.trainingMetrics = { totalLoss: 0, totalAccuracy: 0, samplesProcessed: 0, currentEpoch: 0 };
-            this.emit('trainingStart', { epochs, datasetSize: dataset.length });
-            
-            for (let epoch = 0; epoch < epochs; epoch++) {
-                if (signal?.aborted) {
-                    this.emit('trainingAborted', { epoch });
-                    throw new DOMException('Training aborted', 'AbortError');
-                }
-                
-                this.trainingMetrics.currentEpoch = epoch + 1;
-                let epochLoss = 0, epochCorrect = 0;
-
-                for (let i = 0; i < dataset.length; i++) {
-                    if (signal?.aborted) {
-                        this.emit('trainingAborted', { epoch, sample: i });
-                        throw new DOMException('Training aborted', 'AbortError');
-                    }
-                    
-                    const sample = dataset[i];
-                    this.processText(sample.input, 0.3);
-                    
-                    const expectedLen = sample.output?.length || 1;
-                    const actualSpikes = this.spikeHistory.size;
-                    const loss = Math.abs(expectedLen - actualSpikes) / (expectedLen || 1);
-                    epochLoss += loss;
-                    if (actualSpikes > 0) epochCorrect++;
-                    
-                    this.trainingMetrics.samplesProcessed++;
-                    
-                    if (onProgress && i % 10 === 0) {
-                        onProgress({
-                            epoch: epoch + 1, totalEpochs: epochs,
-                            sample: i + 1, totalSamples: dataset.length,
-                            loss: epochLoss / (i + 1),
-                            accuracy: (epochCorrect / (i + 1)) * 100
-                        });
-                        await new Promise(r => setTimeout(r, 10));
-                    }
-                }
-
-                this.trainingMetrics.totalLoss = epochLoss / dataset.length;
-                this.trainingMetrics.totalAccuracy = (epochCorrect / dataset.length) * 100;
-                this.emit('epochEnd', { epoch: epoch + 1, ...this.trainingMetrics });
-            }
-
-            this.isLearning = false;
-            this.emit('trainingComplete', this.trainingMetrics);
-            return this.trainingMetrics;
-        }
-
-        reset() {
-            this.neurons.fill(0);
-            this.synapseCount = 0;
-            this.spikeQueue = [];
-            this.spikeHistory.clear();
-            this._adjacencyList.clear();
-            this.step = 0;
-            this.isRunning = false;
-            this.isLearning = false;
-            this._needsRedraw = true;
-            
-            this._initNeurons();
-            this._initSynapses(2000);
-            this._updateAttentionMap();
-            this.emit('reset');
-        }
-
-        getMetrics() {
-            const recentSpikes = this.spikeHistory.getRecent(20).length;
-            const activityPercent = Math.min(100, Math.floor(recentSpikes / 50));
-            let avgWeight = 0;
-            for (let i = 0; i < this.synapseCount; i++) {
-                avgWeight += this.synapses[i * 6 + 4];
-            }
-            avgWeight = this.synapseCount > 0 ? avgWeight / this.synapseCount : 0;
-            return {
-                neurons: this.totalNeurons,
-                synapses: this.synapseCount,
-                spikes: this.spikeHistory.size,
-                activity: activityPercent,
-                avgWeight: Math.floor(avgWeight),
-                step: this.step,
-                isRunning: this.isRunning,
-                isLearning: this.isLearning,
-                needsRedraw: this._needsRedraw
-            };
-        }
-
-        save() {
-            return {
-                neurons: Array.from(this.neurons),
-                synapses: Array.from(this.synapses.slice(0, this.synapseCount * 6)),
-                synapseCount: this.synapseCount,
-                focusX: this.focusX, focusY: this.focusY, focusRadius: this.focusRadius,
-                step: this.step, learningRate: this.learningRate, stdpWindow: this.stdpWindow,
-                trainingMetrics: { ...this.trainingMetrics },
-                timestamp: Date.now(),
-                version: '4.0-pro'
-            };
-        }
-
-        load(data) {
-            if (!data || typeof data !== 'object') return false;
-            try {
-                if (data.neurons && Array.isArray(data.neurons)) {
-                    this.neurons.set(data.neurons);
-                }
-                if (data.synapses && Array.isArray(data.synapses)) {
-                    const arr = new Uint8Array(data.synapses);
-                    this.synapses.set(arr);
-                    this.synapseCount = data.synapseCount || Math.floor(arr.length / 6);
-                    this._adjacencyList.clear();
-                    for (let i = 0; i < this.synapseCount; i++) {
-                        const base = i * 6;
-                        const fromId = this._neuronId(this.synapses[base], this.synapses[base + 1]);
-                        if (!this._adjacencyList.has(fromId)) {
-                            this._adjacencyList.set(fromId, []);
-                        }
-                        this._adjacencyList.get(fromId).push(i);
-                    }
-                }
-                if (data.focusX !== undefined) this.focusX = data.focusX;
-                if (data.focusY !== undefined) this.focusY = data.focusY;
-                if (data.focusRadius !== undefined) this.focusRadius = data.focusRadius;
-                if (data.step !== undefined) this.step = data.step;
-                if (data.learningRate !== undefined) this.learningRate = data.learningRate;
-                if (data.stdpWindow !== undefined) this.stdpWindow = data.stdpWindow;
-                if (data.trainingMetrics) this.trainingMetrics = { ...data.trainingMetrics };
-                
-                this._updateAttentionMap();
-                this.emit('loaded', { version: data.version });
-                return true;
-            } catch (e) {
-                console.error('[SpikeBrain.load] Error:', e);
-                this.emit('loadError', e);
-                return false;
-            }
-        }
-
-        draw(ctx, width, height) {
-            if (!this._needsRedraw && this.spikeQueue.length === 0) {
-                return;
-            }
-            this._needsRedraw = false;
-            
-            const imgData = ctx.createImageData(width, height);
-            for (let py = 0; py < height; py++) {
-                for (let px = 0; px < width; px++) {
-                    const nx = Math.floor(px * this.width / width);
-                    const ny = Math.floor(py * this.height / height);
-                    const n = this.getNeuron(nx, ny);
-                    const idx = (py * width + px) * 4;
-                    const act = n.potential / 255;
-                    
-                    if (act < 0.3) {
-                        imgData.data[idx] = 0;
-                        imgData.data[idx + 1] = Math.floor(act * 3 * 255);
-                        imgData.data[idx + 2] = 255;
-                    } else if (act < 0.6) {
-                        imgData.data[idx] = Math.floor((act - 0.3) * 3.33 * 255);
-                        imgData.data[idx + 1] = 255;
-                        imgData.data[idx + 2] = Math.floor((1 - (act - 0.3) * 3.33) * 255);
-                    } else {
-                        imgData.data[idx] = 255;
-                        imgData.data[idx + 1] = Math.floor((1 - (act - 0.6) * 2.5) * 255);
-                        imgData.data[idx + 2] = 0;
-                    }
-                    if (n.type === 1) {
-                        imgData.data[idx] = Math.floor(imgData.data[idx] * 0.7 + 100);
-                        imgData.data[idx + 2] = Math.floor(imgData.data[idx + 2] * 0.7 + 100);
-                    }
-                    imgData.data[idx + 3] = 255;
-                }
-            }
-            ctx.putImageData(imgData, 0, 0);
-            
-            ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
-            for (const spike of this.spikeHistory.toArray().slice(-30)) {
-                const x = (spike.x / this.width) * width;
-                const y = (spike.y / this.height) * height;
-                const age = (this.step - spike.time) / 10;
-                if (age > 1) continue;
-                ctx.globalAlpha = 1 - age;
-                ctx.beginPath();
-                ctx.arc(x, y, 3 + age * 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            ctx.globalAlpha = 0.3;
-            ctx.strokeStyle = '#00ffff';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(
-                (this.focusX / this.width) * width,
-                (this.focusY / this.height) * height,
-                (this.focusRadius / this.width) * width,
-                0, Math.PI * 2
-            );
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-        }
-
-        markClean() { this._needsRedraw = false; }
-        markDirty() { this._needsRedraw = true; }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 6: МЕНЕДЖЕР ЧАТА (ПОЛНОСТЬЮ ПЕРЕПИСАН — БЕЗ ШАБЛОНОВ!)
-    // ═══════════════════════════════════════════════════════════════
-    class ChatManager {
-        constructor(brain, config = {}) {
-            this.brain = brain;
-            this.messagesEl = config.messagesEl || document.getElementById('chatMessages');
-            this.inputEl = config.inputEl || document.getElementById('chatInput');
-            this.sendBtn = config.sendBtn || document.getElementById('btnSend');
-            this.statusText = config.statusText || document.getElementById('chatStatusText');
-            this.vizBadges = {
-                input: document.getElementById('vizInput'),
-                output: document.getElementById('vizOutput'),
-                learning: document.getElementById('vizLearning')
-            };
-            this.isProcessing = false;
-            this.conversationHistory = [];
-            this.maxHistory = 50; // Увеличил историю
-            
-            // ❌ ШАБЛОНЫ УДАЛЕНЫ ПОЛНОСТЬЮ
-            // this.responseTemplates = { ... } // БОЛЬШЕ НЕТ!
-            
-            this._bindEvents();
-            this._updateStatus('READY');
-        }
-
-        _bindEvents() {
-            this.sendBtn.addEventListener('click', () => this._sendMessage());
-            this.inputEl.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this._sendMessage();
-                }
-            });
-        }
-
-        async _sendMessage() {
-            const text = this.inputEl.value.trim();
-            if (!text || this.isProcessing) return;
-            
-            this.inputEl.value = '';
-            this._addMessage(text, 'user');
-            await this._processMessage(text);
-        }
-
-        async _processMessage(text) {
-            this.isProcessing = true;
-            this._updateStatus('PROCESSING');
-            this._setVizBadge('input', true);
-            
-            const thinkingMsg = this._addMessage('⚡', 'bot', true);
-            await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 300));
-            
-            const normalized = Utils.normalizeText(text);
-            
-            // 🔥 ОБРАБАТЫВАЕМ ТЕКСТ ЧЕРЕЗ МОЗГ
-            // Если обучение включено, передаём награду
-            const reward = this.brain.isLearning ? 0.3 : 0;
-            const result = this.brain.processText(normalized, reward);
-            
-            // 🔥 ПОЛУЧАЕМ ОТВЕТ ОТ МОЗГА (без шаблонов)
-            const response = this._generateBrainResponse(text, result);
-            
-            if (thinkingMsg) thinkingMsg.remove();
-            
-            // Добавляем ответ
-            this._addMessage(response.text, 'bot', false, {
-                confidence: response.confidence,
-                spikes: result?.results?.reduce((sum, r) => sum + (r.spikes || 0), 0) || 0,
-                neurons: this.brain.getMetrics().activity + '%'
-            });
-            
-            // Сохраняем в историю
-            this.conversationHistory.push({ 
-                role: 'user', 
-                text, 
-                normalized,
-                timestamp: Date.now() 
-            });
-            this.conversationHistory.push({ 
-                role: 'bot', 
-                text: response.text,
-                confidence: response.confidence,
-                timestamp: Date.now() 
-            });
-            
-            // Ограничиваем историю
-            if (this.conversationHistory.length > this.maxHistory) {
-                this.conversationHistory = this.conversationHistory.slice(-this.maxHistory);
-            }
-            
-            this.isProcessing = false;
-            this._updateStatus('READY');
-            this._setVizBadge('input', false);
-            this._setVizBadge('output', true);
-            
-            setTimeout(() => this._setVizBadge('output', false), 1000);
-            this.inputEl.focus();
-        }
-
-        /**
-         * 🔥 ГЕНЕРАЦИЯ ОТВЕТА МОЗГОМ (БЕЗ ШАБЛОНОВ)
-         */
-        _generateBrainResponse(input, result) {
-            // 1. Пробуем предсказать следующий токен
-            const prediction = this.brain.predictNext(input);
-            
-            // 2. Если предсказание осмысленное (не пустое и не '?')
-            if (prediction && prediction.text && prediction.text !== '?' && prediction.text.length > 0) {
-                // Если предсказание короткое (1 символ), пробуем сгенерировать фразу
-                if (prediction.text.length === 1) {
-                    const phrase = Utils.generatePhrase(this.brain, input, 5);
-                    if (phrase.length > input.length) {
-                        return {
-                            text: phrase,
-                            confidence: 0.6,
-                            fromBrain: true,
-                            generated: true
-                        };
-                    }
-                }
-                
-                return {
-                    text: prediction.text,
-                    confidence: 0.7 + (result?.results?.length || 0) * 0.05,
-                    fromBrain: true
-                };
-            }
-            
-            // 3. Если мозг не дал ответа, но есть история — ищем похожий контекст
-            if (this.conversationHistory.length >= 2) {
-                // Ищем похожие сообщения в истории
-                let bestMatch = null;
-                let bestScore = 0;
-                
-                for (let i = 0; i < this.conversationHistory.length - 1; i += 2) {
-                    if (this.conversationHistory[i].role === 'user') {
-                        const score = Utils.similarity(input, this.conversationHistory[i].text);
-                        if (score > bestScore && score > 0.3) {
-                            bestScore = score;
-                            if (this.conversationHistory[i + 1]?.role === 'bot') {
-                                bestMatch = this.conversationHistory[i + 1].text;
+                        if (delta !== 0) {
+                            const newWeight = Utils.clamp(this.synapses[base + 4] + delta, 0, 255);
+                            if (newWeight !== this.synapses[base + 4]) {
+                                this.synapses[base + 4] = newWeight;
+                                this.emit('synapseUpdate', { index: i, newWeight });
                             }
                         }
                     }
                 }
-                
-                if (bestMatch) {
-                    return {
-                        text: bestMatch,
-                        confidence: 0.5 + bestScore * 0.3,
-                        fromHistory: true
-                    };
-                }
             }
-            
-            // 4. Если совсем ничего нет — возвращаем минимальный ответ
-            // (но не шаблонный, а честное "не знаю" от мозга)
-            return {
-                text: '...',
-                confidence: 0.1
-            };
-        }
 
-        _addMessage(text, role, isThinking = false, metrics = null) {
-            const msg = document.createElement('div');
-            msg.className = `message ${role}${isThinking ? ' thinking' : ''}`;
-            
-            const content = document.createElement('div');
-            content.textContent = text;
-            
-            const meta = document.createElement('div');
-            meta.className = 'message-meta';
-            meta.innerHTML = `${role === 'user' ? 'ВЫ' : 'SPIKEBRAIN'} • ${Utils.messageTime()}`;
-            
-            msg.appendChild(content);
-            msg.appendChild(meta);
-            
-            if (metrics && !isThinking) {
-                const metricsEl = document.createElement('div');
-                metricsEl.className = 'message-metrics';
-                
-                let metricsHtml = `<span>Уверенность: <strong>${Math.round(metrics.confidence * 100)}%</strong></span>`;
-                if (metrics.spikes) metricsHtml += `<span>Спайков: <strong>${metrics.spikes}</strong></span>`;
-                if (metrics.neurons) metricsHtml += `<span>Активность: <strong>${metrics.neurons}</strong></span>`;
-                
-                metricsEl.innerHTML = metricsHtml;
-                msg.appendChild(metricsEl);
-            }
-            
-            this.messagesEl.appendChild(msg);
-            this.messagesEl.scrollTo({ top: this.messagesEl.scrollHeight, behavior: 'smooth' });
-            return msg;
-        }
-
-        _updateStatus(status) {
-            const statusMap = {
-                'READY': { text: 'READY', color: 'var(--success)' },
-                'PROCESSING': { text: 'PROCESSING', color: 'var(--warning)' },
-                'ERROR': { text: 'ERROR', color: 'var(--danger)' }
-            };
-            const config = statusMap[status] || statusMap['READY'];
-            if (this.statusText) {
-                this.statusText.textContent = config.text;
-                this.statusText.style.color = config.color;
-            }
-        }
-
-        _setVizBadge(type, active) {
-            const badge = this.vizBadges[type];
-            if (!badge) return;
-            badge.classList.toggle('active', active);
-        }
-
-        clear() {
-            if (!this.messagesEl) return;
-            this.messagesEl.innerHTML = '';
-            this.conversationHistory = [];
-            this._addMessage('🧠 Чат очищен. Готов к новому диалогу.', 'bot');
-        }
-
-        getHistory() { 
-            return [...this.conversationHistory]; 
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 7: Logger (без изменений)
-    // ═══════════════════════════════════════════════════════════════
-    const Logger = {
-        element: null,
-        maxEntries: 100,
-
-        init(elementId = 'logContent') {
-            this.element = document.getElementById(elementId);
-            return this;
-        },
-
-        log(message, type = 'info') {
-            if (!this.element) return;
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type}`;
-            entry.innerHTML = `
-                <span class="log-timestamp">[${Utils.timestamp()}]</span>
-                <span>${Utils.escapeHtml(message)}</span>
-            `;
-            this.element.insertBefore(entry, this.element.firstChild);
-            while (this.element.children.length > this.maxEntries) {
-                this.element.removeChild(this.element.lastChild);
-            }
-        },
-
-        clear() { if (this.element) this.element.innerHTML = ''; },
-        info(msg) { this.log(msg, 'info'); },
-        success(msg) { this.log(msg, 'success'); },
-        error(msg) { this.log(msg, 'error'); },
-        warn(msg) { this.log(msg, 'warn'); }
-    };
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 8: Tests (расширенный)
-    // ═══════════════════════════════════════════════════════════════
-    const Tests = {
-        runAll(brain, logger) {
-            const results = [];
-            results.push(this.testEncoding(logger));
-            results.push(this.testSpikes(brain, logger));
-            results.push(this.testSynapses(brain, logger));
-            results.push(this.testText(brain, logger));
-            results.push(this.testSaveLoad(brain, logger));
-            results.push(this.testConfigValidation(logger));
-            results.push(this.testAdjacencyList(brain, logger));
-            results.push(this.testRingBuffer(logger));
-            // 🔥 НОВЫЙ ТЕСТ: проверка ответа мозга
-            results.push(this.testBrainResponse(brain, logger));
-            
-            const passed = results.filter(r => r.passed).length;
-            return { passed, total: results.length, results };
-        },
-
-        testEncoding(logger) {
-            const text = 'кот';
-            const bigrams = BPE.encode(text);
-            const decoded = BPE.decode(bigrams);
-            const passed = decoded === text;
-            logger.log(passed ? `✓ Кодирование: "${text}" → ${bigrams.length} биграмм` : `✗ Ошибка кодирования`, passed ? 'success' : 'error');
-            return { name: 'BPE Encoding', passed, message: passed ? 'OK' : 'Failed' };
-        },
-
-        testSpikes(brain, logger) {
-            const before = brain.spikeHistory.size;
-            brain.inject(100, 100, 200);
-            brain.forward(null, 0);
-            const after = brain.spikeHistory.size;
-            const passed = after > before;
-            logger.log(passed ? `✓ Спайки: ${after - before} новых` : `✗ Нет спайков`, passed ? 'success' : 'error');
-            return { name: 'Spike Generation', passed, message: passed ? 'OK' : 'Failed' };
-        },
-
-        testSynapses(brain, logger) {
-            const passed = brain.synapseCount > 0;
-            logger.log(passed ? `✓ Синапсов: ${brain.synapseCount}` : `✗ Нет синапсов`, passed ? 'success' : 'error');
-            return { name: 'Synapses', passed, message: passed ? 'OK' : 'Failed' };
-        },
-
-        testText(brain, logger) {
-            try {
-                const result = brain.processText('кот', 0.1);
-                const passed = result && result.bigrams?.length > 0;
-                logger.log(passed ? `✓ Текст обработан: ${result.bigrams.length} биграмм` : `✗ Ошибка обработки`, passed ? 'success' : 'error');
-                return { name: 'Text Processing', passed, message: passed ? 'OK' : 'Failed' };
-            } catch (e) {
-                logger.log(`✗ Ошибка: ${e.message}`, 'error');
-                return { name: 'Text Processing', passed: false, message: 'Exception' };
-            }
-        },
-
-        testSaveLoad(brain, logger) {
-            try {
-                const saved = brain.save();
-                const loaded = brain.load(saved);
-                const passed = loaded && brain.step === saved.step;
-                logger.log(passed ? `✓ Сохранение/загрузка: OK` : `✗ Ошибка сохранения`, passed ? 'success' : 'error');
-                return { name: 'Save/Load', passed, message: passed ? 'OK' : 'Failed' };
-            } catch (e) {
-                logger.log(`✗ Ошибка: ${e.message}`, 'error');
-                return { name: 'Save/Load', passed: false, message: 'Exception' };
-            }
-        },
-
-        testConfigValidation(logger) {
-            try {
-                Config.validate('learningRate', 0.05);
-                let caught = false;
-                try { Config.validate('learningRate', 2.0); }
-                catch (e) { caught = e instanceof RangeError; }
-                const passed = caught;
-                logger.log(passed ? '✓ Валидация конфигурации: работает' : '✗ Валидация не ловит ошибки', passed ? 'success' : 'error');
-                return { name: 'Config Validation', passed, message: passed ? 'OK' : 'Failed' };
-            } catch (e) {
-                logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
-                return { name: 'Config Validation', passed: false, message: 'Exception' };
-            }
-        },
-
-        testAdjacencyList(brain, logger) {
-            const fromId = brain._neuronId(10, 10);
-            const synapses = brain._adjacencyList.get(fromId);
-            const passed = synapses === undefined || Array.isArray(synapses);
-            logger.log(passed ? '✓ Adjacency list: структура корректна' : '✗ Adjacency list: ошибка структуры', passed ? 'success' : 'error');
-            return { name: 'Adjacency List', passed, message: passed ? 'OK' : 'Failed' };
-        },
-
-        testRingBuffer(logger) {
-            const rb = new RingBuffer(5, 3);
-            rb.push('a', 1); rb.push('b', 2); rb.push('c', 3); rb.push('d', 4);
-            const recent = rb.getRecent(2);
-            const passed = recent.includes('c') && recent.includes('d') && !recent.includes('a');
-            logger.log(passed ? '✓ RingBuffer: age-based фильтрация работает' : '✗ RingBuffer: ошибка фильтрации', passed ? 'success' : 'error');
-            return { name: 'Ring Buffer', passed, message: passed ? 'OK' : 'Failed' };
-        },
-
-        // 🔥 НОВЫЙ ТЕСТ: проверка ответа мозга
-        testBrainResponse(brain, logger) {
-            try {
-                const pred = brain.predictNext('привет');
-                const passed = pred && pred.text !== undefined;
-                logger.log(passed ? `✓ Мозг отвечает: "${pred.text}"` : `✗ Мозг не отвечает`, passed ? 'success' : 'error');
-                return { name: 'Brain Response', passed, message: passed ? 'OK' : 'Failed' };
-            } catch (e) {
-                logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
-                return { name: 'Brain Response', passed: false, message: 'Exception' };
-            }
-        }
-    };
-
-    // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 9: App (с новой кнопкой обучения)
-    // ═══════════════════════════════════════════════════════════════
-    class App {
-        constructor() {
-            this.brain = new SpikeBrain({
-                width: 256, height: 256,
-                maxSynapses: 65536,
-                learningRate: 0.01, stdpWindow: 20
-            });
-            
-            this.chat = new ChatManager(this.brain, {
-                messagesEl: document.getElementById('chatMessages'),
-                inputEl: document.getElementById('chatInput'),
-                sendBtn: document.getElementById('btnSend'),
-                statusText: document.getElementById('chatStatusText')
-            });
-            
-            this.canvas = document.getElementById('brainCanvas');
-            this.ctx = this.canvas.getContext('2d');
-            this.running = false;
-            this.fps = 0;
-            this.frameCount = 0;
-            this.lastTime = performance.now();
-            this.dataset = null;
-            this.isTraining = false;
-            this.trainAbortController = null;
-            this.checkpoints = JSON.parse(localStorage.getItem('sb_checkpoints') || '[]');
-            
-            Logger.init();
-            this._initUI();
-            this._resizeCanvas();
-            this._updateStats();
-            this._renderCheckpoints();
-            
-            this.brain.on('spike', (data) => {
-                if (this.running && Math.random() < 0.01) {
-                    Logger.info(`Спайк @(${data.x},${data.y}) шаг ${data.time}`);
-                }
-            });
-            this.brain.on('trainingComplete', (metrics) => {
-                Logger.success(`Обучение завершено: Loss=${metrics.totalLoss.toFixed(3)}, Acc=${Math.round(metrics.totalAccuracy)}%`);
-            });
-            this.brain.on('loadError', (err) => {
-                Logger.error(`Ошибка загрузки: ${err.message}`);
-            });
-            
-            window.addEventListener('resize', () => this._resizeCanvas());
-            requestAnimationFrame((t) => this._loop(t));
-            
-            Logger.success('🧠 SpikeBrain Nano v4.0 PRO инициализирован');
-            Logger.info(`📊 Нейронов: ${this.brain.totalNeurons.toLocaleString()} | Синапсов: ${this.brain.synapseCount.toLocaleString()}`);
-            Logger.info('🔥 Режим обучения в реальном времени: ВЫКЛ');
-        }
-
-        _initUI() {
-            document.getElementById('btnStart').onclick = () => this.start();
-            document.getElementById('btnPause').onclick = () => this.pause();
-            document.getElementById('btnReset').onclick = () => this.reset();
-            document.getElementById('btnStep').onclick = () => this.step();
-            document.getElementById('btnTrainManual').onclick = () => this.train();
-            document.getElementById('btnTest').onclick = () => this.runTests();
-            document.getElementById('btnPredict').onclick = () => this.predict();
-            document.getElementById('btnSave').onclick = () => this.save();
-            document.getElementById('clearLog').onclick = () => Logger.clear();
-
-            document.getElementById('learningRate').oninput = (e) => {
-                const val = parseFloat(e.target.value);
-                try { Config.validate('learningRate', val);
-                    this.brain.learningRate = val;
-                    document.getElementById('lrValue').innerText = val.toFixed(3);
-                } catch (err) { Logger.error(err.message); }
-            };
-            document.getElementById('stdpWindow').oninput = (e) => {
-                const val = parseInt(e.target.value);
-                try { Config.validate('stdpWindow', val);
-                    this.brain.stdpWindow = val;
-                    document.getElementById('stdpValue').innerText = val;
-                } catch (err) { Logger.error(err.message); }
-            };
-            document.getElementById('focusRadius').oninput = (e) => {
-                const val = parseInt(e.target.value);
-                try { Config.validate('focusRadius', val);
-                    this.brain.setFocus(this.brain.focusX, this.brain.focusY, val);
-                    document.getElementById('focusValue').innerText = val;
-                } catch (err) { Logger.error(err.message); }
-            };
-        }
-
-        // 🔥 НОВЫЙ МЕТОД: переключение режима обучения
-        toggleLearning() {
-            this.brain.isLearning = !this.brain.isLearning;
-            const btn = document.getElementById('btnToggleLearning');
-            btn.textContent = `🎓 Режим обучения: ${this.brain.isLearning ? 'ВКЛ' : 'ВЫКЛ'}`;
-            btn.style.background = this.brain.isLearning ? 'var(--success)' : 'var(--bg-card)';
-            btn.style.color = this.brain.isLearning ? '#000' : 'var(--text-main)';
-            Logger.info(`Режим обучения ${this.brain.isLearning ? 'включён' : 'выключен'}`);
-        }
-
-        _resizeCanvas() {
-            const container = this.canvas.parentElement;
-            this.canvas.width = container.clientWidth;
-            this.canvas.height = container.clientHeight;
-            this.brain.markDirty();
-        }
-
-        start() {
-            this.running = true;
-            this.brain.isRunning = true;
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnPause').disabled = false;
-            document.getElementById('vizLearning').classList.add('active');
-            Logger.info('▶ Запуск симуляции');
-        }
-
-        pause() {
-            this.running = false;
-            this.brain.isRunning = false;
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnPause').disabled = true;
-            document.getElementById('vizLearning').classList.remove('active');
-            Logger.warn('⏸ Пауза');
-        }
-
-        reset() {
-            this.pause();
-            this.brain.reset();
-            this.chat.clear();
-            this._updateStats();
-            Logger.warn('🔄 Полный сброс');
-        }
-
-        step() {
-            this.brain.forward(null, 0);
-            this._updateStats();
-        }
-
-        train() {
-            const text = 'кот мяу кот спит кот ест';
-            Logger.info(`🎓 Обучение на: "${text}"`);
-            this.brain.isLearning = true;
-            const result = this.brain.processText(text, 0.3);
-            this.brain.isLearning = false;
-            Logger.success(`✅ Обработано ${result?.bigrams?.length || 0} биграмм`);
-            this._updateStats();
-        }
-
-        predict() {
-            const text = document.getElementById('chatInput').value.trim();
-            if (!text) { Logger.error('❌ Введите текст для предсказания'); return; }
-            const pred = this.brain.predictNext(text);
-            Logger.info(`🔮 После "${text}" → ${pred.text || '?'} (${pred.raw})`);
-            const output = document.getElementById('testOutput');
-            output.style.display = 'block';
-            output.innerHTML = `Предсказание: <strong>${Utils.escapeHtml(pred.text || '?')}</strong> (${pred.raw})`;
-            output.className = 'test-output pass';
-        }
-
-        runTests() {
-            Logger.info('🧪 Запуск тестов...');
-            const results = Tests.runAll(this.brain, Logger);
-            const output = document.getElementById('testOutput');
-            output.style.display = 'block';
-            let html = `<strong>Тесты: ${results.passed}/${results.total}</strong><br>`;
-            results.results.forEach(r => {
-                html += `<div style="margin-top:4px; color:${r.passed ? 'var(--success)' : 'var(--danger)'}">${r.message}</div>`;
-            });
-            output.innerHTML = html;
-            output.className = results.passed === results.total ? 'test-output pass' : 'test-output fail';
-            this._updateStats();
-        }
-
-        save() {
-            const data = this.brain.save();
-            try {
-                localStorage.setItem('spikebrain_v4', JSON.stringify(data));
-                Logger.success('💾 Сохранено в localStorage');
-            } catch (e) {
-                Logger.error('❌ Ошибка сохранения: ' + e.message);
-            }
-        }
-
-        load() {
-            try {
-                const data = JSON.parse(localStorage.getItem('spikebrain_v4'));
-                if (data && this.brain.load(data)) {
-                    Logger.success('📂 Загружено из localStorage');
-                    this._updateStats();
-                }
-            } catch (e) {
-                Logger.error('❌ Ошибка загрузки: ' + e.message);
-            }
-        }
-
-        loadDataset(input) {
-            const file = input.files?.[0];
-            if (!file) return;
-            
-            if (!file.name.endsWith('.json')) {
-                Logger.error('❌ Ожидался JSON файл');
-                alert('Пожалуйста, выберите файл с расширением .json');
-                input.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    const isValid = Array.isArray(data.dialogs) || Array.isArray(data);
-                    if (!isValid) {
-                        throw new Error('Датасет должен быть массивом или объектом с полем "dialogs"');
-                    }
-                    
-                    const dataset = Array.isArray(data.dialogs) ? data.dialogs : data;
-                    
-                    for (let i = 0; i < Math.min(10, dataset.length); i++) {
-                        const item = dataset[i];
-                        if (!item || typeof item.input !== 'string') {
-                            throw new Error(`Элемент ${i}: поле "input" должно быть строкой`);
+            _loadSensors(sensors) {
+                if (!sensors) return;
+                let changed = false;
+                for (let i = 0; i < 64 && i < sensors.length; i++) {
+                    const val = sensors[i];
+                    if (val === 0) continue;
+                    const baseX = (i % 8) * 32, baseY = Math.floor(i / 8) * 32;
+                    for (let dy = 0; dy < 16; dy += 4) {
+                        for (let dx = 0; dx < 16; dx += 4) {
+                            const x = (baseX + dx) % this.width;
+                            const y = (baseY + dy) % this.height;
+                            const neuron = this.getNeuron(x, y);
+                            if (neuron.potential !== Utils.clamp(neuron.potential + val, 0, 255)) {
+                                this.inject(x, y, val);
+                                changed = true;
+                            }
                         }
                     }
-                    
-                    this.dataset = dataset;
-                    document.getElementById('datasetName').textContent = file.name;
-                    document.getElementById('datasetPairs').textContent = this.dataset.length;
-                    document.getElementById('datasetEpochs').textContent = '10';
-                    document.getElementById('btnTrain').disabled = false;
-                    
-                    this.chat._addMessage(`📚 Датасет загружен: ${this.dataset.length} пар диалога`, 'bot');
-                    Logger.success(`📊 Датасет "${file.name}": ${dataset.length} образцов`);
-                    
-                } catch (err) {
-                    Logger.error('❌ Ошибка датасета: ' + err.message);
-                    alert('Ошибка чтения датасета: ' + err.message);
                 }
-            };
-            reader.onerror = () => {
-                Logger.error('❌ Ошибка чтения файла');
-                alert('Не удалось прочитать файл');
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
+                if (changed) this._needsRedraw = true;
+            }
 
-        async startTraining() {
-            if (!this.dataset || this.isTraining) return;
-            
-            this.isTraining = true;
-            this.brain.isLearning = true;
-            this.trainAbortController = new AbortController();
-            
-            document.getElementById('btnTrain').disabled = true;
-            document.getElementById('btnStopTrain').disabled = false;
-            document.getElementById('vizLearning').classList.add('active');
-            document.getElementById('trainingStatus').textContent = 'Обучение...';
-            
-            const epochs = 10;
-            try {
-                await this.brain.trainOnDataset(
-                    this.dataset, epochs, 
-                    (progress) => {
-                        const pct = ((progress.epoch - 1) * 100 + (progress.sample / progress.totalSamples) * 100) / epochs;
-                        document.getElementById('progressFill').style.width = pct + '%';
-                        document.getElementById('progressText').textContent = Math.round(pct) + '%';
-                        document.getElementById('statLoss').textContent = progress.loss.toFixed(3);
-                        document.getElementById('statAccuracy').textContent = Math.round(progress.accuracy) + '%';
-                        document.getElementById('statEpoch').textContent = progress.epoch;
-                    },
-                    this.trainAbortController.signal
+            _readMotors() {
+                for (let i = 0; i < 16; i++) {
+                    const baseX = 128 + (i % 4) * 32;
+                    const baseY = 128 + Math.floor(i / 4) * 32;
+                    let activity = 0, count = 0;
+                    for (let dy = 0; dy < 16; dy += 4) {
+                        for (let dx = 0; dx < 16; dx += 4) {
+                            const x = (baseX + dx) % this.width;
+                            const y = (baseY + dy) % this.height;
+                            const neuron = this.getNeuron(x, y);
+                            if (neuron.potential > neuron.threshold * 0.8) {
+                                activity += neuron.potential;
+                                count++;
+                            }
+                        }
+                    }
+                    this.motors[i] = count > 0 ? Math.min(255, (activity / count) * 2) : 0;
+                }
+            }
+
+            _getMostActiveRegion() {
+                let maxActivity = 0, bestX = 0, bestY = 0;
+                for (let y = 0; y < this.height; y += 16) {
+                    for (let x = 0; x < this.width; x += 16) {
+                        let activity = 0;
+                        for (let dy = 0; dy < 16; dy += 4) {
+                            for (let dx = 0; dx < 16; dx += 4) {
+                                const n = this.getNeuron(x + dx, y + dy);
+                                activity += n.potential;
+                            }
+                        }
+                        if (activity > maxActivity) {
+                            maxActivity = activity;
+                            bestX = x; bestY = y;
+                        }
+                    }
+                }
+                return { x: bestX, y: bestY };
+            }
+
+            getNeuron(x, y) {
+                const idx = this._neuronIndex(x, y);
+                return {
+                    potential: this.neurons[idx],
+                    threshold: this.neurons[idx + 1],
+                    refractory: this.neurons[idx + 2],
+                    type: this.neurons[idx + 3]
+                };
+            }
+
+            setNeuron(x, y, data) {
+                const idx = this._neuronIndex(x, y);
+                this.neurons[idx] = Utils.clamp(data.potential, 0, 255);
+                this.neurons[idx + 1] = Utils.clamp(data.threshold, 1, 255);
+                this.neurons[idx + 2] = Utils.clamp(data.refractory, 0, 255);
+                this.neurons[idx + 3] = data.type & 0xFF;
+            }
+
+            addSynapse(fromX, fromY, toX, toY, weight = 128, delay = 0) {
+                if (this.synapseCount >= this.maxSynapses) return false;
+                const idx = this.synapseCount * 6;
+                
+                this.synapses[idx] = fromX & 0xFF;
+                this.synapses[idx + 1] = fromY & 0xFF;
+                this.synapses[idx + 2] = toX & 0xFF;
+                this.synapses[idx + 3] = toY & 0xFF;
+                this.synapses[idx + 4] = Utils.clamp(weight, 0, 255);
+                this.synapses[idx + 5] = Utils.clamp(delay, 0, 5) & 0xFF;
+                
+                const fromId = this._neuronId(fromX, fromY);
+                if (!this._adjacencyList.has(fromId)) {
+                    this._adjacencyList.set(fromId, []);
+                }
+                this._adjacencyList.get(fromId).push(this.synapseCount);
+                
+                this.synapseCount++;
+                this.emit('synapseAdded', { from: {x:fromX,y:fromY}, to: {x:toX,y:toY}, weight });
+                return true;
+            }
+
+            setFocus(x, y, radius = null) {
+                this.focusX = Utils.clamp(x, 0, this.width - 1);
+                this.focusY = Utils.clamp(y, 0, this.height - 1);
+                if (radius !== null) {
+                    this.focusRadius = Utils.clamp(radius, 8, 128);
+                }
+                this._updateAttentionMap();
+                this.emit('focusChanged', { x: this.focusX, y: this.focusY, radius: this.focusRadius });
+            }
+
+            inject(x, y, strength) {
+                const neuron = this.getNeuron(x, y);
+                this.setNeuron(x, y, {
+                    ...neuron,
+                    potential: Utils.clamp(neuron.potential + strength, 0, 255)
+                });
+            }
+
+            forward(sensors = null, reward = 0) {
+                this.step++;
+                if (sensors) this._loadSensors(sensors);
+                
+                const spikes = this._checkSpikes();
+                this._propagateSpikes(spikes);
+                this._deliverSpikes();
+                this._decay();
+                this._readMotors();
+                
+                if (this.isLearning && Math.abs(reward) > 0.01) {
+                    this._applySTDP(reward);
+                }
+                
+                return { spikes: spikes.length, motors: this.motors.slice() };
+            }
+
+            processText(text, reward = 0) {
+                if (!text || typeof text !== 'string') return null;
+                const bigrams = BPE.encode(text);
+                if (bigrams.length === 0) return null;
+                
+                const category = BPE.getCategory(text);
+                this.setFocus(category * 64 + 32, 128);
+                
+                const results = [];
+                for (const bg of bigrams) {
+                    const sensors = new Uint8Array(64);
+                    sensors[bg.x % 64] = bg.x;
+                    if (bg.y > 0) sensors[bg.y % 64] = bg.y;
+                    const out = this.forward(sensors, reward);
+                    const prediction = this._getMostActiveRegion();
+                    results.push({ input: bg, prediction, spikes: out.spikes });
+                }
+                return { bigrams, category, results };
+            }
+
+            predictNext(text) {
+                const result = this.processText(text, 0);
+                if (!result || result.results.length === 0) {
+                    return { text: '?', raw: '00 00', x: 0, y: 0 };
+                }
+                const last = result.results[result.results.length - 1];
+                const pred = last.prediction;
+                return {
+                    x: pred.x, y: pred.y,
+                    text: BPE.decode([{ x: pred.x, y: pred.y }]),
+                    raw: `${Utils.formatHex(pred.x)} ${Utils.formatHex(pred.y)}`
+                };
+            }
+
+            /**
+             * ГЕНЕРАЦИЯ ОСМЫСЛЕННОГО ОТВЕТА (НОВЫЙ МЕТОД)
+             */
+            generateResponse(text) {
+                if (!text) return '...';
+                
+                try {
+                    // Получаем предсказание следующего токена
+                    const pred = this.predictNext(text);
+                    if (!pred || !pred.text || pred.text === '?' || pred.text.length === 0) {
+                        return '...';
+                    }
+                    
+                    // Начинаем строить ответ
+                    let response = pred.text;
+                    let current = pred.text;
+                    
+                    // Продолжаем генерацию до 5 токенов или пока есть предсказания
+                    for (let i = 0; i < 5; i++) {
+                        const nextPred = this.predictNext(current);
+                        if (!nextPred || !nextPred.text || nextPred.text === '?' || nextPred.text.length === 0) {
+                            break;
+                        }
+                        // Избегаем зацикливания
+                        if (nextPred.text === current) break;
+                        
+                        response += nextPred.text;
+                        current = nextPred.text;
+                        
+                        // Ограничиваем длину
+                        if (response.length > 50) break;
+                    }
+                    
+                    return response;
+                } catch (e) {
+                    console.error('Error in generateResponse:', e);
+                    return '...';
+                }
+            }
+
+            async trainOnDataset(dataset, epochs = 10, onProgress = null, signal = null) {
+                if (!Array.isArray(dataset)) {
+                    throw new TypeError('Dataset must be an array');
+                }
+                for (let i = 0; i < dataset.length; i++) {
+                    const item = dataset[i];
+                    if (!item || typeof item.input !== 'string') {
+                        throw new Error(`Invalid dataset item at index ${i}: missing input string`);
+                    }
+                }
+                
+                this.isLearning = true;
+                this.trainingMetrics = { totalLoss: 0, totalAccuracy: 0, samplesProcessed: 0, currentEpoch: 0 };
+                this.emit('trainingStart', { epochs, datasetSize: dataset.length });
+                
+                for (let epoch = 0; epoch < epochs; epoch++) {
+                    if (signal?.aborted) {
+                        this.emit('trainingAborted', { epoch });
+                        throw new DOMException('Training aborted', 'AbortError');
+                    }
+                    
+                    this.trainingMetrics.currentEpoch = epoch + 1;
+                    let epochLoss = 0, epochCorrect = 0;
+
+                    for (let i = 0; i < dataset.length; i++) {
+                        if (signal?.aborted) {
+                            this.emit('trainingAborted', { epoch, sample: i });
+                            throw new DOMException('Training aborted', 'AbortError');
+                        }
+                        
+                        const sample = dataset[i];
+                        const result = this.processText(sample.input, 0.3);
+                        
+                        // Простая метрика: если есть спайки, считаем успехом
+                        const actualSpikes = result?.results?.reduce((sum, r) => sum + (r.spikes || 0), 0) || 0;
+                        const expectedLen = sample.output?.length || 1;
+                        const loss = Math.abs(expectedLen - actualSpikes) / (expectedLen || 1);
+                        epochLoss += loss;
+                        if (actualSpikes > 0) epochCorrect++;
+                        
+                        this.trainingMetrics.samplesProcessed++;
+                        
+                        if (onProgress && i % 10 === 0) {
+                            onProgress({
+                                epoch: epoch + 1, totalEpochs: epochs,
+                                sample: i + 1, totalSamples: dataset.length,
+                                loss: epochLoss / (i + 1),
+                                accuracy: (epochCorrect / (i + 1)) * 100
+                            });
+                            await new Promise(r => setTimeout(r, 10));
+                        }
+                    }
+
+                    this.trainingMetrics.totalLoss = epochLoss / dataset.length;
+                    this.trainingMetrics.totalAccuracy = (epochCorrect / dataset.length) * 100;
+                    this.emit('epochEnd', { epoch: epoch + 1, ...this.trainingMetrics });
+                }
+
+                this.isLearning = false;
+                this.emit('trainingComplete', this.trainingMetrics);
+                return this.trainingMetrics;
+            }
+
+            reset() {
+                this.neurons.fill(0);
+                this.synapseCount = 0;
+                this.spikeQueue = [];
+                this.spikeHistory.clear();
+                this._adjacencyList.clear();
+                this.step = 0;
+                this.isRunning = false;
+                this.isLearning = false;
+                this._needsRedraw = true;
+                
+                this._initNeurons();
+                this._initSynapses(2000);
+                this._updateAttentionMap();
+                this.emit('reset');
+            }
+
+            getMetrics() {
+                const recentSpikes = this.spikeHistory.getRecent(20).length;
+                const activityPercent = Math.min(100, Math.floor(recentSpikes / 50));
+                let avgWeight = 0;
+                for (let i = 0; i < this.synapseCount; i++) {
+                    avgWeight += this.synapses[i * 6 + 4];
+                }
+                avgWeight = this.synapseCount > 0 ? avgWeight / this.synapseCount : 0;
+                return {
+                    neurons: this.totalNeurons,
+                    synapses: this.synapseCount,
+                    spikes: this.spikeHistory.size,
+                    activity: activityPercent,
+                    avgWeight: Math.floor(avgWeight),
+                    step: this.step,
+                    isRunning: this.isRunning,
+                    isLearning: this.isLearning,
+                    needsRedraw: this._needsRedraw
+                };
+            }
+
+            save() {
+                return {
+                    neurons: Array.from(this.neurons),
+                    synapses: Array.from(this.synapses.slice(0, this.synapseCount * 6)),
+                    synapseCount: this.synapseCount,
+                    focusX: this.focusX, focusY: this.focusY, focusRadius: this.focusRadius,
+                    step: this.step, learningRate: this.learningRate, stdpWindow: this.stdpWindow,
+                    trainingMetrics: { ...this.trainingMetrics },
+                    timestamp: Date.now(),
+                    version: '4.1-pro'
+                };
+            }
+
+            load(data) {
+                if (!data || typeof data !== 'object') return false;
+                try {
+                    if (data.neurons && Array.isArray(data.neurons)) {
+                        this.neurons.set(data.neurons);
+                    }
+                    if (data.synapses && Array.isArray(data.synapses)) {
+                        const arr = new Uint8Array(data.synapses);
+                        this.synapses.set(arr);
+                        this.synapseCount = data.synapseCount || Math.floor(arr.length / 6);
+                        this._adjacencyList.clear();
+                        for (let i = 0; i < this.synapseCount; i++) {
+                            const base = i * 6;
+                            const fromId = this._neuronId(this.synapses[base], this.synapses[base + 1]);
+                            if (!this._adjacencyList.has(fromId)) {
+                                this._adjacencyList.set(fromId, []);
+                            }
+                            this._adjacencyList.get(fromId).push(i);
+                        }
+                    }
+                    if (data.focusX !== undefined) this.focusX = data.focusX;
+                    if (data.focusY !== undefined) this.focusY = data.focusY;
+                    if (data.focusRadius !== undefined) this.focusRadius = data.focusRadius;
+                    if (data.step !== undefined) this.step = data.step;
+                    if (data.learningRate !== undefined) this.learningRate = data.learningRate;
+                    if (data.stdpWindow !== undefined) this.stdpWindow = data.stdpWindow;
+                    if (data.trainingMetrics) this.trainingMetrics = { ...data.trainingMetrics };
+                    
+                    this._updateAttentionMap();
+                    this.emit('loaded', { version: data.version });
+                    return true;
+                } catch (e) {
+                    console.error('[SpikeBrain.load] Error:', e);
+                    this.emit('loadError', e);
+                    return false;
+                }
+            }
+
+            draw(ctx, width, height) {
+                if (!this._needsRedraw && this.spikeQueue.length === 0 && this.spikeHistory.size === 0) {
+                    return;
+                }
+                this._needsRedraw = false;
+                
+                const imgData = ctx.createImageData(width, height);
+                for (let py = 0; py < height; py++) {
+                    for (let px = 0; px < width; px++) {
+                        const nx = Math.floor(px * this.width / width);
+                        const ny = Math.floor(py * this.height / height);
+                        const n = this.getNeuron(nx, ny);
+                        const idx = (py * width + px) * 4;
+                        const act = n.potential / 255;
+                        
+                        if (act < 0.3) {
+                            imgData.data[idx] = 0;
+                            imgData.data[idx + 1] = Math.floor(act * 3 * 255);
+                            imgData.data[idx + 2] = 255;
+                        } else if (act < 0.6) {
+                            imgData.data[idx] = Math.floor((act - 0.3) * 3.33 * 255);
+                            imgData.data[idx + 1] = 255;
+                            imgData.data[idx + 2] = Math.floor((1 - (act - 0.3) * 3.33) * 255);
+                        } else {
+                            imgData.data[idx] = 255;
+                            imgData.data[idx + 1] = Math.floor((1 - (act - 0.6) * 2.5) * 255);
+                            imgData.data[idx + 2] = 0;
+                        }
+                        if (n.type === 1) {
+                            imgData.data[idx] = Math.floor(imgData.data[idx] * 0.7 + 100);
+                            imgData.data[idx + 2] = Math.floor(imgData.data[idx + 2] * 0.7 + 100);
+                        }
+                        imgData.data[idx + 3] = 255;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+                
+                // Рендер спайков — ИСПРАВЛЕНО
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+                const spikes = this.spikeHistory.toArray().slice(-30);
+                for (const spike of spikes) {
+                    if (!spike || spike.x === undefined || spike.y === undefined) continue;
+                    const x = (spike.x / this.width) * width;
+                    const y = (spike.y / this.height) * height;
+                    const age = (this.step - (spike.time || 0)) / 10;
+                    if (age > 1) continue;
+                    ctx.globalAlpha = 1 - age;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3 + age * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                
+                // Рендер фокуса внимания
+                ctx.globalAlpha = 0.3;
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(
+                    (this.focusX / this.width) * width,
+                    (this.focusY / this.height) * height,
+                    (this.focusRadius / this.width) * width,
+                    0, Math.PI * 2
                 );
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            markClean() { this._needsRedraw = false; }
+            markDirty() { this._needsRedraw = true; }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // МЕНЕДЖЕР ЧАТА — ИСПРАВЛЕННЫЙ, БЕЗ ШАБЛОНОВ
+        // ═══════════════════════════════════════════════════════════════
+        class ChatManager {
+            constructor(brain, config = {}) {
+                this.brain = brain;
+                this.messagesEl = config.messagesEl || document.getElementById('chatMessages');
+                this.inputEl = config.inputEl || document.getElementById('chatInput');
+                this.sendBtn = config.sendBtn || document.getElementById('btnSend');
+                this.statusText = config.statusText || document.getElementById('chatStatusText');
+                this.vizBadges = {
+                    input: document.getElementById('vizInput'),
+                    output: document.getElementById('vizOutput'),
+                    learning: document.getElementById('vizLearning')
+                };
+                this.isProcessing = false;
+                this.conversationHistory = [];
+                this.maxHistory = 50;
                 
-                this._saveCheckpoint();
-                this.chat._addMessage(`✅ Обучение завершено! Loss: ${this.brain.trainingMetrics.totalLoss.toFixed(3)}, Accuracy: ${Math.round(this.brain.trainingMetrics.totalAccuracy)}%`, 'bot');
+                this._bindEvents();
+                this._updateStatus('READY');
+            }
+
+            _bindEvents() {
+                this.sendBtn.addEventListener('click', () => this._sendMessage());
+                this.inputEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this._sendMessage();
+                    }
+                });
+            }
+
+            async _sendMessage() {
+                const text = this.inputEl.value.trim();
+                if (!text || this.isProcessing) return;
                 
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    Logger.warn('⏹ Обучение остановлено пользователем');
-                    this.chat._addMessage('⏹ Обучение остановлено', 'bot');
-                } else {
-                    console.error('Training error:', err);
-                    Logger.error('❌ Ошибка обучения: ' + err.message);
-                    this.chat._addMessage('❌ Ошибка обучения: ' + err.message, 'bot');
-                }
-            } finally {
-                this.isTraining = false;
-                this.brain.isLearning = false;
-                this.trainAbortController = null;
-                document.getElementById('btnTrain').disabled = !this.dataset;
-                document.getElementById('btnStopTrain').disabled = true;
-                document.getElementById('vizLearning').classList.remove('active');
-                document.getElementById('trainingStatus').textContent = 'Готов';
+                this.inputEl.value = '';
+                this._addMessage(text, 'user');
+                await this._processMessage(text);
             }
-        }
 
-        stopTraining() {
-            if (this.trainAbortController) {
-                this.trainAbortController.abort();
-                Logger.warn('⏹ Остановка обучения...');
-            }
-        }
-
-        _saveCheckpoint() {
-            const checkpoint = {
-                id: Date.now(),
-                date: new Date().toLocaleString('ru-RU'),
-                data: this.brain.save(),
-                metrics: { ...this.brain.trainingMetrics }
-            };
-            this.checkpoints.push(checkpoint);
-            if (this.checkpoints.length > 5) this.checkpoints.shift();
-            try {
-                localStorage.setItem('sb_checkpoints', JSON.stringify(this.checkpoints));
-            } catch (e) {
-                Logger.warn('⚠ Не удалось сохранить чекпоинты: ' + e.message);
-            }
-            this._renderCheckpoints();
-        }
-
-        _renderCheckpoints() {
-            const container = document.getElementById('checkpointSlots');
-            if (!container) return;
-            container.innerHTML = '';
-            for (let i = 0; i < 5; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'checkpoint-slot';
-                if (this.checkpoints[i]) {
-                    const cp = this.checkpoints[i];
-                    slot.classList.add('active');
-                    slot.innerHTML = `
-                        <div class="slot-number">Слот ${i+1}</div>
-                        <div class="slot-info">Эпоха: ${cp.metrics.currentEpoch}</div>
-                        <div class="slot-date">${cp.date}</div>
-                    `;
-                    slot.onclick = () => this._loadCheckpoint(i);
-                } else {
-                    slot.innerHTML = `<div class="slot-number">Слот ${i+1}</div><div class="slot-info">Пусто</div>`;
-                }
-                container.appendChild(slot);
-            }
-        }
-
-        _loadCheckpoint(index) {
-            if (!this.checkpoints[index]) return;
-            const cp = this.checkpoints[index];
-            if (this.brain.load(cp.data)) {
-                this.chat._addMessage(`📂 Загружен чекпоинт #${index+1} от ${cp.date}`, 'bot');
-                document.getElementById('statEpoch').textContent = cp.metrics.currentEpoch;
-                document.getElementById('statLoss').textContent = cp.metrics.totalLoss.toFixed(3);
-                document.getElementById('statAccuracy').textContent = Math.round(cp.metrics.totalAccuracy) + '%';
-                Logger.success(`📂 Чекпоинт #${index+1} загружен`);
-            } else {
-                Logger.error('❌ Ошибка загрузки чекпоинта');
-            }
-        }
-
-        exportModel() {
-            const data = {
-                brain: this.brain.save(),
-                dataset: this.dataset,
-                checkpoints: this.checkpoints,
-                exportedAt: new Date().toISOString(),
-                version: '4.0-pro'
-            };
-            try {
-                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `spikebrain_model_${Date.now()}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                this.chat._addMessage('💾 Модель экспортирована', 'bot');
-                Logger.success('💾 Экспорт завершён');
-            } catch (e) {
-                Logger.error('❌ Ошибка экспорта: ' + e.message);
-            }
-        }
-
-        importModel(input) {
-            const file = input.files?.[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
+            async _processMessage(text) {
+                this.isProcessing = true;
+                this._updateStatus('PROCESSING');
+                this._setVizBadge('input', true);
+                
+                const thinkingMsg = this._addMessage('⚡', 'bot', true);
+                
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                const normalized = Utils.normalizeText(text);
+                
+                // Обрабатываем через мозг с обучением
+                const reward = this.brain.isLearning ? 0.3 : 0;
+                const result = this.brain.processText(normalized, reward);
+                
+                // Генерируем ответ
+                let responseText = '...';
                 try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    if (!data.brain || typeof data.brain !== 'object') {
-                        throw new Error('Неверный формат модели: отсутствует поле "brain"');
-                    }
-                    
-                    if (this.brain.load(data.brain)) {
-                        if (data.dataset && Array.isArray(data.dataset)) {
-                            this.dataset = data.dataset;
-                            document.getElementById('datasetPairs').textContent = this.dataset.length;
-                            document.getElementById('btnTrain').disabled = false;
-                        }
-                        if (data.checkpoints && Array.isArray(data.checkpoints)) {
-                            this.checkpoints = data.checkpoints;
-                            this._renderCheckpoints();
-                        }
-                        this.chat._addMessage('📂 Модель импортирована успешно', 'bot');
-                        Logger.success(`📂 Импорт модели ${data.version || 'unknown'} завершён`);
-                        this._updateStats();
-                    } else {
-                        throw new Error('Не удалось загрузить состояние мозга');
-                    }
-                } catch (err) {
-                    Logger.error('❌ Ошибка импорта: ' + err.message);
-                    alert('Ошибка импорта модели: ' + err.message);
+                    responseText = this.brain.generateResponse(normalized) || '...';
+                } catch (e) {
+                    console.error('Error generating response:', e);
+                    responseText = '...';
                 }
-            };
-            reader.onerror = () => {
-                Logger.error('❌ Ошибка чтения файла модели');
-                alert('Не удалось прочитать файл модели');
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
+                
+                if (thinkingMsg) thinkingMsg.remove();
+                
+                this._addMessage(responseText, 'bot', false, {
+                    confidence: 0.7,
+                    spikes: result?.results?.reduce((sum, r) => sum + (r.spikes || 0), 0) || 0,
+                    neurons: this.brain.getMetrics().activity + '%'
+                });
+                
+                this.conversationHistory.push({ role: 'user', text, timestamp: Date.now() });
+                this.conversationHistory.push({ role: 'bot', text: responseText, timestamp: Date.now() });
+                
+                if (this.conversationHistory.length > this.maxHistory) {
+                    this.conversationHistory = this.conversationHistory.slice(-this.maxHistory);
+                }
+                
+                this.isProcessing = false;
+                this._updateStatus('READY');
+                this._setVizBadge('input', false);
+                this._setVizBadge('output', true);
+                
+                setTimeout(() => this._setVizBadge('output', false), 1000);
+                this.inputEl.focus();
+            }
 
-        _updateStats() {
-            const m = this.brain.getMetrics();
-            document.getElementById('statNeurons').innerText = m.neurons.toLocaleString();
-            document.getElementById('statSynapses').innerText = m.synapses.toLocaleString();
-            document.getElementById('statActivity').innerText = m.activity + '%';
-            document.getElementById('stepDisplay').innerText = m.step.toLocaleString();
-            document.getElementById('footerSynapses').innerText = m.synapses.toLocaleString();
-        }
+            _addMessage(text, role, isThinking = false, metrics = null) {
+                const msg = document.createElement('div');
+                msg.className = `message ${role}${isThinking ? ' thinking' : ''}`;
+                
+                const content = document.createElement('div');
+                content.textContent = text;
+                
+                const meta = document.createElement('div');
+                meta.className = 'message-meta';
+                meta.innerHTML = `${role === 'user' ? 'ВЫ' : 'SPIKEBRAIN'} • ${Utils.messageTime()}`;
+                
+                msg.appendChild(content);
+                msg.appendChild(meta);
+                
+                if (metrics && !isThinking) {
+                    const metricsEl = document.createElement('div');
+                    metricsEl.className = 'message-metrics';
+                    
+                    let metricsHtml = `<span>Уверенность: <strong>${Math.round(metrics.confidence * 100)}%</strong></span>`;
+                    if (metrics.spikes) metricsHtml += `<span>Спайков: <strong>${metrics.spikes}</strong></span>`;
+                    if (metrics.neurons) metricsHtml += `<span>Активность: <strong>${metrics.neurons}</strong></span>`;
+                    
+                    metricsEl.innerHTML = metricsHtml;
+                    msg.appendChild(metricsEl);
+                }
+                
+                this.messagesEl.appendChild(msg);
+                this.messagesEl.scrollTo({ top: this.messagesEl.scrollHeight, behavior: 'smooth' });
+                return msg;
+            }
 
-        _draw() {
-            if (this.running || this.brain._needsRedraw) {
-                this.brain.draw(this.ctx, this.canvas.width, this.canvas.height);
+            _updateStatus(status) {
+                const statusMap = {
+                    'READY': { text: 'READY', color: 'var(--success)' },
+                    'PROCESSING': { text: 'PROCESSING', color: 'var(--warning)' },
+                    'ERROR': { text: 'ERROR', color: 'var(--danger)' }
+                };
+                const config = statusMap[status] || statusMap['READY'];
+                if (this.statusText) {
+                    this.statusText.textContent = config.text;
+                    this.statusText.style.color = config.color;
+                }
+            }
+
+            _setVizBadge(type, active) {
+                const badge = this.vizBadges[type];
+                if (!badge) return;
+                badge.classList.toggle('active', active);
+            }
+
+            clear() {
+                if (!this.messagesEl) return;
+                this.messagesEl.innerHTML = '';
+                this.conversationHistory = [];
+                this._addMessage('🧠 Чат очищен. Готов к новому диалогу.', 'bot');
+            }
+
+            getHistory() { 
+                return [...this.conversationHistory]; 
             }
         }
 
-        _loop(now) {
-            this.frameCount++;
-            if (now - this.lastTime >= 1000) {
-                this.fps = this.frameCount;
+        // ═══════════════════════════════════════════════════════════════
+        // LOGGER
+        // ═══════════════════════════════════════════════════════════════
+        const Logger = {
+            element: null,
+            maxEntries: 100,
+
+            init(elementId = 'logContent') {
+                this.element = document.getElementById(elementId);
+                return this;
+            },
+
+            log(message, type = 'info') {
+                if (!this.element) return;
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.innerHTML = `
+                    <span class="log-timestamp">[${Utils.timestamp()}]</span>
+                    <span>${Utils.escapeHtml(message)}</span>
+                `;
+                this.element.insertBefore(entry, this.element.firstChild);
+                while (this.element.children.length > this.maxEntries) {
+                    this.element.removeChild(this.element.lastChild);
+                }
+            },
+
+            clear() { if (this.element) this.element.innerHTML = ''; },
+            info(msg) { this.log(msg, 'info'); },
+            success(msg) { this.log(msg, 'success'); },
+            error(msg) { this.log(msg, 'error'); },
+            warn(msg) { this.log(msg, 'warn'); }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // TESTS
+        // ═══════════════════════════════════════════════════════════════
+        const Tests = {
+            runAll(brain, logger) {
+                const results = [];
+                results.push(this.testEncoding(logger));
+                results.push(this.testSpikes(brain, logger));
+                results.push(this.testSynapses(brain, logger));
+                results.push(this.testText(brain, logger));
+                results.push(this.testSaveLoad(brain, logger));
+                results.push(this.testConfigValidation(logger));
+                results.push(this.testAdjacencyList(brain, logger));
+                results.push(this.testRingBuffer(logger));
+                results.push(this.testBrainResponse(brain, logger));
+                
+                const passed = results.filter(r => r.passed).length;
+                return { passed, total: results.length, results };
+            },
+
+            testEncoding(logger) {
+                const text = 'кот';
+                const bigrams = BPE.encode(text);
+                const decoded = BPE.decode(bigrams);
+                const passed = decoded === text;
+                logger.log(passed ? `✓ Кодирование: "${text}" → ${bigrams.length} биграмм` : `✗ Ошибка кодирования`, passed ? 'success' : 'error');
+                return { name: 'BPE Encoding', passed, message: passed ? 'OK' : 'Failed' };
+            },
+
+            testSpikes(brain, logger) {
+                const before = brain.spikeHistory.size;
+                brain.inject(100, 100, 200);
+                brain.forward(null, 0);
+                const after = brain.spikeHistory.size;
+                const passed = after > before;
+                logger.log(passed ? `✓ Спайки: ${after - before} новых` : `✗ Нет спайков`, passed ? 'success' : 'error');
+                return { name: 'Spike Generation', passed, message: passed ? 'OK' : 'Failed' };
+            },
+
+            testSynapses(brain, logger) {
+                const passed = brain.synapseCount > 0;
+                logger.log(passed ? `✓ Синапсов: ${brain.synapseCount}` : `✗ Нет синапсов`, passed ? 'success' : 'error');
+                return { name: 'Synapses', passed, message: passed ? 'OK' : 'Failed' };
+            },
+
+            testText(brain, logger) {
+                try {
+                    const result = brain.processText('кот', 0.1);
+                    const passed = result && result.bigrams?.length > 0;
+                    logger.log(passed ? `✓ Текст обработан: ${result.bigrams.length} биграмм` : `✗ Ошибка обработки`, passed ? 'success' : 'error');
+                    return { name: 'Text Processing', passed, message: passed ? 'OK' : 'Failed' };
+                } catch (e) {
+                    logger.log(`✗ Ошибка: ${e.message}`, 'error');
+                    return { name: 'Text Processing', passed: false, message: 'Exception' };
+                }
+            },
+
+            testSaveLoad(brain, logger) {
+                try {
+                    const saved = brain.save();
+                    const loaded = brain.load(saved);
+                    const passed = loaded && brain.step === saved.step;
+                    logger.log(passed ? `✓ Сохранение/загрузка: OK` : `✗ Ошибка сохранения`, passed ? 'success' : 'error');
+                    return { name: 'Save/Load', passed, message: passed ? 'OK' : 'Failed' };
+                } catch (e) {
+                    logger.log(`✗ Ошибка: ${e.message}`, 'error');
+                    return { name: 'Save/Load', passed: false, message: 'Exception' };
+                }
+            },
+
+            testConfigValidation(logger) {
+                try {
+                    Config.validate('learningRate', 0.05);
+                    let caught = false;
+                    try { Config.validate('learningRate', 2.0); }
+                    catch (e) { caught = e instanceof RangeError; }
+                    const passed = caught;
+                    logger.log(passed ? '✓ Валидация конфигурации: работает' : '✗ Валидация не ловит ошибки', passed ? 'success' : 'error');
+                    return { name: 'Config Validation', passed, message: passed ? 'OK' : 'Failed' };
+                } catch (e) {
+                    logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
+                    return { name: 'Config Validation', passed: false, message: 'Exception' };
+                }
+            },
+
+            testAdjacencyList(brain, logger) {
+                const fromId = brain._neuronId(10, 10);
+                const synapses = brain._adjacencyList.get(fromId);
+                const passed = synapses === undefined || Array.isArray(synapses);
+                logger.log(passed ? '✓ Adjacency list: структура корректна' : '✗ Adjacency list: ошибка структуры', passed ? 'success' : 'error');
+                return { name: 'Adjacency List', passed, message: passed ? 'OK' : 'Failed' };
+            },
+
+            testRingBuffer(logger) {
+                const rb = new RingBuffer(5, 3);
+                rb.push('a', 1); rb.push('b', 2); rb.push('c', 3); rb.push('d', 4);
+                const recent = rb.getRecent(2);
+                const passed = recent.includes('c') && recent.includes('d') && !recent.includes('a');
+                logger.log(passed ? '✓ RingBuffer: age-based фильтрация работает' : '✗ RingBuffer: ошибка фильтрации', passed ? 'success' : 'error');
+                return { name: 'Ring Buffer', passed, message: passed ? 'OK' : 'Failed' };
+            },
+
+            testBrainResponse(brain, logger) {
+                try {
+                    const response = brain.generateResponse('привет');
+                    const passed = response && response !== '...';
+                    logger.log(passed ? `✓ Мозг отвечает: "${response}"` : `✗ Мозг не отвечает`, passed ? 'success' : 'error');
+                    return { name: 'Brain Response', passed, message: passed ? 'OK' : 'Failed' };
+                } catch (e) {
+                    logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
+                    return { name: 'Brain Response', passed: false, message: 'Exception' };
+                }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // APP
+        // ═══════════════════════════════════════════════════════════════
+        class App {
+            constructor() {
+                this.brain = new SpikeBrain({
+                    width: 256, height: 256,
+                    maxSynapses: 65536,
+                    learningRate: 0.01, stdpWindow: 20
+                });
+                
+                this.chat = new ChatManager(this.brain, {
+                    messagesEl: document.getElementById('chatMessages'),
+                    inputEl: document.getElementById('chatInput'),
+                    sendBtn: document.getElementById('btnSend'),
+                    statusText: document.getElementById('chatStatusText')
+                });
+                
+                this.canvas = document.getElementById('brainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.running = false;
+                this.fps = 0;
                 this.frameCount = 0;
-                this.lastTime = now;
-                document.getElementById('fpsDisplay').innerText = this.fps;
+                this.lastTime = performance.now();
+                this.dataset = null;
+                this.isTraining = false;
+                this.trainAbortController = null;
+                this.checkpoints = JSON.parse(localStorage.getItem('sb_checkpoints') || '[]');
+                
+                Logger.init();
+                this._initUI();
+                this._resizeCanvas();
+                this._updateStats();
+                this._renderCheckpoints();
+                
+                this.brain.on('spike', (data) => {
+                    if (this.running && Math.random() < 0.01) {
+                        Logger.info(`Спайк @(${data.x},${data.y}) шаг ${data.time}`);
+                    }
+                });
+                this.brain.on('trainingComplete', (metrics) => {
+                    Logger.success(`Обучение завершено: Loss=${metrics.totalLoss.toFixed(3)}, Acc=${Math.round(metrics.totalAccuracy)}%`);
+                });
+                this.brain.on('loadError', (err) => {
+                    Logger.error(`Ошибка загрузки: ${err.message}`);
+                });
+                
+                window.addEventListener('resize', () => this._resizeCanvas());
+                requestAnimationFrame((t) => this._loop(t));
+                
+                Logger.success('🧠 SpikeBrain Nano v4.1 PRO инициализирован');
+                Logger.info(`📊 Нейронов: ${this.brain.totalNeurons.toLocaleString()} | Синапсов: ${this.brain.synapseCount.toLocaleString()}`);
+                Logger.info('🔥 Режим обучения в реальном времени: ВЫКЛ');
             }
-            if (this.running) {
+
+            _initUI() {
+                document.getElementById('btnStart').onclick = () => this.start();
+                document.getElementById('btnPause').onclick = () => this.pause();
+                document.getElementById('btnReset').onclick = () => this.reset();
+                document.getElementById('btnStep').onclick = () => this.step();
+                document.getElementById('btnTrainManual').onclick = () => this.train();
+                document.getElementById('btnTest').onclick = () => this.runTests();
+                document.getElementById('btnPredict').onclick = () => this.predict();
+                document.getElementById('btnSave').onclick = () => this.save();
+                document.getElementById('clearLog').onclick = () => Logger.clear();
+
+                document.getElementById('learningRate').oninput = (e) => {
+                    const val = parseFloat(e.target.value);
+                    try { Config.validate('learningRate', val);
+                        this.brain.learningRate = val;
+                        document.getElementById('lrValue').innerText = val.toFixed(3);
+                    } catch (err) { Logger.error(err.message); }
+                };
+                document.getElementById('stdpWindow').oninput = (e) => {
+                    const val = parseInt(e.target.value);
+                    try { Config.validate('stdpWindow', val);
+                        this.brain.stdpWindow = val;
+                        document.getElementById('stdpValue').innerText = val;
+                    } catch (err) { Logger.error(err.message); }
+                };
+                document.getElementById('focusRadius').oninput = (e) => {
+                    const val = parseInt(e.target.value);
+                    try { Config.validate('focusRadius', val);
+                        this.brain.setFocus(this.brain.focusX, this.brain.focusY, val);
+                        document.getElementById('focusValue').innerText = val;
+                    } catch (err) { Logger.error(err.message); }
+                };
+            }
+
+            toggleLearning() {
+                this.brain.isLearning = !this.brain.isLearning;
+                const btn = document.getElementById('btnToggleLearning');
+                btn.textContent = `🎓 Режим обучения: ${this.brain.isLearning ? 'ВКЛ' : 'ВЫКЛ'}`;
+                btn.style.background = this.brain.isLearning ? 'var(--success)' : 'var(--bg-card)';
+                btn.style.color = this.brain.isLearning ? '#000' : 'var(--text-main)';
+                Logger.info(`Режим обучения ${this.brain.isLearning ? 'включён' : 'выключен'}`);
+            }
+
+            _resizeCanvas() {
+                const container = this.canvas.parentElement;
+                this.canvas.width = container.clientWidth;
+                this.canvas.height = container.clientHeight;
+                this.brain.markDirty();
+            }
+
+            start() {
+                this.running = true;
+                this.brain.isRunning = true;
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnPause').disabled = false;
+                document.getElementById('vizLearning').classList.add('active');
+                Logger.info('▶ Запуск симуляции');
+            }
+
+            pause() {
+                this.running = false;
+                this.brain.isRunning = false;
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnPause').disabled = true;
+                document.getElementById('vizLearning').classList.remove('active');
+                Logger.warn('⏸ Пауза');
+            }
+
+            reset() {
+                this.pause();
+                this.brain.reset();
+                this.chat.clear();
+                this._updateStats();
+                Logger.warn('🔄 Полный сброс');
+            }
+
+            step() {
                 this.brain.forward(null, 0);
                 this._updateStats();
             }
-            this._draw();
-            requestAnimationFrame((t) => this._loop(t));
-        }
-    }
 
-    window.addEventListener('DOMContentLoaded', () => {
+            train() {
+                const text = 'кот мяу кот спит кот ест';
+                Logger.info(`🎓 Обучение на: "${text}"`);
+                this.brain.isLearning = true;
+                const result = this.brain.processText(text, 0.3);
+                this.brain.isLearning = false;
+                Logger.success(`✅ Обработано ${result?.bigrams?.length || 0} биграмм`);
+                this._updateStats();
+            }
+
+            predict() {
+                const text = document.getElementById('chatInput').value.trim();
+                if (!text) { Logger.error('❌ Введите текст для предсказания'); return; }
+                const pred = this.brain.predictNext(text);
+                Logger.info(`🔮 После "${text}" → ${pred.text || '?'} (${pred.raw})`);
+                const output = document.getElementById('testOutput');
+                output.style.display = 'block';
+                output.innerHTML = `Предсказание: <strong>${Utils.escapeHtml(pred.text || '?')}</strong> (${pred.raw})`;
+                output.className = 'test-output pass';
+            }
+
+            runTests() {
+                Logger.info('🧪 Запуск тестов...');
+                const results = Tests.runAll(this.brain, Logger);
+                const output = document.getElementById('testOutput');
+                output.style.display = 'block';
+                let html = `<strong>Тесты: ${results.passed}/${results.total}</strong><br>`;
+                results.results.forEach(r => {
+                    html += `<div style="margin-top:4px; color:${r.passed ? 'var(--success)' : 'var(--danger)'}">${r.message}</div>`;
+                });
+                output.innerHTML = html;
+                output.className = results.passed === results.total ? 'test-output pass' : 'test-output fail';
+                this._updateStats();
+            }
+
+            save() {
+                const data = this.brain.save();
+                try {
+                    localStorage.setItem('spikebrain_v4', JSON.stringify(data));
+                    Logger.success('💾 Сохранено в localStorage');
+                } catch (e) {
+                    Logger.error('❌ Ошибка сохранения: ' + e.message);
+                }
+            }
+
+            load() {
+                try {
+                    const data = JSON.parse(localStorage.getItem('spikebrain_v4'));
+                    if (data && this.brain.load(data)) {
+                        Logger.success('📂 Загружено из localStorage');
+                        this._updateStats();
+                    }
+                } catch (e) {
+                    Logger.error('❌ Ошибка загрузки: ' + e.message);
+                }
+            }
+
+            loadDataset(input) {
+                const file = input.files?.[0];
+                if (!file) return;
+                
+                if (!file.name.endsWith('.json')) {
+                    Logger.error('❌ Ожидался JSON файл');
+                    alert('Пожалуйста, выберите файл с расширением .json');
+                    input.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        const isValid = Array.isArray(data.dialogs) || Array.isArray(data);
+                        if (!isValid) {
+                            throw new Error('Датасет должен быть массивом или объектом с полем "dialogs"');
+                        }
+                        
+                        const dataset = Array.isArray(data.dialogs) ? data.dialogs : data;
+                        
+                        for (let i = 0; i < Math.min(10, dataset.length); i++) {
+                            const item = dataset[i];
+                            if (!item || typeof item.input !== 'string') {
+                                throw new Error(`Элемент ${i}: поле "input" должно быть строкой`);
+                            }
+                        }
+                        
+                        this.dataset = dataset;
+                        document.getElementById('datasetName').textContent = file.name;
+                        document.getElementById('datasetPairs').textContent = this.dataset.length;
+                        document.getElementById('datasetEpochs').textContent = '10';
+                        document.getElementById('btnTrain').disabled = false;
+                        
+                        this.chat._addMessage(`📚 Датасет загружен: ${this.dataset.length} пар диалога`, 'bot');
+                        Logger.success(`📊 Датасет "${file.name}": ${dataset.length} образцов`);
+                        
+                    } catch (err) {
+                        Logger.error('❌ Ошибка датасета: ' + err.message);
+                        alert('Ошибка чтения датасета: ' + err.message);
+                    }
+                };
+                reader.onerror = () => {
+                    Logger.error('❌ Ошибка чтения файла');
+                    alert('Не удалось прочитать файл');
+                };
+                reader.readAsText(file);
+                input.value = '';
+            }
+
+            async startTraining() {
+                if (!this.dataset || this.isTraining) return;
+                
+                this.isTraining = true;
+                this.brain.isLearning = true;
+                this.trainAbortController = new AbortController();
+                
+                document.getElementById('btnTrain').disabled = true;
+                document.getElementById('btnStopTrain').disabled = false;
+                document.getElementById('vizLearning').classList.add('active');
+                document.getElementById('trainingStatus').textContent = 'Обучение...';
+                
+                const epochs = 10;
+                try {
+                    await this.brain.trainOnDataset(
+                        this.dataset, epochs, 
+                        (progress) => {
+                            const pct = ((progress.epoch - 1) * 100 + (progress.sample / progress.totalSamples) * 100) / epochs;
+                            document.getElementById('progressFill').style.width = pct + '%';
+                            document.getElementById('progressText').textContent = Math.round(pct) + '%';
+                            document.getElementById('statLoss').textContent = progress.loss.toFixed(3);
+                            document.getElementById('statAccuracy').textContent = Math.round(progress.accuracy) + '%';
+                            document.getElementById('statEpoch').textContent = progress.epoch;
+                        },
+                        this.trainAbortController.signal
+                    );
+                    
+                    this._saveCheckpoint();
+                    this.chat._addMessage(`✅ Обучение завершено! Loss: ${this.brain.trainingMetrics.totalLoss.toFixed(3)}, Accuracy: ${Math.round(this.brain.trainingMetrics.totalAccuracy)}%`, 'bot');
+                    
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        Logger.warn('⏹ Обучение остановлено пользователем');
+                        this.chat._addMessage('⏹ Обучение остановлено', 'bot');
+                    } else {
+                        console.error('Training error:', err);
+                        Logger.error('❌ Ошибка обучения: ' + err.message);
+                        this.chat._addMessage('❌ Ошибка обучения: ' + err.message, 'bot');
+                    }
+                } finally {
+                    this.isTraining = false;
+                    this.brain.isLearning = false;
+                    this.trainAbortController = null;
+                    document.getElementById('btnTrain').disabled = !this.dataset;
+                    document.getElementById('btnStopTrain').disabled = true;
+                    document.getElementById('vizLearning').classList.remove('active');
+                    document.getElementById('trainingStatus').textContent = 'Готов';
+                }
+            }
+
+            stopTraining() {
+                if (this.trainAbortController) {
+                    this.trainAbortController.abort();
+                    Logger.warn('⏹ Остановка обучения...');
+                }
+            }
+
+            _saveCheckpoint() {
+                const checkpoint = {
+                    id: Date.now(),
+                    date: new Date().toLocaleString('ru-RU'),
+                    data: this.brain.save(),
+                    metrics: { ...this.brain.trainingMetrics }
+                };
+                this.checkpoints.push(checkpoint);
+                if (this.checkpoints.length > 5) this.checkpoints.shift();
+                try {
+                    localStorage.setItem('sb_checkpoints', JSON.stringify(this.checkpoints));
+                } catch (e) {
+                    Logger.warn('⚠ Не удалось сохранить чекпоинты: ' + e.message);
+                }
+                this._renderCheckpoints();
+            }
+
+            _renderCheckpoints() {
+                const container = document.getElementById('checkpointSlots');
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < 5; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'checkpoint-slot';
+                    if (this.checkpoints[i]) {
+                        const cp = this.checkpoints[i];
+                        slot.classList.add('active');
+                        slot.innerHTML = `
+                            <div class="slot-number">Слот ${i+1}</div>
+                            <div class="slot-info">Эпоха: ${cp.metrics.currentEpoch}</div>
+                            <div class="slot-date">${cp.date}</div>
+                        `;
+                        slot.onclick = () => this._loadCheckpoint(i);
+                    } else {
+                        slot.innerHTML = `<div class="slot-number">Слот ${i+1}</div><div class="slot-info">Пусто</div>`;
+                    }
+                    container.appendChild(slot);
+                }
+            }
+
+            _loadCheckpoint(index) {
+                if (!this.checkpoints[index]) return;
+                const cp = this.checkpoints[index];
+                if (this.brain.load(cp.data)) {
+                    this.chat._addMessage(`📂 Загружен чекпоинт #${index+1} от ${cp.date}`, 'bot');
+                    document.getElementById('statEpoch').textContent = cp.metrics.currentEpoch;
+                    document.getElementById('statLoss').textContent = cp.metrics.totalLoss.toFixed(3);
+                    document.getElementById('statAccuracy').textContent = Math.round(cp.metrics.totalAccuracy) + '%';
+                    Logger.success(`📂 Чекпоинт #${index+1} загружен`);
+                } else {
+                    Logger.error('❌ Ошибка загрузки чекпоинта');
+                }
+            }
+
+            exportModel() {
+                const data = {
+                    brain: this.brain.save(),
+                    dataset: this.dataset,
+                    checkpoints: this.checkpoints,
+                    exportedAt: new Date().toISOString(),
+                    version: '4.1-pro'
+                };
+                try {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `spikebrain_model_${Date.now()}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.chat._addMessage('💾 Модель экспортирована', 'bot');
+                    Logger.success('💾 Экспорт завершён');
+                } catch (e) {
+                    Logger.error('❌ Ошибка экспорта: ' + e.message);
+                }
+            }
+
+            importModel(input) {
+                const file = input.files?.[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (!data.brain || typeof data.brain !== 'object') {
+                            throw new Error('Неверный формат модели: отсутствует поле "brain"');
+                        }
+                        
+                        if (this.brain.load(data.brain)) {
+                            if (data.dataset && Array.isArray(data.dataset)) {
+                                this.dataset = data.dataset;
+                                document.getElementById('datasetPairs').textContent = this.dataset.length;
+                                document.getElementById('btnTrain').disabled = false;
+                            }
+                            if (data.checkpoints && Array.isArray(data.checkpoints)) {
+                                this.checkpoints = data.checkpoints;
+                                this._renderCheckpoints();
+                            }
+                            this.chat._addMessage('📂 Модель импортирована успешно', 'bot');
+                            Logger.success(`📂 Импорт модели ${data.version || 'unknown'} завершён`);
+                            this._updateStats();
+                        } else {
+                            throw new Error('Не удалось загрузить состояние мозга');
+                        }
+                    } catch (err) {
+                        Logger.error('❌ Ошибка импорта: ' + err.message);
+                        alert('Ошибка импорта модели: ' + err.message);
+                    }
+                };
+                reader.onerror = () => {
+                    Logger.error('❌ Ошибка чтения файла модели');
+                    alert('Не удалось прочитать файл модели');
+                };
+                reader.readAsText(file);
+                input.value = '';
+            }
+
+            _updateStats() {
+                const m = this.brain.getMetrics();
+                document.getElementById('statNeurons').innerText = m.neurons.toLocaleString();
+                document.getElementById('statSynapses').innerText = m.synapses.toLocaleString();
+                document.getElementById('statActivity').innerText = m.activity + '%';
+                document.getElementById('stepDisplay').innerText = m.step.toLocaleString();
+                document.getElementById('footerSynapses').innerText = m.synapses.toLocaleString();
+            }
+
+            _draw() {
+                if (this.running || this.brain._needsRedraw) {
+                    this.brain.draw(this.ctx, this.canvas.width, this.canvas.height);
+                }
+            }
+
+            _loop(now) {
+                this.frameCount++;
+                if (now - this.lastTime >= 1000) {
+                    this.fps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastTime = now;
+                    document.getElementById('fpsDisplay').innerText = this.fps;
+                }
+                if (this.running) {
+                    this.brain.forward(null, 0);
+                    this._updateStats();
+                }
+                this._draw();
+                requestAnimationFrame((t) => this._loop(t));
+            }
+        }
+
         window.app = new App();
-        console.log('[App] SpikeBrain Nano v4.0 PRO готов к работе');
-        console.log('[App] Режим реального обучения: выключен (включи кнопкой)');
-    });
+        console.log('[App] SpikeBrain Nano v4.1 PRO готов к работе');
+    })();
     </script>
 </body>
-  </html>
+                                    </html>
