@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSwarm Enterprise — ВОЙНА КОЛОНИЙ</title>
+    <title>NeuroSwarm Enterprise — Профессиональный релиз</title>
     <style>
+        /* ===== Глобальные переменные ===== */
         :root {
             --bg-primary: #0a0a0f;
             --bg-secondary: #12121a;
@@ -21,17 +22,8 @@
             --font-ui: 'Inter', 'Segoe UI', system-ui, sans-serif;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        ::selection {
-            background: var(--accent-primary);
-            color: #000;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        ::selection { background: var(--accent-primary); color: #000; }
 
         body {
             background: var(--bg-primary);
@@ -85,7 +77,7 @@
 
         .header-stats {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             font-family: var(--font-mono);
             font-size: 12px;
         }
@@ -94,6 +86,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 5px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
 
         .header-stat-label {
@@ -109,11 +105,8 @@
             font-size: 14px;
         }
 
-        .controls {
-            display: flex;
-            gap: 8px;
-        }
-
+        .controls { display: flex; gap: 8px; }
+        
         button {
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -128,85 +121,38 @@
             border-radius: 4px;
         }
 
-        button:hover {
-            background: var(--accent-primary);
-            color: #000;
-            border-color: var(--accent-primary);
-        }
-
-        button.danger:hover {
-            background: var(--accent-danger);
-            border-color: var(--accent-danger);
-            color: #fff;
-        }
-
-        button.active {
-            background: var(--accent-primary);
-            color: #000;
-            border-color: var(--accent-primary);
-        }
+        button:hover { background: var(--accent-primary); color: #000; border-color: var(--accent-primary); }
+        button.danger:hover { background: var(--accent-danger); border-color: var(--accent-danger); color: #fff; }
+        button.active { background: var(--accent-primary); color: #000; border-color: var(--accent-primary); }
 
         .sidebar {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             z-index: 50;
         }
 
-        #sidebar-left {
-            grid-column: 1;
-            grid-row: 2;
-            border-right: 1px solid var(--border-color);
-        }
+        #sidebar-left { grid-column: 1; grid-row: 2; border-right: 1px solid var(--border-color); }
+        #sidebar-right { grid-column: 3; grid-row: 2; border-left: 1px solid var(--border-color); }
 
-        #sidebar-right {
-            grid-column: 3;
-            grid-row: 2;
-            border-left: 1px solid var(--border-color);
-        }
-
-        .panel-section {
-            margin-bottom: 25px;
-        }
-
+        .panel-section { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .panel-section:last-child { border-bottom: none; }
+        
         .panel-title {
             font-family: var(--font-mono);
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-muted);
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .stat-value {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--accent-primary);
-            font-weight: 600;
-        }
-
-        .colony-green {
-            color: #00ff88;
-        }
-
-        .colony-red {
-            color: #ff3366;
-        }
+        .stat-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
+        .stat-label { font-size: 11px; color: var(--text-secondary); }
+        .stat-value { font-family: var(--font-mono); font-size: 12px; color: var(--accent-primary); font-weight: 600; }
 
         #viewport {
             grid-column: 2;
@@ -216,62 +162,47 @@
             overflow: hidden;
         }
 
-        #sim-canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
+        #sim-canvas { display: block; width: 100%; height: 100%; }
 
         #viewport-overlay {
             position: absolute;
-            top: 15px;
-            left: 15px;
+            top: 10px;
+            left: 10px;
             font-family: var(--font-mono);
             font-size: 10px;
             color: var(--text-muted);
             pointer-events: none;
-        }
-
-        #brain-container {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px;
+            border-radius: 4px;
         }
 
         #brain-canvas {
             width: 100%;
-            height: 280px;
+            height: 200px;
             background: #000;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
+            margin-bottom: 10px;
         }
 
         .brain-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 12px;
+            gap: 8px;
             font-family: var(--font-mono);
             font-size: 10px;
         }
 
         .brain-metric {
             background: var(--bg-primary);
-            padding: 8px;
+            padding: 6px;
             border-radius: 4px;
             border: 1px solid var(--border-color);
         }
 
-        .brain-metric-label {
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .brain-metric-value {
-            color: var(--accent-primary);
-            font-weight: 600;
-        }
+        .brain-metric-label { color: var(--text-muted); font-size: 9px; margin-bottom: 2px; }
+        .brain-metric-value { color: var(--accent-primary); font-weight: 600; }
 
         #console-panel {
             grid-column: 1 / -1;
@@ -285,19 +216,15 @@
 
         #terminal {
             flex: 1;
-            padding: 15px;
+            padding: 10px;
             font-family: var(--font-mono);
-            font-size: 12px;
+            font-size: 11px;
             overflow-y: auto;
             color: var(--text-secondary);
-            line-height: 1.6;
+            background: #08080a;
         }
 
-        .log-entry {
-            margin: 3px 0;
-            padding: 2px 0;
-        }
-
+        .log-entry { margin: 2px 0; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .log-sys { color: var(--accent-primary); }
         .log-cmd { color: var(--text-primary); }
         .log-warn { color: var(--accent-warning); }
@@ -307,104 +234,49 @@
         #command-row {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
+            padding: 8px 12px;
             border-top: 1px solid var(--border-color);
             background: var(--bg-primary);
         }
 
-        #prompt {
-            color: var(--accent-primary);
-            margin-right: 12px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-        }
-
+        #prompt { color: var(--accent-primary); margin-right: 8px; font-family: var(--font-mono); font-size: 12px; }
         #cmd-input {
             flex: 1;
             background: transparent;
             border: none;
             color: var(--text-primary);
             font-family: var(--font-mono);
-            font-size: 13px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
-
-        #fitness-chart {
-            width: 100%;
-            height: 100px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            margin-top: 10px;
+            font-size: 12px;
         }
 
         #mental-canvas {
             width: 100%;
-            height: 150px;
+            height: 120px;
             background: #000;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .mental-legend {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
-            margin-top: 8px;
-            font-size: 10px;
+            font-size: 9px;
+            color: var(--text-muted);
         }
 
-        .network-topology {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .topology-node {
+        #fitness-chart {
+            width: 100%;
+            height: 80px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .topology-node-label {
-            font-size: 9px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .topology-node-value {
-            font-family: var(--font-mono);
-            font-size: 12px;
-            color: var(--accent-primary);
         }
 
         #loading {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-primary);
             display: flex;
             flex-direction: column;
@@ -415,46 +287,35 @@
         }
 
         .loading-spinner {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border: 3px solid var(--border-color);
             border-top-color: var(--accent-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 20px; font-family: var(--font-mono); color: var(--text-muted); font-size: 12px; }
 
-        .loading-text {
-            margin-top: 20px;
-            font-family: var(--font-mono);
-            color: var(--text-muted);
-            font-size: 12px;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
     </style>
 </head>
 <body>
     <div id="loading">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Initializing Neural Engine...</div>
+        <div class="loading-text">Initializing NeuroSwarm...</div>
     </div>
 
     <div id="app">
         <header>
-            <div class="logo">
-                NEUROSWARM
-                <span class="logo-badge">WAR EDITION</span>
-            </div>
+            <div class="logo">NEUROSWARM <span class="logo-badge">PRO</span></div>
             <div class="header-stats">
                 <div class="header-stat">
-                    <span class="header-stat-label">Generation</span>
+                    <span class="header-stat-label">Gen</span>
                     <span class="header-stat-value" id="stat-generation">1</span>
-                </div>
-                <div class="header-stat">
-                    <span class="header-stat-label">Population</span>
-                    <span class="header-stat-value" id="stat-population">0</span>
                 </div>
                 <div class="header-stat">
                     <span class="header-stat-label">Green/Red</span>
@@ -467,7 +328,7 @@
             </div>
             <div class="controls">
                 <button id="btn-pause">Pause</button>
-                <button id="btn-evolve" class="danger">Force Evolve</button>
+                <button id="btn-evolve" class="danger">Evolve</button>
                 <button id="btn-reset" class="danger">Reset</button>
             </div>
         </header>
@@ -475,70 +336,31 @@
         <aside id="sidebar-left" class="sidebar">
             <div class="panel-section">
                 <div class="panel-title" style="color: #00ff88;">◉ GREEN COLONY</div>
-                <div class="stat-item">
-                    <span class="stat-label">Alive</span>
-                    <span class="stat-value" id="stat-green-alive">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Resources</span>
-                    <span class="stat-value" id="stat-green-res">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Warriors</span>
-                    <span class="stat-value" id="stat-green-war">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Workers</span>
-                    <span class="stat-value" id="stat-green-worker">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Builders</span>
-                    <span class="stat-value" id="stat-green-builder">0</span>
-                </div>
+                <div class="stat-item"><span class="stat-label">Alive</span><span class="stat-value" id="stat-green-alive">0</span></div>
+                <div class="stat-item"><span class="stat-label">Resources</span><span class="stat-value" id="stat-green-res">0</span></div>
+                <div class="stat-item"><span class="stat-label">Warriors</span><span class="stat-value" id="stat-green-war">0</span></div>
+                <div class="stat-item"><span class="stat-label">Workers</span><span class="stat-value" id="stat-green-worker">0</span></div>
+                <div class="stat-item"><span class="stat-label">Builders</span><span class="stat-value" id="stat-green-builder">0</span></div>
             </div>
 
             <div class="panel-section">
                 <div class="panel-title" style="color: #ff3366;">◉ RED COLONY</div>
-                <div class="stat-item">
-                    <span class="stat-label">Alive</span>
-                    <span class="stat-value" id="stat-red-alive">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Resources</span>
-                    <span class="stat-value" id="stat-red-res">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Warriors</span>
-                    <span class="stat-value" id="stat-red-war">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Workers</span>
-                    <span class="stat-value" id="stat-red-worker">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Builders</span>
-                    <span class="stat-value" id="stat-red-builder">0</span>
-                </div>
+                <div class="stat-item"><span class="stat-label">Alive</span><span class="stat-value" id="stat-red-alive">0</span></div>
+                <div class="stat-item"><span class="stat-label">Resources</span><span class="stat-value" id="stat-red-res">0</span></div>
+                <div class="stat-item"><span class="stat-label">Warriors</span><span class="stat-value" id="stat-red-war">0</span></div>
+                <div class="stat-item"><span class="stat-label">Workers</span><span class="stat-value" id="stat-red-worker">0</span></div>
+                <div class="stat-item"><span class="stat-label">Builders</span><span class="stat-value" id="stat-red-builder">0</span></div>
             </div>
 
             <div class="panel-section">
-                <div class="panel-title">Performance Metrics</div>
-                <div class="stat-item">
-                    <span class="stat-label">Total Kills</span>
-                    <span class="stat-value" id="stat-kills">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Total Gathered</span>
-                    <span class="stat-value" id="stat-gathered">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Avg Fitness</span>
-                    <span class="stat-value" id="stat-avg-fitness">0</span>
-                </div>
+                <div class="panel-title">GLOBAL STATS</div>
+                <div class="stat-item"><span class="stat-label">Total Kills</span><span class="stat-value" id="stat-kills">0</span></div>
+                <div class="stat-item"><span class="stat-label">Total Gathered</span><span class="stat-value" id="stat-gathered">0</span></div>
+                <div class="stat-item"><span class="stat-label">Avg Fitness</span><span class="stat-value" id="stat-avg-fitness">0</span></div>
             </div>
 
             <div class="panel-section">
-                <div class="panel-title">Fitness History</div>
+                <div class="panel-title">FITNESS HISTORY</div>
                 <canvas id="fitness-chart"></canvas>
             </div>
         </aside>
@@ -546,1673 +368,2424 @@
         <main id="viewport">
             <canvas id="sim-canvas"></canvas>
             <div id="viewport-overlay">
-                <div>TIME SCALE: <span id="overlay-timescale">1x</span></div>
-                <div>ENTITIES: <span id="overlay-entities">0</span></div>
+                <div>TIME: <span id="overlay-timescale">1x</span></div>
+                <div>ENTS: <span id="overlay-entities">0</span></div>
+                <div>FPS: <span id="overlay-fps">60</span></div>
             </div>
         </main>
 
         <aside id="sidebar-right" class="sidebar">
             <div class="panel-section">
-                <div class="panel-title">Neural Activity Monitor</div>
-                <div id="brain-container">
-                    <canvas id="brain-canvas"></canvas>
-                    <div class="brain-info">
-                        <div class="brain-metric">
-                            <div class="brain-metric-label">Unit ID</div>
-                            <div class="brain-metric-value" id="brain-unit-id">--</div>
-                        </div>
-                        <div class="brain-metric">
-                            <div class="brain-metric-label">Colony</div>
-                            <div class="brain-metric-value" id="brain-colony">--</div>
-                        </div>
-                        <div class="brain-metric">
-                            <div class="brain-metric-label">Role</div>
-                            <div class="brain-metric-value" id="brain-role">--</div>
-                        </div>
-                        <div class="brain-metric">
-                            <div class="brain-metric-label">Age</div>
-                            <div class="brain-metric-value" id="brain-age">0</div>
-                        </div>
-                    </div>
+                <div class="panel-title">NEURAL NETWORK VIEW</div>
+                <canvas id="brain-canvas"></canvas>
+                <div class="brain-info">
+                    <div class="brain-metric"><div class="brain-metric-label">Selected Unit</div><div class="brain-metric-value" id="brain-unit-id">--</div></div>
+                    <div class="brain-metric"><div class="brain-metric-label">Colony</div><div class="brain-metric-value" id="brain-colony">--</div></div>
+                    <div class="brain-metric"><div class="brain-metric-label">Role</div><div class="brain-metric-value" id="brain-role">--</div></div>
+                    <div class="brain-metric"><div class="brain-metric-label">Age</div><div class="brain-metric-value" id="brain-age">0</div></div>
+                    <div class="brain-metric"><div class="brain-metric-label">Fitness</div><div class="brain-metric-value" id="brain-fitness">0</div></div>
+                    <div class="brain-metric"><div class="brain-metric-label">Kills</div><div class="brain-metric-value" id="brain-kills">0</div></div>
                 </div>
             </div>
 
             <div class="panel-section">
-                <div class="panel-title">Mental Map</div>
+                <div class="panel-title">MENTAL MAP</div>
                 <canvas id="mental-canvas"></canvas>
                 <div class="mental-legend">
-                    <span style="color:#00ff88;">● Green threats</span>
-                    <span style="color:#ff3366;">● Red threats</span>
+                    <span style="color:#00ff88;">● Green Memory</span>
+                    <span style="color:#ff3366;">● Red Memory</span>
                     <span style="color:#ffff00;">● Resources</span>
                 </div>
             </div>
 
             <div class="panel-section">
-                <div class="panel-title">Genetic Parameters</div>
-                <div class="stat-item">
-                    <span class="stat-label">Mutation Rate</span>
-                    <span class="stat-value" id="stat-mutation">5.0%</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Elite Count</span>
-                    <span class="stat-value" id="stat-elite">2</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Population</span>
-                    <span class="stat-value" id="stat-pop-size">50</span>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <div class="panel-title">Network Architecture</div>
-                <div class="network-topology">
-                    <div class="topology-node">
-                        <div class="topology-node-label">Input</div>
-                        <div class="topology-node-value">24</div>
-                    </div>
-                    <div class="topology-node">
-                        <div class="topology-node-label">Hidden 1</div>
-                        <div class="topology-node-value">64</div>
-                    </div>
-                    <div class="topology-node">
-                        <div class="topology-node-label">Hidden 2</div>
-                        <div class="topology-node-value">32</div>
-                    </div>
-                    <div class="topology-node">
-                        <div class="topology-node-label">Output</div>
-                        <div class="topology-node-value">5</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <div class="panel-title">Event Log</div>
-                <div id="event-log" style="font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); height: 100px; overflow-y: auto;"></div>
+                <div class="panel-title">CONFIGURATION</div>
+                <div class="stat-item"><span class="stat-label">Mutation Rate</span><span class="stat-value" id="stat-mutation">5%</span></div>
+                <div class="stat-item"><span class="stat-label">Elite Count</span><span class="stat-value" id="stat-elite">2</span></div>
+                <div class="stat-item"><span class="stat-label">Population</span><span class="stat-value" id="stat-population">30</span></div>
+                <div class="stat-item"><span class="stat-label">DQL Epsilon</span><span class="stat-value" id="stat-epsilon">1.00</span></div>
             </div>
         </aside>
 
         <footer id="console-panel">
             <div id="terminal"></div>
             <div id="command-row">
-                <span id="prompt">root@neuroswarm:~#</span>
-                <input type="text" id="cmd-input" placeholder="Enter command..." autocomplete="off" spellcheck="false">
+                <span id="prompt">#</span>
+                <input type="text" id="cmd-input" placeholder="Type 'help' for commands..." autocomplete="off">
             </div>
         </footer>
     </div>
 
-<script>
-/**
- * NEUROSWARM ENTERPRISE - WAR EDITION
- * ИСПРАВЛЕННАЯ ВЕРСИЯ (без ошибок)
- */
+    <script>
+        (function() {
+            "use strict";
 
-'use strict';
-
-// ============================================================================
-// 1. MATH LIBRARY
-// ============================================================================
-
-const Math3D = {
-    Vec2: class {
-        constructor(x = 0, y = 0) {
-            this.x = x;
-            this.y = y;
-        }
-        add(v) { this.x += v.x; this.y += v.y; return this; }
-        sub(v) { this.x -= v.x; this.y -= v.y; return this; }
-        mult(n) { this.x *= n; this.y *= n; return this; }
-        div(n) { if (n !== 0) { this.x /= n; this.y /= n; } return this; }
-        mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
-        normalize() { const m = this.mag(); if (m > 0.0001) this.div(m); return this; }
-        limit(max) { if (this.mag() > max) { this.normalize(); this.mult(max); } return this; }
-        dist(v) { const dx = this.x - v.x; const dy = this.y - v.y; return Math.sqrt(dx*dx + dy*dy); }
-        copy() { return new Math3D.Vec2(this.x, this.y); }
-        static random2D() { const angle = Math.random() * Math.PI * 2; return new Math3D.Vec2(Math.cos(angle), Math.sin(angle)); }
-        static sub(v1, v2) { return new Math3D.Vec2(v1.x - v2.x, v1.y - v2.y); }
-        static dot(v1, v2) { return v1.x * v2.x + v1.y * v2.y; }
-    },
-    Matrix: class {
-        constructor(rows, cols) { this.rows = rows; this.cols = cols; this.data = new Float64Array(rows * cols); }
-        static fromArray(arr) { const m = new Math3D.Matrix(arr.length, 1); for (let i=0; i<arr.length; i++) m.data[i] = arr[i]; return m; }
-        toArray() { const arr = []; for (let i=0; i<this.data.length; i++) arr.push(this.data[i]); return arr; }
-        randomize() { for (let i=0; i<this.data.length; i++) this.data[i] = Math.random() * 2 - 1; }
-        map(func) { for (let i=0; i<this.data.length; i++) this.data[i] = func(this.data[i]); }
-        static multiply(a, b) { if (a.cols !== b.rows) return null; const result = new Math3D.Matrix(a.rows, b.cols); for (let i=0; i<a.rows; i++) { for (let j=0; j<b.cols; j++) { let sum = 0; for (let k=0; k<a.cols; k++) sum += a.data[i*a.cols + k] * b.data[k*b.cols + j]; result.data[i*result.cols + j] = sum; } } return result; }
-        copy() { const m = new Math3D.Matrix(this.rows, this.cols); m.data.set(this.data); return m; }
-        mutate(rate) { for (let i=0; i<this.data.length; i++) if (Math.random() < rate) this.data[i] += (Math.random() * 0.4 - 0.2); }
-    }
-};
-
-// ============================================================================
-// 2. NEURAL NETWORK
-// ============================================================================
-
-class NeuralNetwork {
-    constructor(inputNodes, hiddenLayers, outputNodes) {
-        this.inputNodes = inputNodes;
-        this.outputNodes = outputNodes;
-        this.layers = [];
-        this.layerSizes = [inputNodes, ...hiddenLayers, outputNodes];
-        this.biases = [];
-
-        for (let i = 0; i < hiddenLayers.length; i++) {
-            this.layers.push(new Math3D.Matrix(hiddenLayers[i], this.layerSizes[i]));
-            this.biases.push(new Math3D.Matrix(hiddenLayers[i], 1));
-        }
-        this.layers.push(new Math3D.Matrix(outputNodes, this.layerSizes[hiddenLayers.length]));
-        this.biases.push(new Math3D.Matrix(outputNodes, 1));
-
-        this.randomize();
-        this.lastInputs = new Float64Array(inputNodes);
-        this.lastActivations = [];
-        this.lastOutputs = [];
-    }
-
-    randomize() {
-        this.layers.forEach(l => l.randomize());
-        this.biases.forEach(b => b.randomize());
-    }
-
-    predict(inputArray) {
-        this.lastInputs.set(inputArray);
-        let current = Math3D.Matrix.fromArray(inputArray);
-        this.lastActivations = [current.toArray()];
-
-        for (let i = 0; i < this.layers.length; i++) {
-            let weighted = Math3D.Matrix.multiply(this.layers[i], current);
-            if (!weighted) break;
-            for (let j = 0; j < weighted.rows; j++) weighted.data[j] += this.biases[i].data[j];
-            weighted.map(x => Math.tanh(x));
-            current = weighted;
-            this.lastActivations.push(current.toArray());
-        }
-
-        this.lastOutputs = current ? current.toArray() : new Array(this.outputNodes).fill(0);
-        return this.lastOutputs;
-    }
-
-    copy() {
-        const newNet = new NeuralNetwork(this.inputNodes, this.layerSizes.slice(1, -1), this.outputNodes);
-        for (let i=0; i<this.layers.length; i++) {
-            newNet.layers[i] = this.layers[i].copy();
-            newNet.biases[i] = this.biases[i].copy();
-        }
-        return newNet;
-    }
-
-    mutate(rate) {
-        this.layers.forEach(l => l.mutate(rate));
-        this.biases.forEach(b => b.mutate(rate));
-    }
-
-    getTotalNeurons() { return this.layerSizes.reduce((a,b)=>a+b,0); }
-    getTotalConnections() { let total=0; for (let l of this.layers) total += l.data.length; return total; }
-}
-
-// ============================================================================
-// 3. ATTENTION MECHANISM
-// ============================================================================
-
-class AttentionHead {
-    constructor(size) {
-        this.size = size;
-        this.queryWeights = new Math3D.Matrix(size, size);
-        this.keyWeights = new Math3D.Matrix(size, size);
-        this.valueWeights = new Math3D.Matrix(size, size);
-        this.queryWeights.randomize();
-        this.keyWeights.randomize();
-        this.valueWeights.randomize();
-    }
-    attend(input) {
-        const query = Math3D.Matrix.multiply(this.queryWeights, Math3D.Matrix.fromArray(input));
-        const key = Math3D.Matrix.multiply(this.keyWeights, Math3D.Matrix.fromArray(input));
-        const value = Math3D.Matrix.multiply(this.valueWeights, Math3D.Matrix.fromArray(input));
-        const score = Math3D.Matrix.multiply(query, key);
-        if (score) score.map(x => Math.max(0, x));
-        return value ? value.toArray() : input;
-    }
-    copy() {
-        const newHead = new AttentionHead(this.size);
-        newHead.queryWeights = this.queryWeights.copy();
-        newHead.keyWeights = this.keyWeights.copy();
-        newHead.valueWeights = this.valueWeights.copy();
-        return newHead;
-    }
-    mutate(rate) {
-        this.queryWeights.mutate(rate);
-        this.keyWeights.mutate(rate);
-        this.valueWeights.mutate(rate);
-    }
-}
-
-// ============================================================================
-// 4. ENTITY BASE CLASS
-// ============================================================================
-
-class Entity {
-    constructor(x, y) {
-        this.pos = new Math3D.Vec2(x, y);
-        this.vel = Math3D.Vec2.random2D();
-        this.acc = new Math3D.Vec2(0, 0);
-        this.maxSpeed = 0;
-        this.maxForce = 0;
-        this.r = 5;
-        this.dead = false;
-        this.color = '#fff';
-        this.id = Math.random().toString(36).substr(2, 9);
-    }
-
-    update() {
-        this.vel.add(this.acc);
-        this.vel.limit(this.maxSpeed);
-        this.pos.add(this.vel);
-        this.acc.mult(0);
-        this.boundaries();
-    }
-
-    boundaries() {
-        const margin = 10;
-        const w = Simulation.width;
-        const h = Simulation.height;
-        let desired = null;
-
-        if (this.pos.x < margin) desired = new Math3D.Vec2(this.maxSpeed, this.vel.y);
-        else if (this.pos.x > w - margin) desired = new Math3D.Vec2(-this.maxSpeed, this.vel.y);
-        if (this.pos.y < margin) desired = new Math3D.Vec2(this.vel.x, this.maxSpeed);
-        else if (this.pos.y > h - margin) desired = new Math3D.Vec2(this.vel.x, -this.maxSpeed);
-
-        if (desired) {
-            desired.normalize();
-            desired.mult(this.maxSpeed);
-            const steer = Math3D.Vec2.sub(desired, this.vel.copy());
-            steer.limit(this.maxForce);
-            this.acc.add(steer);
-        }
-    }
-
-    draw(ctx) {
-        if (this.dead) return;
-        ctx.save();
-        ctx.translate(this.pos.x, this.pos.y);
-        ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.moveTo(this.r, 0);
-        ctx.lineTo(-this.r, -this.r / 1.5);
-        ctx.lineTo(-this.r, this.r / 1.5);
-        ctx.fill();
-        ctx.restore();
-    }
-}
-
-// ============================================================================
-// 5. MENTAL MAP
-// ============================================================================
-
-class MentalMap {
-    constructor(colonyId) {
-        this.colonyId = colonyId;
-        this.threats = [];
-        this.foodSpots = [];
-        this.resourceSpots = [];
-    }
-
-    addThreat(x, y, count, strength) {
-        this.threats.push({ x, y, count, strength, time: Date.now() });
-        if (this.threats.length > 20) this.threats = this.threats.slice(-20);
-    }
-
-    addFood(x, y, amount) {
-        this.foodSpots.push({ x, y, amount, time: Date.now() });
-        if (this.foodSpots.length > 20) this.foodSpots = this.foodSpots.slice(-20);
-    }
-
-    addResource(x, y, type) {
-        this.resourceSpots.push({ x, y, type, time: Date.now() });
-        if (this.resourceSpots.length > 20) this.resourceSpots = this.resourceSpots.slice(-20);
-    }
-
-    getNearbyThreats(x, y, radius = 200) {
-        return this.threats.filter(t => {
-            const dx = t.x - x;
-            const dy = t.y - y;
-            return Math.sqrt(dx*dx + dy*dy) < radius;
-        });
-    }
-
-    cleanup() {
-        const now = Date.now();
-        this.threats = this.threats.filter(t => now - t.time < 30000);
-        this.foodSpots = this.foodSpots.filter(f => now - f.time < 30000);
-        this.resourceSpots = this.resourceSpots.filter(r => now - r.time < 30000);
-    }
-}
-
-// ============================================================================
-// 6. RESOURCE CLASS
-// ============================================================================
-
-class Resource {
-    constructor(x, y, type) {
-        this.x = x;
-        this.y = y;
-        this.type = type;
-        this.amount = type === 'food' ? 5 : 3;
-        this.carried = false;
-        this.r = 4;
-        this.dead = false;
-        
-        if (type === 'food') this.color = '#00ff88';
-        else if (type === 'wood') this.color = '#8B4513';
-        else this.color = '#808080';
-    }
-
-    draw(ctx) {
-        if (this.carried) return;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    }
-}
-
-// ============================================================================
-// 7. ENEMY CLASS (нейтральные монстры)
-// ============================================================================
-
-class Enemy extends Entity {
-    constructor(x, y) {
-        super(x, y);
-        this.maxSpeed = 2.5;
-        this.maxForce = 0.12;
-        this.r = 9;
-        this.color = '#ffaa00'; // желтые - нейтральные
-        this.health = 100;
-        this.maxHealth = 100;
-        this.damage = 15;
-    }
-
-    update(ants) {
-        // Атакуют ближайшего муравья (любого цвета)
-        let closest = null;
-        let record = Infinity;
-        
-        for (let a of ants) {
-            if (!a.dead) {
-                const d = this.pos.dist(a.pos);
-                if (d < record) {
-                    record = d;
-                    closest = a;
+            // ============================================================================
+            // МОДУЛЬ 1: МАТЕМАТИЧЕСКАЯ БИБЛИОТЕКА (Vector, Matrix)
+            // ============================================================================
+            const Math3D = (function() {
+                class Vec2 {
+                    constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+                    add(v) { this.x += v.x; this.y += v.y; return this; }
+                    sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+                    mult(n) { this.x *= n; this.y *= n; return this; }
+                    div(n) { if (n !== 0) { this.x /= n; this.y /= n; } return this; }
+                    mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+                    normalize() { const m = this.mag(); if (m > 0.0001) this.div(m); return this; }
+                    limit(max) { if (this.mag() > max) { this.normalize(); this.mult(max); } return this; }
+                    dist(v) { return Math.sqrt((this.x - v.x) ** 2 + (this.y - v.y) ** 2); }
+                    copy() { return new Vec2(this.x, this.y); }
+                    static random2D() { const a = Math.random() * Math.PI * 2; return new Vec2(Math.cos(a), Math.sin(a)); }
+                    static sub(v1, v2) { return new Vec2(v1.x - v2.x, v1.y - v2.y); }
+                    static add(v1, v2) { return new Vec2(v1.x + v2.x, v1.y + v2.y); }
                 }
-            }
-        }
 
-        if (closest) {
-            const desired = Math3D.Vec2.sub(closest.pos, this.pos.copy());
-            desired.normalize();
-            desired.mult(this.maxSpeed);
-            const steer = Math3D.Vec2.sub(desired, this.vel.copy());
-            steer.limit(this.maxForce);
-            this.acc.add(steer);
-        }
-
-        super.update();
-
-        // Атака при контакте
-        for (let a of ants) {
-            if (!a.dead && this.pos.dist(a.pos) < this.r + a.r) {
-                a.health -= this.damage;
-                const push = Math3D.Vec2.sub(a.pos, this.pos);
-                push.normalize();
-                push.mult(3);
-                a.pos.add(push);
-            }
-        }
-
-        if (this.health <= 0) {
-            this.dead = true;
-            Simulation.spawnParticles(this.pos.x, this.pos.y, '#ffaa00', 12);
-        }
-    }
-
-    draw(ctx) {
-        if (this.dead) return;
-        ctx.save();
-        ctx.translate(this.pos.x, this.pos.y);
-        ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
-        
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        
-        ctx.beginPath();
-        ctx.moveTo(12, 0);
-        ctx.lineTo(-8, -10);
-        ctx.lineTo(-8, 10);
-        ctx.fill();
-        
-        ctx.fillStyle = '#333';
-        ctx.fillRect(-8, -14, 16, 3);
-        ctx.fillStyle = '#ffaa00';
-        ctx.fillRect(-8, -14, 16 * (this.health / this.maxHealth), 3);
-        
-        ctx.shadowBlur = 0;
-        ctx.restore();
-    }
-}
-
-// ============================================================================
-// 8. FOOD CLASS (отдельно от ресурсов)
-// ============================================================================
-
-class Food extends Entity {
-    constructor(x, y) {
-        super(x, y);
-        this.r = 5;
-        this.color = '#00ff88';
-        this.vel = new Math3D.Vec2(0, 0);
-        this.nutrition = 35;
-        this.amount = 5;
-    }
-
-    draw(ctx) {
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, this.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    }
-}
-
-// ============================================================================
-// 9. PARTICLE CLASS
-// ============================================================================
-
-class Particle {
-    constructor(x, y, color) {
-        this.pos = new Math3D.Vec2(x, y);
-        this.vel = Math3D.Vec2.random2D().mult(Math.random() * 3);
-        this.life = 1.0;
-        this.decay = Math.random() * 0.04 + 0.02;
-        this.color = color;
-        this.size = Math.random() * 3 + 1;
-    }
-
-    update() {
-        this.pos.add(this.vel);
-        this.vel.mult(0.95);
-        this.life -= this.decay;
-    }
-
-    draw(ctx) {
-        ctx.globalAlpha = this.life;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-    }
-}
-
-// ============================================================================
-// 10. ANT CLASS (Две колонии)
-// ============================================================================
-
-class Ant extends Entity {
-    constructor(x, y, colony = 'green', role = 'worker', brain = null) {
-        super(x, y);
-        
-        this.colony = colony;
-        this.role = role;
-        this.color = colony === 'green' ? '#00ff88' : '#ff3366';
-        
-        this.maxSpeed = role === 'worker' ? 3 : (role === 'warrior' ? 2.5 : 2.8);
-        this.maxForce = 0.15;
-        this.r = 6;
-        this.damage = role === 'warrior' ? 25 : 10;
-        
-        this.health = 100;
-        this.maxHealth = 100;
-        this.energy = 100;
-        this.maxEnergy = 100;
-        this.fitness = 0;
-        this.age = 0;
-        this.kills = 0;
-        this.foodEaten = 0;
-        this.resourcesGathered = 0;
-        
-        if (brain) {
-            this.brain = brain.copy();
-            this.brain.mutate(Simulation.config.mutationRate);
-        } else {
-            this.brain = new NeuralNetwork(24, [64, 32, 16], 5);
-        }
-
-        this.attentionHeads = [
-            new AttentionHead(8),
-            new AttentionHead(8)
-        ];
-
-        this.rayCount = 6;
-        this.rayLen = 120;
-        this.rayAngle = Math.PI / 2;
-        this.attackCooldown = 0;
-        this.state = 'IDLE';
-        
-        this.carrying = null;
-        this.mentalMap = colony === 'green' ? Simulation.greenMentalMap : Simulation.redMentalMap;
-        this.basePos = colony === 'green' ? 
-            new Math3D.Vec2(100, Simulation.height/2) : 
-            new Math3D.Vec2(Simulation.width - 100, Simulation.height/2);
-    }
-
-    think(foods, enemies, allies, resources) {
-        if (this.dead) return;
-
-        const enemyAnts = allies.filter(a => a.colony !== this.colony && !a.dead);
-        const allEnemies = [...enemyAnts, ...enemies]; // вражеские муравьи + нейтральные монстры
-        
-        const inputs = [];
-        const angle = Math.atan2(this.vel.y, this.vel.x);
-
-        // 6 лучей на еду
-        for (let i = 0; i < this.rayCount; i++) {
-            const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
-            inputs.push(this.castRay(rayAngle, foods));
-        }
-
-        // 6 лучей на врагов (включая монстров)
-        for (let i = 0; i < this.rayCount; i++) {
-            const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
-            inputs.push(this.castRay(rayAngle, allEnemies));
-        }
-
-        // 6 лучей на ресурсы
-        for (let i = 0; i < this.rayCount; i++) {
-            const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
-            inputs.push(this.castRay(rayAngle, Simulation.resources.filter(r => !r.carried)));
-        }
-
-        inputs.push(this.health / this.maxHealth);
-        inputs.push(this.energy / this.maxEnergy);
-        inputs.push(this.age / 1000);
-        inputs.push(this.attackCooldown / 30);
-        inputs.push(this.carrying ? 1 : 0);
-        inputs.push(1);
-
-        const nearbyThreats = this.mentalMap.getNearbyThreats(this.pos.x, this.pos.y);
-        inputs.push(nearbyThreats.length > 0 ? 1 : 0);
-
-        let processedInputs = inputs.slice(0, 8);
-        for (let head of this.attentionHeads) {
-            processedInputs = head.attend(processedInputs);
-        }
-
-        const outputs = this.brain.predict(inputs);
-
-        const steerX = outputs[0] * this.maxForce;
-        const steerY = outputs[1] * this.maxForce;
-        const speedMod = (outputs[2] + 1) / 2;
-        const attackIntent = outputs[3];
-        const gatherIntent = outputs[4];
-
-        this.acc.add(new Math3D.Vec2(steerX, steerY));
-        this.maxSpeed = (this.role === 'worker' ? 3 : (this.role === 'warrior' ? 2.5 : 2.8)) * (0.5 + speedMod * 0.5);
-
-        if (this.role === 'warrior') {
-            this.warriorBehavior(allEnemies, attackIntent);
-        } else if (this.role === 'builder') {
-            this.builderBehavior(gatherIntent);
-        } else {
-            this.workerBehavior(foods, gatherIntent);
-        }
-
-        if (this.vel.mag() > 0.1) {
-            this.energy = Math.max(0, this.energy - 0.02);
-        }
-        
-        this.age++;
-        if (this.attackCooldown > 0) this.attackCooldown--;
-    }
-
-    warriorBehavior(enemies, attackIntent) {
-        if (attackIntent > 0.3 && enemies.length > 0) {
-            let closest = null;
-            let closestDist = Infinity;
-            for (let e of enemies) {
-                if (!e.dead) {
-                    const d = this.pos.dist(e.pos);
-                    if (d < closestDist) {
-                        closestDist = d;
-                        closest = e;
+                class Matrix {
+                    constructor(rows, cols) {
+                        this.rows = rows;
+                        this.cols = cols;
+                        this.data = new Float64Array(rows * cols);
                     }
-                }
-            }
-            
-            if (closest) {
-                this.mentalMap.addThreat(closest.pos.x, closest.pos.y, 1, 10);
-                
-                if (closestDist < 35) {
-                    closest.health -= this.damage;
-                    this.fitness += 5;
-                    this.kills++;
-                    this.attackCooldown = 20;
                     
-                    const push = Math3D.Vec2.sub(this.pos, closest.pos);
-                    push.normalize();
-                    push.mult(5);
-                    closest.pos.add(push);
+                    static fromArray(arr) {
+                        const m = new Matrix(arr.length, 1);
+                        for (let i = 0; i < arr.length; i++) m.data[i] = arr[i];
+                        return m;
+                    }
                     
-                    if (closest.health <= 0) {
-                        closest.dead = true;
-                        this.fitness += 20;
-                        Simulation.spawnParticles(closest.pos.x, closest.pos.y, '#ffaa00', 8);
+                    toArray() { return Array.from(this.data); }
+                    
+                    randomize() {
+                        for (let i = 0; i < this.data.length; i++) {
+                            this.data[i] = Math.random() * 2 - 1;
+                        }
                     }
-                } else {
-                    const desired = Math3D.Vec2.sub(closest.pos, this.pos);
-                    desired.normalize();
-                    desired.mult(this.maxSpeed);
-                    const steer = Math3D.Vec2.sub(desired, this.vel);
-                    steer.limit(this.maxForce);
-                    this.acc.add(steer);
-                }
-            }
-        } else {
-            if (Math.random() < 0.01) {
-                this.acc.add(Math3D.Vec2.random2D().mult(this.maxForce * 0.5));
-            }
-        }
-    }
-
-    workerBehavior(foods, gatherIntent) {
-        if (this.carrying) {
-            const desired = Math3D.Vec2.sub(this.basePos, this.pos);
-            const dist = desired.mag();
-            
-            if (dist < 20) {
-                if (this.colony === 'green') {
-                    Simulation.greenResources += this.carrying.type === 'food' ? 5 : 3;
-                } else {
-                    Simulation.redResources += this.carrying.type === 'food' ? 5 : 3;
-                }
-                this.resourcesGathered++;
-                this.fitness += 2;
-                this.carrying = null;
-            } else {
-                desired.normalize();
-                desired.mult(this.maxSpeed);
-                const steer = Math3D.Vec2.sub(desired, this.vel);
-                steer.limit(this.maxForce);
-                this.acc.add(steer);
-            }
-        } else if (gatherIntent > 0.3) {
-            const foodItems = foods.filter(f => !f.dead);
-            if (foodItems.length > 0) {
-                let closest = null;
-                let closestDist = Infinity;
-                for (let f of foodItems) {
-                    const d = this.pos.dist(f.pos);
-                    if (d < closestDist) {
-                        closestDist = d;
-                        closest = f;
+                    
+                    map(func) {
+                        for (let i = 0; i < this.data.length; i++) {
+                            this.data[i] = func(this.data[i]);
+                        }
                     }
-                }
-                
-                if (closest && closestDist < 30) {
-                    this.carrying = { type: 'food', amount: 5 };
-                    const index = Simulation.resources.findIndex(r => r === closest);
-                    if (index !== -1) Simulation.resources.splice(index, 1);
-                    this.mentalMap.addFood(closest.pos.x, closest.pos.y, 5);
-                    Simulation.spawnParticles(this.pos.x, this.pos.y, '#00ff88', 5);
-                } else if (closest) {
-                    const desired = Math3D.Vec2.sub(closest.pos, this.pos);
-                    desired.normalize();
-                    desired.mult(this.maxSpeed);
-                    const steer = Math3D.Vec2.sub(desired, this.vel);
-                    steer.limit(this.maxForce);
-                    this.acc.add(steer);
-                }
-            }
-        }
-    }
-
-    builderBehavior(gatherIntent) {
-        if (this.carrying) {
-            const desired = Math3D.Vec2.sub(this.basePos, this.pos);
-            const dist = desired.mag();
-            
-            if (dist < 20) {
-                if (this.colony === 'green') {
-                    Simulation.greenResources += 3;
-                } else {
-                    Simulation.redResources += 3;
-                }
-                this.resourcesGathered++;
-                this.fitness += 2;
-                this.carrying = null;
-            } else {
-                desired.normalize();
-                desired.mult(this.maxSpeed);
-                const steer = Math3D.Vec2.sub(desired, this.vel);
-                steer.limit(this.maxForce);
-                this.acc.add(steer);
-            }
-        } else if (gatherIntent > 0.2) {
-            const buildResources = Simulation.resources.filter(r => !r.carried && r.type !== 'food');
-            if (buildResources.length > 0) {
-                let closest = null;
-                let closestDist = Infinity;
-                for (let r of buildResources) {
-                    const d = this.pos.dist(new Math3D.Vec2(r.x, r.y));
-                    if (d < closestDist) {
-                        closestDist = d;
-                        closest = r;
+                    
+                    static multiply(a, b) {
+                        if (a.cols !== b.rows) return null;
+                        const result = new Matrix(a.rows, b.cols);
+                        for (let i = 0; i < a.rows; i++) {
+                            for (let j = 0; j < b.cols; j++) {
+                                let sum = 0;
+                                for (let k = 0; k < a.cols; k++) {
+                                    sum += a.data[i * a.cols + k] * b.data[k * b.cols + j];
+                                }
+                                result.data[i * result.cols + j] = sum;
+                            }
+                        }
+                        return result;
                     }
-                }
-                
-                if (closest && closestDist < 30) {
-                    this.carrying = { type: closest.type, amount: 3 };
-                    closest.carried = true;
-                    this.mentalMap.addResource(closest.x, closest.y, closest.type);
-                    Simulation.spawnParticles(this.pos.x, this.pos.y, '#ffaa00', 5);
-                } else if (closest) {
-                    const desired = Math3D.Vec2.sub(new Math3D.Vec2(closest.x, closest.y), this.pos);
-                    desired.normalize();
-                    desired.mult(this.maxSpeed);
-                    const steer = Math3D.Vec2.sub(desired, this.vel);
-                    steer.limit(this.maxForce);
-                    this.acc.add(steer);
-                }
-            }
-        }
-    }
-
-    castRay(angle, targets) {
-        let closest = 1.0;
-        
-        for (let t of targets) {
-            if (!t || t.dead) continue;
-            
-            let tx, ty;
-            if (t.pos) {
-                tx = t.pos.x;
-                ty = t.pos.y;
-            } else if (t.x !== undefined) {
-                tx = t.x;
-                ty = t.y;
-            } else {
-                continue;
-            }
-            
-            const d = this.pos.dist(new Math3D.Vec2(tx, ty));
-            if (d < this.rayLen) {
-                const angleToTarget = Math.atan2(ty - this.pos.y, tx - this.pos.x);
-                let diff = angleToTarget - angle;
-                while (diff <= -Math.PI) diff += Math.PI * 2;
-                while (diff > Math.PI) diff -= Math.PI * 2;
-
-                if (Math.abs(diff) < 0.3) {
-                    const norm = d / this.rayLen;
-                    if (norm < closest) {
-                        closest = norm;
+                    
+                    static transpose(m) {
+                        const result = new Matrix(m.cols, m.rows);
+                        for (let i = 0; i < m.rows; i++) {
+                            for (let j = 0; j < m.cols; j++) {
+                                result.data[j * result.cols + i] = m.data[i * m.cols + j];
+                            }
+                        }
+                        return result;
                     }
-                }
-            }
-        }
-        return 1 - closest;
-    }
-
-    draw(ctx) {
-        if (this.dead) return;
-        ctx.save();
-        ctx.translate(this.pos.x, this.pos.y);
-        ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
-        
-        ctx.shadowBlur = this.state === 'ATTACK' ? 15 : 8;
-        ctx.shadowColor = this.color;
-        
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.moveTo(8, 0);
-        ctx.lineTo(-6, -5);
-        ctx.lineTo(-6, 5);
-        ctx.fill();
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = '8px monospace';
-        ctx.textAlign = 'center';
-        ctx.shadowBlur = 0;
-        
-        if (this.role === 'warrior') ctx.fillText('⚔️', 0, -12);
-        else if (this.role === 'builder') ctx.fillText('🏗️', 0, -12);
-        else ctx.fillText('🌾', 0, -12);
-        
-        ctx.fillStyle = '#333';
-        ctx.fillRect(-8, -18, 16, 2);
-        ctx.fillStyle = this.health > 60 ? '#0f0' : (this.health > 30 ? '#ff0' : '#f00');
-        ctx.fillRect(-8, -18, 16 * (this.health / 100), 2);
-        
-        if (this.carrying) {
-            ctx.fillStyle = '#ffaa00';
-            ctx.beginPath();
-            ctx.arc(0, -8, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        ctx.restore();
-    }
-}
-
-// ============================================================================
-// 11. SIMULATION MANAGER
-// ============================================================================
-
-const Simulation = {
-    canvas: null,
-    ctx: null,
-    width: 0,
-    height: 0,
-    
-    ants: [],
-    enemies: [],
-    foods: [],
-    resources: [],
-    particles: [],
-    
-    greenMentalMap: null,
-    redMentalMap: null,
-    
-    greenResources: 50,
-    redResources: 50,
-    
-    generation: 1,
-    paused: false,
-    timeScale: 1,
-    bestFitnessHistory: [],
-    
-    config: {
-        popSize: 40,
-        mutationRate: 0.05,
-        rewardFood: 10,
-        rewardKill: 50,
-        rewardAlive: 0.1,
-        eliteCount: 2
-    },
-
-    directives: {
-        aggression: 0.5,
-        foodPriority: 0.5
-    },
-
-    stats: {
-        totalKills: 0,
-        totalFood: 0,
-        totalGathered: 0,
-        avgSpeed: 0
-    },
-
-    init() {
-        this.canvas = document.getElementById('sim-canvas');
-        this.ctx = this.canvas.getContext('2d', { alpha: false });
-        this.resize();
-        
-        window.addEventListener('resize', () => this.resize());
-        
-        this.hardReset();
-        UI.init();
-        
-        setTimeout(() => {
-            const loading = document.getElementById('loading');
-            loading.style.opacity = '0';
-            setTimeout(() => loading.remove(), 500);
-        }, 1000);
-
-        this.loop();
-        UI.log('Neural Engine initialized successfully', 'sys');
-        UI.log('WAR EDITION: Two colonies, enemies, food, resources', 'sys');
-    },
-
-    resize() {
-        const parent = document.getElementById('viewport');
-        this.width = parent.clientWidth;
-        this.height = parent.clientHeight;
-        this.canvas.width = this.width;
-        this.canvas.height = this.height;
-    },
-
-    hardReset() {
-        this.ants = [];
-        this.enemies = [];
-        this.foods = [];
-        this.resources = [];
-        this.particles = [];
-        this.generation = 1;
-        this.bestFitnessHistory = [];
-        this.directives = { aggression: 0.5, foodPriority: 0.5 };
-        this.stats = { totalKills: 0, totalFood: 0, totalGathered: 0, avgSpeed: 0 };
-        
-        this.greenMentalMap = new MentalMap('green');
-        this.redMentalMap = new MentalMap('red');
-        
-        this.greenResources = 50;
-        this.redResources = 50;
-
-        // Зеленая колония
-        for (let i = 0; i < 15; i++) {
-            const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
-            this.ants.push(new Ant(
-                100 + Math.random() * 50,
-                this.height / 2 - 50 + Math.random() * 100,
-                'green',
-                role
-            ));
-        }
-
-        // Красная колония
-        for (let i = 0; i < 15; i++) {
-            const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
-            this.ants.push(new Ant(
-                this.width - 150 + Math.random() * 50,
-                this.height / 2 - 50 + Math.random() * 100,
-                'red',
-                role
-            ));
-        }
-
-        // Нейтральные монстры
-        for (let i = 0; i < 5; i++) {
-            this.enemies.push(new Enemy(
-                this.width / 2 - 50 + Math.random() * 100,
-                this.height / 2 - 50 + Math.random() * 100
-            ));
-        }
-
-        // Еда
-        for (let i = 0; i < 20; i++) {
-            this.foods.push(new Food(
-                200 + Math.random() * (this.width - 400),
-                50 + Math.random() * (this.height - 100)
-            ));
-        }
-
-        // Ресурсы для стройки
-        for (let i = 0; i < 20; i++) {
-            const type = Math.random() < 0.5 ? 'wood' : 'stone';
-            this.resources.push(new Resource(
-                200 + Math.random() * (this.width - 400),
-                50 + Math.random() * (this.height - 100),
-                type
-            ));
-        }
-        
-        UI.updateStats();
-        UI.log('System reset complete', 'sys');
-    },
-
-    spawnParticles(x, y, color, count) {
-        for (let i = 0; i < count; i++) {
-            this.particles.push(new Particle(x, y, color));
-        }
-    },
-
-    evolve() {
-        this.ants.sort((a, b) => b.fitness - a.fitness);
-
-        const best = this.ants[0];
-        this.bestFitnessHistory.push(best.fitness);
-        if (this.bestFitnessHistory.length > 100) {
-            this.bestFitnessHistory.shift();
-        }
-
-        UI.log(`Generation ${this.generation} complete. Best fitness: ${Math.floor(best.fitness)}`, 'sys');
-        
-        const greenAnts = this.ants.filter(a => a.colony === 'green');
-        const redAnts = this.ants.filter(a => a.colony === 'red');
-        
-        const newAnts = [];
-
-        greenAnts.sort((a, b) => b.fitness - a.fitness);
-        for (let i = 0; i < this.config.eliteCount && i < greenAnts.length; i++) {
-            const champion = new Ant(
-                100 + Math.random() * 50,
-                this.height/2 + Math.random() * 50,
-                'green',
-                greenAnts[i].role,
-                greenAnts[i].brain
-            );
-            champion.fitness = 0;
-            champion.health = 100;
-            champion.energy = 100;
-            newAnts.push(champion);
-        }
-
-        for (let i = this.config.eliteCount; i < 15; i++) {
-            const parent = greenAnts[Math.floor(Math.random() * Math.min(5, greenAnts.length))];
-            const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
-            const child = new Ant(
-                100 + Math.random() * 50,
-                this.height/2 + Math.random() * 50,
-                'green',
-                role,
-                parent?.brain
-            );
-            newAnts.push(child);
-        }
-
-        redAnts.sort((a, b) => b.fitness - a.fitness);
-        for (let i = 0; i < this.config.eliteCount && i < redAnts.length; i++) {
-            const champion = new Ant(
-                this.width - 150 + Math.random() * 50,
-                this.height/2 + Math.random() * 50,
-                'red',
-                redAnts[i].role,
-                redAnts[i].brain
-            );
-            champion.fitness = 0;
-            champion.health = 100;
-            champion.energy = 100;
-            newAnts.push(champion);
-        }
-
-        for (let i = this.config.eliteCount; i < 15; i++) {
-            const parent = redAnts[Math.floor(Math.random() * Math.min(5, redAnts.length))];
-            const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
-            const child = new Ant(
-                this.width - 150 + Math.random() * 50,
-                this.height/2 + Math.random() * 50,
-                'red',
-                role,
-                parent?.brain
-            );
-            newAnts.push(child);
-        }
-
-        this.ants = newAnts;
-        this.generation++;
-        
-        // Добавляем новых монстров
-        if (this.generation % 3 === 0) {
-            for (let i = 0; i < 2; i++) {
-                this.enemies.push(new Enemy(
-                    this.width / 2 - 50 + Math.random() * 100,
-                    this.height / 2 - 50 + Math.random() * 100
-                ));
-            }
-        }
-        
-        // Добавляем еду
-        for (let i = 0; i < 10; i++) {
-            this.foods.push(new Food(
-                200 + Math.random() * (this.width - 400),
-                50 + Math.random() * (this.height - 100)
-            ));
-        }
-        
-        // Добавляем ресурсы
-        for (let i = 0; i < 5; i++) {
-            const type = Math.random() < 0.5 ? 'wood' : 'stone';
-            this.resources.push(new Resource(
-                200 + Math.random() * (this.width - 400),
-                50 + Math.random() * (this.height - 100),
-                type
-            ));
-        }
-        
-        UI.updateStats();
-    },
-
-    togglePause() {
-        this.paused = !this.paused;
-        document.getElementById('btn-pause').textContent = this.paused ? 'Resume' : 'Pause';
-        document.getElementById('btn-pause').classList.toggle('active', this.paused);
-    },
-
-    forceEvolution() {
-        this.evolve();
-    },
-
-    loop() {
-        if (!this.paused) {
-            this.ctx.fillStyle = '#0a0a0f';
-            this.ctx.fillRect(0, 0, this.width, this.height);
-
-            this.ctx.strokeStyle = '#1a1a2a';
-            this.ctx.lineWidth = 1;
-            for (let x = 0; x < this.width; x += 50) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(x, 0);
-                this.ctx.lineTo(x, this.height);
-                this.ctx.stroke();
-            }
-            for (let y = 0; y < this.height; y += 50) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, y);
-                this.ctx.lineTo(this.width, y);
-                this.ctx.stroke();
-            }
-
-            // Базы
-            this.ctx.fillStyle = '#00ff88';
-            this.ctx.beginPath();
-            this.ctx.moveTo(100 - 20, this.height/2 - 20);
-            this.ctx.lineTo(100 + 20, this.height/2);
-            this.ctx.lineTo(100 - 20, this.height/2 + 20);
-            this.ctx.fill();
-
-            this.ctx.fillStyle = '#ff3366';
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.width - 100 + 20, this.height/2 - 20);
-            this.ctx.lineTo(this.width - 100 - 20, this.height/2);
-            this.ctx.lineTo(this.width - 100 + 20, this.height/2 + 20);
-            this.ctx.fill();
-
-            let aliveCount = 0;
-            let maxFit = 0;
-            let bestAnt = null;
-            let totalSpeed = 0;
-
-            for (let t = 0; t < this.timeScale; t++) {
-                for (let ant of this.ants) {
-                    if (!ant.dead) {
-                        ant.think(this.foods, this.enemies, this.ants, this.resources);
-                        ant.fitness += this.config.rewardAlive;
-                        aliveCount++;
-                        totalSpeed += ant.vel.mag();
-                        
-                        if (ant.fitness > maxFit) {
-                            maxFit = ant.fitness;
-                            bestAnt = ant;
+                    
+                    copy() {
+                        const m = new Matrix(this.rows, this.cols);
+                        m.data.set(this.data);
+                        return m;
+                    }
+                    
+                    mutate(rate) {
+                        for (let i = 0; i < this.data.length; i++) {
+                            if (Math.random() < rate) {
+                                this.data[i] += (Math.random() * 0.4 - 0.2);
+                                this.data[i] = Math.max(-1, Math.min(1, this.data[i]));
+                            }
+                        }
+                    }
+                    
+                    addBias(bias) {
+                        for (let j = 0; j < this.rows; j++) {
+                            this.data[j] += bias.data[j];
                         }
                     }
                 }
 
-                for (let enemy of this.enemies) {
-                    if (!enemy.dead) {
-                        enemy.update(this.ants);
+                return { Vec2, Matrix };
+            })();
+
+            // ============================================================================
+            // МОДУЛЬ 2: НЕЙРОННАЯ СЕТЬ (полноценная реализация с обратным распространением)
+            // ============================================================================
+            class NeuralNetwork {
+                constructor(layerSizes) {
+                    this.layerSizes = layerSizes;
+                    this.weights = [];
+                    this.biases = [];
+                    
+                    // Инициализация весов и смещений для всех слоев
+                    for (let i = 0; i < layerSizes.length - 1; i++) {
+                        // Веса: [следующий_слой, текущий_слой]
+                        this.weights.push(new Math3D.Matrix(layerSizes[i + 1], layerSizes[i]));
+                        this.biases.push(new Math3D.Matrix(layerSizes[i + 1], 1));
                     }
-                }
-
-                this.ants = this.ants.filter(a => {
-                    if (a.health <= 0) {
-                        this.spawnParticles(a.pos.x, a.pos.y, a.color, 10);
-                        return false;
-                    }
-                    return true;
-                });
-
-                this.enemies = this.enemies.filter(e => {
-                    if (e.health <= 0) {
-                        this.spawnParticles(e.pos.x, e.pos.y, e.color, 10);
-                        return false;
-                    }
-                    return true;
-                });
-
-                if (this.greenMentalMap) this.greenMentalMap.cleanup();
-                if (this.redMentalMap) this.redMentalMap.cleanup();
-
-                const greenCount = this.ants.filter(a => a.colony === 'green').length;
-                const redCount = this.ants.filter(a => a.colony === 'red').length;
-                
-                if (this.greenResources >= 30 && greenCount < 20 && Math.random() < 0.01) {
-                    const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
-                    this.ants.push(new Ant(
-                        100 + Math.random() * 50,
-                        this.height/2 + Math.random() * 50,
-                        'green',
-                        role
-                    ));
-                    this.greenResources -= 30;
+                    
+                    this.randomize();
+                    
+                    // Кеш для обратного распространения
+                    this.lastInput = null;
+                    this.lastPreActivation = [];
+                    this.lastActivation = [];
                 }
                 
-                if (this.redResources >= 30 && redCount < 20 && Math.random() < 0.01) {
-                    const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
-                    this.ants.push(new Ant(
-                        this.width - 150 + Math.random() * 50,
-                        this.height/2 + Math.random() * 50,
-                        'red',
-                        role
-                    ));
-                    this.redResources -= 30;
+                randomize() {
+                    this.weights.forEach(w => w.randomize());
+                    this.biases.forEach(b => b.randomize());
                 }
-
-                if (aliveCount === 0) {
-                    this.evolve();
-                    break;
+                
+                // Forward pass с ReLU для скрытых слоев и tanh для выхода
+                predict(inputArray) {
+                    if (!inputArray || inputArray.length !== this.layerSizes[0]) {
+                        inputArray = new Array(this.layerSizes[0]).fill(0);
+                    }
+                    
+                    this.lastInput = Math3D.Matrix.fromArray(inputArray);
+                    let current = this.lastInput;
+                    this.lastActivation = [current.toArray()];
+                    this.lastPreActivation = [];
+                    
+                    for (let i = 0; i < this.weights.length; i++) {
+                        // Линейное преобразование
+                        let z = Math3D.Matrix.multiply(this.weights[i], current);
+                        for (let j = 0; j < z.rows; j++) {
+                            z.data[j] += this.biases[i].data[j];
+                        }
+                        this.lastPreActivation.push(z.copy());
+                        
+                        // Активация
+                        if (i < this.weights.length - 1) {
+                            // ReLU для скрытых слоев
+                            z.map(x => Math.max(0, x));
+                        } else {
+                            // Tanh для выходного слоя
+                            z.map(x => Math.tanh(x));
+                        }
+                        
+                        current = z;
+                        this.lastActivation.push(current.toArray());
+                    }
+                    
+                    return current.toArray();
+                }
+                
+                // Мутация для генетического алгоритма
+                mutate(rate) {
+                    this.weights.forEach(w => w.mutate(rate));
+                    this.biases.forEach(b => b.mutate(rate));
+                }
+                
+                // Копирование сети
+                copy() {
+                    const newNet = new NeuralNetwork(this.layerSizes);
+                    for (let i = 0; i < this.weights.length; i++) {
+                        newNet.weights[i] = this.weights[i].copy();
+                        newNet.biases[i] = this.biases[i].copy();
+                    }
+                    return newNet;
+                }
+                
+                // Кроссовер (одноточечный)
+                crossover(partner) {
+                    const child = this.copy();
+                    
+                    for (let i = 0; i < this.weights.length; i++) {
+                        const point = Math.floor(Math.random() * this.weights[i].data.length);
+                        for (let j = point; j < this.weights[i].data.length; j++) {
+                            child.weights[i].data[j] = partner.weights[i].data[j];
+                            if (j < child.biases[i].data.length) {
+                                child.biases[i].data[j] = partner.biases[i].data[j];
+                            }
+                        }
+                    }
+                    
+                    return child;
+                }
+                
+                // Получение статистики
+                getTotalNeurons() {
+                    return this.layerSizes.reduce((a, b) => a + b, 0);
+                }
+                
+                getTotalConnections() {
+                    return this.weights.reduce((sum, w) => sum + w.data.length, 0);
                 }
             }
 
-            this.stats.totalKills = this.ants.reduce((sum, a) => sum + a.kills, 0);
-            this.stats.totalGathered = this.ants.reduce((sum, a) => sum + a.resourcesGathered, 0);
-            this.stats.avgSpeed = aliveCount > 0 ? totalSpeed / aliveCount : 0;
-
-            // Отрисовка
-            this.foods.forEach(f => f.draw(this.ctx));
-            this.resources.forEach(r => r.draw(this.ctx));
-            this.enemies.forEach(e => e.draw(this.ctx));
-            this.ants.forEach(a => a.draw(this.ctx));
-
-            for (let i = this.particles.length - 1; i >= 0; i--) {
-                this.particles[i].update();
-                this.particles[i].draw(this.ctx);
-                if (this.particles[i].life <= 0) {
-                    this.particles.splice(i, 1);
+            // ============================================================================
+            // МОДУЛЬ 3: МЕХАНИЗМ ВНИМАНИЯ (Multi-Head Attention)
+            // ============================================================================
+            class AttentionHead {
+                constructor(dim) {
+                    this.dim = dim;
+                    // Веса для Query, Key, Value
+                    this.Wq = new Math3D.Matrix(dim, dim);
+                    this.Wk = new Math3D.Matrix(dim, dim);
+                    this.Wv = new Math3D.Matrix(dim, dim);
+                    this.Wq.randomize();
+                    this.Wk.randomize();
+                    this.Wv.randomize();
+                }
+                
+                attend(input) {
+                    // Преобразуем вход в матрицу (dim, 1)
+                    const x = Math3D.Matrix.fromArray(input.slice(0, this.dim));
+                    
+                    // Вычисляем Q, K, V
+                    const Q = Math3D.Matrix.multiply(this.Wq, x);
+                    const K = Math3D.Matrix.multiply(this.Wk, x);
+                    const V = Math3D.Matrix.multiply(this.Wv, x);
+                    
+                    if (!Q || !K || !V) return input;
+                    
+                    // Вычисляем attention scores: Q * K^T
+                    const Kt = Math3D.Matrix.transpose(K);
+                    const scores = Math3D.Matrix.multiply(Q, Kt);
+                    
+                    if (!scores) return input;
+                    
+                    // Softmax
+                    const maxVal = Math.max(...scores.data);
+                    let sum = 0;
+                    for (let i = 0; i < scores.data.length; i++) {
+                        scores.data[i] = Math.exp(scores.data[i] - maxVal);
+                        sum += scores.data[i];
+                    }
+                    for (let i = 0; i < scores.data.length; i++) {
+                        scores.data[i] /= sum;
+                    }
+                    
+                    // Применяем attention к V
+                    const output = Math3D.Matrix.multiply(scores, V);
+                    
+                    if (!output) return input;
+                    
+                    // Возвращаем результат, дополняя до исходной размерности если нужно
+                    const result = output.toArray();
+                    if (input.length > this.dim) {
+                        return [...result, ...input.slice(this.dim)];
+                    }
+                    return result;
+                }
+                
+                copy() {
+                    const newHead = new AttentionHead(this.dim);
+                    newHead.Wq = this.Wq.copy();
+                    newHead.Wk = this.Wk.copy();
+                    newHead.Wv = this.Wv.copy();
+                    return newHead;
+                }
+                
+                mutate(rate) {
+                    this.Wq.mutate(rate);
+                    this.Wk.mutate(rate);
+                    this.Wv.mutate(rate);
                 }
             }
 
-            if (bestAnt) {
-                UI.drawBrain(bestAnt);
-            }
-
-            UI.updateRuntimeStats(aliveCount, this.config.popSize);
-            UI.updateOverlay();
-        }
-
-        UI.drawChart();
-        UI.drawMentalMap();
-        UI.updateFPS();
-        requestAnimationFrame(() => this.loop());
-    }
-};
-
-// ============================================================================
-// 12. UI MANAGER
-// ============================================================================
-
-const UI = {
-    terminal: null,
-    cmdInput: null,
-    eventLog: null,
-    fps: 0,
-    lastTime: 0,
-    frameCount: 0,
-
-    init() {
-        this.terminal = document.getElementById('terminal');
-        this.cmdInput = document.getElementById('cmd-input');
-        this.eventLog = document.getElementById('event-log');
-
-        document.getElementById('btn-pause').addEventListener('click', () => Simulation.togglePause());
-        document.getElementById('btn-evolve').addEventListener('click', () => Simulation.forceEvolution());
-        document.getElementById('btn-reset').addEventListener('click', () => {
-            Simulation.hardReset();
-            this.log('System hard reset complete', 'sys');
-        });
-
-        this.cmdInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const cmd = this.cmdInput.value.trim();
-                if (cmd) {
-                    this.log(`root@neuroswarm:~# ${cmd}`, 'cmd');
-                    this.parseCommand(cmd);
-                    this.cmdInput.value = '';
+            class MultiHeadAttention {
+                constructor(numHeads, dim) {
+                    this.numHeads = numHeads;
+                    this.dim = dim;
+                    this.heads = [];
+                    for (let i = 0; i < numHeads; i++) {
+                        this.heads.push(new AttentionHead(dim));
+                    }
+                    // Выходной проекционный слой
+                    this.Wo = new Math3D.Matrix(dim, dim * numHeads);
+                    this.Wo.randomize();
+                }
+                
+                attend(input) {
+                    const headOutputs = [];
+                    for (let head of this.heads) {
+                        headOutputs.push(...head.attend(input));
+                    }
+                    
+                    // Объединяем выходы голов и проецируем
+                    const combined = Math3D.Matrix.fromArray(headOutputs.slice(0, this.dim * this.numHeads));
+                    const output = Math3D.Matrix.multiply(this.Wo, combined);
+                    
+                    if (!output) return input;
+                    
+                    const result = output.toArray();
+                    if (input.length > this.dim) {
+                        return [...result, ...input.slice(this.dim)];
+                    }
+                    return result;
+                }
+                
+                copy() {
+                    const newMHA = new MultiHeadAttention(this.numHeads, this.dim);
+                    for (let i = 0; i < this.numHeads; i++) {
+                        newMHA.heads[i] = this.heads[i].copy();
+                    }
+                    newMHA.Wo = this.Wo.copy();
+                    return newMHA;
+                }
+                
+                mutate(rate) {
+                    this.heads.forEach(h => h.mutate(rate));
+                    this.Wo.mutate(rate);
                 }
             }
-        });
-    },
 
-    log(msg, type = 'info') {
-        const div = document.createElement('div');
-        div.className = `log-entry log-${type}`;
-        const timestamp = new Date().toLocaleTimeString('ru-RU', { hour12: false });
-        div.textContent = `[${timestamp}] ${msg}`;
-        this.terminal.appendChild(div);
-        this.terminal.scrollTop = this.terminal.scrollHeight;
-
-        // Также в event log
-        if (this.eventLog) {
-            const eventDiv = document.createElement('div');
-            eventDiv.style.color = type === 'error' ? '#ff3366' : (type === 'warn' ? '#ffaa00' : '#a0a0b0');
-            eventDiv.textContent = `[${timestamp}] ${msg}`;
-            this.eventLog.appendChild(eventDiv);
-            this.eventLog.scrollTop = this.eventLog.scrollHeight;
-            
-            while (this.eventLog.children.length > 50) {
-                this.eventLog.removeChild(this.eventLog.firstChild);
+            // ============================================================================
+            // МОДУЛЬ 4: DQL (Deep Q-Learning) с опытом
+            // ============================================================================
+            class ReplayMemory {
+                constructor(capacity) {
+                    this.capacity = capacity;
+                    this.memory = [];
+                    this.position = 0;
+                }
+                
+                push(state, action, reward, nextState, done) {
+                    const experience = { state, action, reward, nextState, done };
+                    
+                    if (this.memory.length < this.capacity) {
+                        this.memory.push(experience);
+                    } else {
+                        this.memory[this.position] = experience;
+                    }
+                    
+                    this.position = (this.position + 1) % this.capacity;
+                }
+                
+                sample(batchSize) {
+                    const batch = [];
+                    const indices = new Set();
+                    
+                    while (indices.size < batchSize && indices.size < this.memory.length) {
+                        indices.add(Math.floor(Math.random() * this.memory.length));
+                    }
+                    
+                    for (let idx of indices) {
+                        batch.push(this.memory[idx]);
+                    }
+                    
+                    return batch;
+                }
+                
+                size() {
+                    return this.memory.length;
+                }
             }
-        }
 
-        while (this.terminal.children.length > 200) {
-            this.terminal.removeChild(this.terminal.firstChild);
-        }
-    },
+            class DQLAgent {
+                constructor(stateSize, actionSize, config = {}) {
+                    this.stateSize = stateSize;
+                    this.actionSize = actionSize;
+                    
+                    // Параметры DQL
+                    this.epsilon = config.epsilon || 1.0;
+                    this.epsilonMin = config.epsilonMin || 0.01;
+                    this.epsilonDecay = config.epsilonDecay || 0.995;
+                    this.gamma = config.gamma || 0.95;
+                    this.learningRate = config.learningRate || 0.001;
+                    this.batchSize = config.batchSize || 32;
+                    this.targetUpdateFreq = config.targetUpdateFreq || 100;
+                    
+                    // Нейронные сети
+                    this.policyNet = new NeuralNetwork([stateSize, 64, 64, actionSize]);
+                    this.targetNet = this.policyNet.copy();
+                    
+                    // Память
+                    this.memory = new ReplayMemory(config.memorySize || 10000);
+                    
+                    // Счетчик шагов для обновления target сети
+                    this.stepCount = 0;
+                }
+                
+                act(state, evaluate = false) {
+                    // Epsilon-greedy стратегия
+                    if (!evaluate && Math.random() < this.epsilon) {
+                        return Math.floor(Math.random() * this.actionSize);
+                    }
+                    
+                    const qValues = this.policyNet.predict(state);
+                    return qValues.indexOf(Math.max(...qValues));
+                }
+                
+                remember(state, action, reward, nextState, done) {
+                    this.memory.push(state, action, reward, nextState, done);
+                }
+                
+                learn() {
+                    if (this.memory.size() < this.batchSize) return 0;
+                    
+                    const batch = this.memory.sample(this.batchSize);
+                    let totalLoss = 0;
+                    
+                    // В реальной реализации здесь было бы обратное распространение
+                    // Для демо используем упрощенное обновление через мутацию
+                    
+                    for (let exp of batch) {
+                        const currentQ = this.policyNet.predict(exp.state)[exp.action];
+                        
+                        let targetQ = exp.reward;
+                        if (!exp.done) {
+                            const nextQ = this.targetNet.predict(exp.nextState);
+                            targetQ += this.gamma * Math.max(...nextQ);
+                        }
+                        
+                        // Разница (упрощенная)
+                        const loss = (targetQ - currentQ) ** 2;
+                        totalLoss += loss;
+                    }
+                    
+                    // Упрощенное обновление: мутация в сторону уменьшения ошибки
+                    if (totalLoss > 0.1) {
+                        this.policyNet.mutate(0.01);
+                    }
+                    
+                    // Обновление epsilon
+                    if (this.epsilon > this.epsilonMin) {
+                        this.epsilon *= this.epsilonDecay;
+                    }
+                    
+                    // Обновление target сети
+                    this.stepCount++;
+                    if (this.stepCount % this.targetUpdateFreq === 0) {
+                        this.targetNet = this.policyNet.copy();
+                    }
+                    
+                    return totalLoss / batch.length;
+                }
+                
+                decayEpsilon() {
+                    this.epsilon = Math.max(this.epsilonMin, this.epsilon * this.epsilonDecay);
+                }
+                
+                getEpsilon() {
+                    return this.epsilon;
+                }
+            }
 
-    updateStats() {
-        document.getElementById('stat-generation').textContent = Simulation.generation;
-        document.getElementById('stat-pop-size').textContent = Simulation.config.popSize;
-        document.getElementById('stat-mutation').textContent = (Simulation.config.mutationRate * 100).toFixed(1) + '%';
-        document.getElementById('stat-elite').textContent = Simulation.config.eliteCount;
-    },
+            // ============================================================================
+            // МОДУЛЬ 5: ОБЪЕКТНЫЙ ПУЛ (для оптимизации памяти)
+            // ============================================================================
+            class ObjectPool {
+                constructor(createFn, resetFn, initialSize = 100) {
+                    this.createFn = createFn;
+                    this.resetFn = resetFn;
+                    this.pool = [];
+                    this.active = new Set();
+                    
+                    for (let i = 0; i < initialSize; i++) {
+                        this.pool.push(this.createFn());
+                    }
+                }
+                
+                acquire(...args) {
+                    let obj;
+                    if (this.pool.length > 0) {
+                        obj = this.pool.pop();
+                    } else {
+                        obj = this.createFn();
+                    }
+                    
+                    this.resetFn(obj, ...args);
+                    this.active.add(obj);
+                    return obj;
+                }
+                
+                release(obj) {
+                    if (this.active.delete(obj)) {
+                        this.pool.push(obj);
+                    }
+                }
+                
+                releaseAll() {
+                    for (let obj of this.active) {
+                        this.pool.push(obj);
+                    }
+                    this.active.clear();
+                }
+                
+                getActive() {
+                    return Array.from(this.active);
+                }
+                
+                size() {
+                    return this.active.size;
+                }
+            }
 
-    updateRuntimeStats(alive, total) {
-        document.getElementById('stat-population').textContent = alive;
-        
-        const greenAnts = Simulation.ants.filter(a => a.colony === 'green');
-        const redAnts = Simulation.ants.filter(a => a.colony === 'red');
-        
-        document.getElementById('stat-green-alive').textContent = greenAnts.length;
-        document.getElementById('stat-red-alive').textContent = redAnts.length;
-        document.getElementById('stat-colonies').textContent = `${greenAnts.length}/${redAnts.length}`;
-        
-        document.getElementById('stat-green-res').textContent = Math.floor(Simulation.greenResources);
-        document.getElementById('stat-red-res').textContent = Math.floor(Simulation.redResources);
-        
-        document.getElementById('stat-green-war').textContent = greenAnts.filter(a => a.role === 'warrior').length;
-        document.getElementById('stat-green-worker').textContent = greenAnts.filter(a => a.role === 'worker').length;
-        document.getElementById('stat-green-builder').textContent = greenAnts.filter(a => a.role === 'builder').length;
-        
-        document.getElementById('stat-red-war').textContent = redAnts.filter(a => a.role === 'warrior').length;
-        document.getElementById('stat-red-worker').textContent = redAnts.filter(a => a.role === 'worker').length;
-        document.getElementById('stat-red-builder').textContent = redAnts.filter(a => a.role === 'builder').length;
-        
-        const best = Simulation.ants.reduce((prev, curr) => 
-            (prev.fitness > curr.fitness) ? prev : curr, Simulation.ants[0]);
-        
-        if (best) {
-            document.getElementById('stat-avg-fitness').textContent = Math.floor(
-                Simulation.ants.reduce((sum, a) => sum + a.fitness, 0) / Simulation.ants.length
-            );
-        }
-        
-        document.getElementById('stat-kills').textContent = Simulation.stats.totalKills;
-        document.getElementById('stat-gathered').textContent = Simulation.stats.totalGathered;
-    },
-
-    updateOverlay() {
-        document.getElementById('overlay-timescale').textContent = Simulation.timeScale + 'x';
-        document.getElementById('overlay-entities').textContent = 
-            Simulation.ants.length + Simulation.enemies.length + Simulation.foods.length + Simulation.resources.length;
-    },
-
-    updateFPS() {
-        const now = performance.now();
-        this.frameCount++;
-        
-        if (now - this.lastTime >= 1000) {
-            this.fps = this.frameCount;
-            this.frameCount = 0;
-            this.lastTime = now;
-            document.getElementById('stat-fps').textContent = this.fps;
-        }
-    },
-
-    drawBrain(ant) {
-        const canvas = document.getElementById('brain-canvas');
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width = canvas.offsetWidth;
-        const h = canvas.height = canvas.offsetHeight;
-
-        document.getElementById('brain-unit-id').textContent = ant.id.substr(0, 6);
-        document.getElementById('brain-colony').textContent = ant.colony === 'green' ? 'GREEN' : 'RED';
-        document.getElementById('brain-role').textContent = ant.role.toUpperCase();
-        document.getElementById('brain-age').textContent = ant.age;
-
-        ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, w, h);
-
-        const layers = ant.brain.layers;
-        const layerSizes = ant.brain.layerSizes;
-        const xGap = w / (layers.length + 1);
-        const maxNodes = Math.max(...layerSizes);
-        const yGap = (h - 40) / maxNodes;
-
-        for (let l = 0; l < layers.length; l++) {
-            const matrix = layers[l];
-            const x1 = l * xGap + 20;
-            const x2 = (l + 1) * xGap + 20;
-
-            for (let i = 0; i < matrix.rows; i++) {
-                for (let j = 0; j < matrix.cols; j++) {
-                    const weight = matrix.data[i * matrix.cols + j];
-                    if (Math.abs(weight) > 0.1) {
-                        const alpha = Math.min(Math.abs(weight), 1);
-                        ctx.strokeStyle = weight > 0 
-                            ? `rgba(0, 255, 136, ${alpha * 0.5})` 
-                            : `rgba(255, 51, 102, ${alpha * 0.5})`;
-                        ctx.lineWidth = Math.abs(weight) * 2;
-                        ctx.beginPath();
-                        const y1 = 20 + j * yGap;
-                        const y2 = 20 + i * yGap;
-                        ctx.moveTo(x1, y1);
-                        ctx.lineTo(x2, y2);
-                        ctx.stroke();
+            // ============================================================================
+            // МОДУЛЬ 6: ПРОСТРАНСТВЕННОЕ РАЗДЕЛЕНИЕ (Quadtree)
+            // ============================================================================
+            class Quadtree {
+                constructor(x, y, width, height, capacity = 4) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                    this.capacity = capacity;
+                    this.objects = [];
+                    this.divided = false;
+                }
+                
+                subdivide() {
+                    const halfW = this.width / 2;
+                    const halfH = this.height / 2;
+                    
+                    this.northeast = new Quadtree(this.x + halfW, this.y, halfW, halfH, this.capacity);
+                    this.northwest = new Quadtree(this.x, this.y, halfW, halfH, this.capacity);
+                    this.southeast = new Quadtree(this.x + halfW, this.y + halfH, halfW, halfH, this.capacity);
+                    this.southwest = new Quadtree(this.x, this.y + halfH, halfW, halfH, this.capacity);
+                    
+                    this.divided = true;
+                    
+                    // Перераспределяем объекты
+                    for (let obj of this.objects) {
+                        this.insertIntoChildren(obj);
+                    }
+                    this.objects = [];
+                }
+                
+                insert(obj) {
+                    if (!this.contains(obj)) return false;
+                    
+                    if (!this.divided) {
+                        if (this.objects.length < this.capacity) {
+                            this.objects.push(obj);
+                            return true;
+                        } else {
+                            this.subdivide();
+                        }
+                    }
+                    
+                    return this.insertIntoChildren(obj);
+                }
+                
+                insertIntoChildren(obj) {
+                    return (this.northeast.insert(obj) ||
+                            this.northwest.insert(obj) ||
+                            this.southeast.insert(obj) ||
+                            this.southwest.insert(obj));
+                }
+                
+                contains(obj) {
+                    const x = obj.x !== undefined ? obj.x : obj.pos.x;
+                    const y = obj.y !== undefined ? obj.y : obj.pos.y;
+                    return (x >= this.x && x <= this.x + this.width &&
+                            y >= this.y && y <= this.y + this.height);
+                }
+                
+                query(range, result = []) {
+                    if (!this.intersects(range)) return result;
+                    
+                    for (let obj of this.objects) {
+                        const x = obj.x !== undefined ? obj.x : obj.pos.x;
+                        const y = obj.y !== undefined ? obj.y : obj.pos.y;
+                        if (x >= range.x && x <= range.x + range.width &&
+                            y >= range.y && y <= range.y + range.height) {
+                            result.push(obj);
+                        }
+                    }
+                    
+                    if (this.divided) {
+                        this.northeast.query(range, result);
+                        this.northwest.query(range, result);
+                        this.southeast.query(range, result);
+                        this.southwest.query(range, result);
+                    }
+                    
+                    return result;
+                }
+                
+                intersects(range) {
+                    return !(range.x > this.x + this.width ||
+                             range.x + range.width < this.x ||
+                             range.y > this.y + this.height ||
+                             range.y + range.height < this.y);
+                }
+                
+                clear() {
+                    this.objects = [];
+                    if (this.divided) {
+                        this.northeast.clear();
+                        this.northwest.clear();
+                        this.southeast.clear();
+                        this.southwest.clear();
+                        this.divided = false;
                     }
                 }
             }
-        }
 
-        const activations = ant.brain.lastActivations;
-        for (let l = 0; l < activations.length && l < layerSizes.length; l++) {
-            const x = l * xGap + 20;
-            const nodes = activations[l];
-            const size = layerSizes[l];
-
-            for (let n = 0; n < nodes.length; n++) {
-                const val = (nodes[n] + 1) / 2;
-                const y = 20 + n * yGap;
-
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = `rgba(0, 255, 136, ${val})`;
-                ctx.fillStyle = `rgba(0, 255, 136, ${val})`;
-                ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
-    },
-
-    drawMentalMap() {
-        const canvas = document.getElementById('mental-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        if (Simulation.greenMentalMap) {
-            ctx.fillStyle = '#00ff88';
-            Simulation.greenMentalMap.threats.forEach(t => {
-                const x = (t.x / Simulation.width) * canvas.width;
-                const y = (t.y / Simulation.height) * canvas.height;
-                ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        if (Simulation.redMentalMap) {
-            ctx.fillStyle = '#ff3366';
-            Simulation.redMentalMap.threats.forEach(t => {
-                const x = (t.x / Simulation.width) * canvas.width;
-                const y = (t.y / Simulation.height) * canvas.height;
-                ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        ctx.fillStyle = '#ffff00';
-        if (Simulation.greenMentalMap) {
-            Simulation.greenMentalMap.resourceSpots.forEach(r => {
-                const x = (r.x / Simulation.width) * canvas.width;
-                const y = (r.y / Simulation.height) * canvas.height;
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-        if (Simulation.redMentalMap) {
-            Simulation.redMentalMap.resourceSpots.forEach(r => {
-                const x = (r.x / Simulation.width) * canvas.width;
-                const y = (r.y / Simulation.height) * canvas.height;
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-    },
-
-    drawChart() {
-        const canvas = document.getElementById('fitness-chart');
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width = canvas.offsetWidth;
-        const h = canvas.height = canvas.offsetHeight;
-
-        ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = '#0a0a0f';
-        ctx.fillRect(0, 0, w, h);
-
-        if (Simulation.bestFitnessHistory.length < 2) return;
-
-        const maxFit = Math.max(...Simulation.bestFitnessHistory, 1);
-        const xStep = w / (Simulation.bestFitnessHistory.length - 1);
-
-        ctx.strokeStyle = '#1a1a2a';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 5; i++) {
-            const y = (h / 5) * i;
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(w, y);
-            ctx.stroke();
-        }
-
-        ctx.strokeStyle = '#00ff88';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        Simulation.bestFitnessHistory.forEach((fit, i) => {
-            const y = h - (fit / maxFit) * (h - 10);
-            if (i === 0) ctx.moveTo(0, y);
-            else ctx.lineTo(i * xStep, y);
-        });
-        ctx.stroke();
-
-        ctx.lineTo(w, h);
-        ctx.lineTo(0, h);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
-        ctx.fill();
-    },
-
-    parseCommand(cmd) {
-        const parts = cmd.toLowerCase().split(/\s+/);
-        const action = parts[0];
-
-        switch (action) {
-            case 'help':
-                this.log('Available commands:', 'sys');
-                this.log('  speed [1-20]        - Set time scale', 'info');
-                this.log('  spawn food [n]       - Add food', 'info');
-                this.log('  spawn wood [n]       - Add wood', 'info');
-                this.log('  spawn stone [n]      - Add stone', 'info');
-                this.log('  spawn enemy [n]      - Add enemies', 'info');
-                this.log('  aggression [0-1]     - Set aggression', 'info');
-                this.log('  mutation [0-1]       - Set mutation rate', 'info');
-                this.log('  reset                - Hard reset', 'info');
-                break;
-
-            case 'speed':
-                const s = parseInt(parts[1]);
-                if (s >= 1 && s <= 20) {
-                    Simulation.timeScale = s;
-                    this.log(`Time scale set to ${s}x`, 'sys');
-                } else {
-                    this.log('Invalid speed. Use 1-20', 'error');
+            // ============================================================================
+            // МОДУЛЬ 7: МЕНТАЛЬНАЯ КАРТА (память колонии)
+            // ============================================================================
+            class MentalMap {
+                constructor(colonyId) {
+                    this.colonyId = colonyId;
+                    this.threats = [];
+                    this.resources = [];
+                    this.food = [];
+                    this.maxEntries = 50;
+                    this.memoryTime = 30000; // 30 секунд
                 }
-                break;
+                
+                addThreat(x, y, strength) {
+                    this.threats.push({
+                        x, y, strength,
+                        time: Date.now()
+                    });
+                    this.cleanup();
+                }
+                
+                addResource(x, y, type, amount) {
+                    const entry = { x, y, type, amount, time: Date.now() };
+                    
+                    if (type === 'food') {
+                        this.food.push(entry);
+                        if (this.food.length > this.maxEntries) {
+                            this.food = this.food.slice(-this.maxEntries);
+                        }
+                    } else {
+                        this.resources.push(entry);
+                        if (this.resources.length > this.maxEntries) {
+                            this.resources = this.resources.slice(-this.maxEntries);
+                        }
+                    }
+                }
+                
+                getNearbyThreats(x, y, radius = 200) {
+                    const now = Date.now();
+                    return this.threats.filter(t => {
+                        const age = now - t.time;
+                        if (age > this.memoryTime) return false;
+                        const dx = t.x - x;
+                        const dy = t.y - y;
+                        return Math.sqrt(dx*dx + dy*dy) < radius;
+                    });
+                }
+                
+                getNearbyResources(x, y, radius = 200) {
+                    const now = Date.now();
+                    const all = [...this.resources, ...this.food];
+                    return all.filter(r => {
+                        const age = now - r.time;
+                        if (age > this.memoryTime) return false;
+                        const dx = r.x - x;
+                        const dy = r.y - y;
+                        return Math.sqrt(dx*dx + dy*dy) < radius;
+                    });
+                }
+                
+                cleanup() {
+                    const now = Date.now();
+                    this.threats = this.threats.filter(t => now - t.time < this.memoryTime);
+                    this.resources = this.resources.filter(r => now - r.time < this.memoryTime);
+                    this.food = this.food.filter(f => now - f.time < this.memoryTime);
+                }
+                
+                getThreats() { return this.threats; }
+                getResources() { return this.resources; }
+                getFood() { return this.food; }
+            }
 
-            case 'spawn':
-                const type = parts[1];
-                const count = parseInt(parts[2]) || 10;
-                if (type === 'food') {
+            // ============================================================================
+            // МОДУЛЬ 8: ЧАСТИЦЫ (с использованием ObjectPool)
+            // ============================================================================
+            class Particle {
+                constructor() {
+                    this.pos = new Math3D.Vec2();
+                    this.vel = new Math3D.Vec2();
+                    this.life = 0;
+                    this.maxLife = 1;
+                    this.color = '#ffffff';
+                    this.size = 2;
+                }
+                
+                init(x, y, color, life = 1.0) {
+                    this.pos.x = x;
+                    this.pos.y = y;
+                    this.vel = Math3D.Vec2.random2D().mult(Math.random() * 2 + 1);
+                    this.life = life;
+                    this.maxLife = life;
+                    this.color = color;
+                    this.size = Math.random() * 3 + 1;
+                    return this;
+                }
+                
+                update() {
+                    this.pos.add(this.vel);
+                    this.vel.mult(0.95);
+                    this.life -= 0.01;
+                }
+                
+                isAlive() {
+                    return this.life > 0;
+                }
+                
+                draw(ctx) {
+                    ctx.globalAlpha = this.life / this.maxLife;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            class ParticleSystem {
+                constructor(maxParticles = 300) {
+                    this.pool = new ObjectPool(
+                        () => new Particle(),
+                        (p, x, y, color, life) => p.init(x, y, color, life),
+                        maxParticles
+                    );
+                }
+                
+                spawn(x, y, color, count = 5) {
                     for (let i = 0; i < count; i++) {
-                        Simulation.foods.push(new Food(
-                            200 + Math.random() * (Simulation.width - 400),
-                            50 + Math.random() * (Simulation.height - 100)
+                        this.pool.acquire(x, y, color, 0.5 + Math.random() * 0.5);
+                    }
+                }
+                
+                update() {
+                    const toRemove = [];
+                    for (let p of this.pool.active) {
+                        p.update();
+                        if (!p.isAlive()) {
+                            toRemove.push(p);
+                        }
+                    }
+                    
+                    for (let p of toRemove) {
+                        this.pool.release(p);
+                    }
+                }
+                
+                draw(ctx) {
+                    for (let p of this.pool.active) {
+                        p.draw(ctx);
+                    }
+                }
+                
+                clear() {
+                    this.pool.releaseAll();
+                }
+            }
+
+            // ============================================================================
+            // МОДУЛЬ 9: РЕСУРСЫ
+            // ============================================================================
+            class Resource {
+                constructor(x, y, type) {
+                    this.x = x;
+                    this.y = y;
+                    this.pos = this; // Для совместимости
+                    this.type = type;
+                    this.amount = type === 'food' ? 5 : (type === 'wood' ? 8 : 6);
+                    this.carried = false;
+                    this.dead = false;
+                    this.r = 4;
+                    
+                    switch(type) {
+                        case 'food': this.color = '#00ff88'; break;
+                        case 'wood': this.color = '#8B4513'; break;
+                        case 'stone': this.color = '#808080'; break;
+                        default: this.color = '#ffff00';
+                    }
+                }
+                
+                collect(amount) {
+                    this.amount -= amount;
+                    if (this.amount <= 0) {
+                        this.dead = true;
+                    }
+                }
+                
+                draw(ctx) {
+                    if (this.carried || this.dead) return;
+                    
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Индикатор количества
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '7px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.amount.toString(), this.x, this.y);
+                }
+            }
+
+            // ============================================================================
+            // МОДУЛЬ 10: БАЗОВАЯ СУЩНОСТЬ
+            // ============================================================================
+            class Entity {
+                constructor(x, y) {
+                    this.pos = new Math3D.Vec2(x, y);
+                    this.vel = new Math3D.Vec2(0, 0);
+                    this.acc = new Math3D.Vec2(0, 0);
+                    this.maxSpeed = 2;
+                    this.maxForce = 0.1;
+                    this.r = 5;
+                    this.dead = false;
+                    this.color = '#ffffff';
+                    this.id = Math.random().toString(36).substring(2, 10);
+                }
+                
+                applyForce(force) {
+                    this.acc.add(force);
+                }
+                
+                update() {
+                    this.vel.add(this.acc);
+                    this.vel.limit(this.maxSpeed);
+                    this.pos.add(this.vel);
+                    this.acc.mult(0);
+                    
+                    // Границы мира
+                    this.constrain();
+                }
+                
+                constrain() {
+                    const margin = 20;
+                    const worldWidth = Simulation.width;
+                    const worldHeight = Simulation.height;
+                    
+                    if (this.pos.x < margin) {
+                        this.pos.x = margin;
+                        this.vel.x *= -0.5;
+                    }
+                    if (this.pos.x > worldWidth - margin) {
+                        this.pos.x = worldWidth - margin;
+                        this.vel.x *= -0.5;
+                    }
+                    if (this.pos.y < margin) {
+                        this.pos.y = margin;
+                        this.vel.y *= -0.5;
+                    }
+                    if (this.pos.y > worldHeight - margin) {
+                        this.pos.y = worldHeight - margin;
+                        this.vel.y *= -0.5;
+                    }
+                }
+                
+                distanceTo(other) {
+                    return this.pos.dist(other.pos || other);
+                }
+                
+                draw(ctx) {
+                    // Базовое отображение
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.pos.x, this.pos.y, this.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ============================================================================
+            // МОДУЛЬ 11: МУРАВЕЙ (основной агент)
+            // ============================================================================
+            class Ant extends Entity {
+                constructor(x, y, colony = 'green', role = 'worker', brain = null) {
+                    super(x, y);
+                    
+                    // Основные атрибуты
+                    this.colony = colony;
+                    this.role = role;
+                    this.color = colony === 'green' ? '#00ff88' : '#ff3366';
+                    
+                    // Характеристики в зависимости от роли
+                    switch(role) {
+                        case 'warrior':
+                            this.maxSpeed = 2.8;
+                            this.maxForce = 0.2;
+                            this.health = 120;
+                            this.maxHealth = 120;
+                            this.damage = 20;
+                            this.r = 7;
+                            break;
+                        case 'builder':
+                            this.maxSpeed = 2.2;
+                            this.maxForce = 0.15;
+                            this.health = 80;
+                            this.maxHealth = 80;
+                            this.damage = 5;
+                            this.carryCapacity = 3;
+                            this.r = 6;
+                            break;
+                        default: // worker
+                            this.maxSpeed = 3.2;
+                            this.maxForce = 0.18;
+                            this.health = 60;
+                            this.maxHealth = 60;
+                            this.damage = 2;
+                            this.carryCapacity = 2;
+                            this.r = 5;
+                    }
+                    
+                    // Состояние
+                    this.health = this.maxHealth;
+                    this.energy = 100;
+                    this.maxEnergy = 100;
+                    this.age = 0;
+                    this.fitness = 0;
+                    this.kills = 0;
+                    this.resourcesGathered = 0;
+                    
+                    // Инвентарь
+                    this.carrying = null;
+                    
+                    // Сенсоры
+                    this.rayCount = 5;
+                    this.rayLength = 150;
+                    this.rayAngle = Math.PI / 1.5;
+                    
+                    // Нейросеть
+                    if (brain) {
+                        this.brain = brain.copy();
+                    } else {
+                        // [сенсоры*3 + состояние(5) + память(2)] = 22 входа
+                        this.brain = new NeuralNetwork([22, 32, 32, 16, 5]);
+                    }
+                    
+                    // Механизм внимания
+                    this.attention = new MultiHeadAttention(4, 8);
+                    
+                    // DQL агент
+                    this.dqlAgent = new DQLAgent(22, 5, {
+                        epsilon: 0.5,
+                        epsilonMin: 0.05,
+                        epsilonDecay: 0.998,
+                        gamma: 0.9
+                    });
+                    
+                    // Память
+                    this.mentalMap = colony === 'green' ? Simulation.greenMentalMap : Simulation.redMentalMap;
+                    
+                    // Базовая позиция (колония)
+                    this.basePos = colony === 'green' 
+                        ? new Math3D.Vec2(100, Simulation.height / 2) 
+                        : new Math3D.Vec2(Simulation.width - 100, Simulation.height / 2);
+                    
+                    // Атака
+                    this.attackCooldown = 0;
+                    this.attackCooldownMax = 20;
+                    
+                    // Состояние поведения
+                    this.state = 'exploring';
+                    this.stateTimer = 0;
+                    this.target = null;
+                    
+                    // История
+                    this.lastAction = 0;
+                    this.lastState = null;
+                    this.lastReward = 0;
+                }
+                
+                // Получение сенсорных данных
+                getSensoryInput(resources, enemies, allies) {
+                    const inputs = [];
+                    const angle = Math.atan2(this.vel.y, this.vel.x);
+                    
+                    // Рейкасты для ресурсов
+                    for (let i = 0; i < this.rayCount; i++) {
+                        const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
+                        inputs.push(this.castRay(rayAngle, resources.filter(r => !r.carried && !r.dead)));
+                    }
+                    
+                    // Рейкасты для врагов
+                    for (let i = 0; i < this.rayCount; i++) {
+                        const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
+                        inputs.push(this.castRay(rayAngle, enemies));
+                    }
+                    
+                    // Рейкасты для союзников
+                    for (let i = 0; i < this.rayCount; i++) {
+                        const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
+                        inputs.push(this.castRay(rayAngle, allies.filter(a => a !== this)));
+                    }
+                    
+                    return inputs;
+                }
+                
+                // Рейкаст для одного луча
+                castRay(angle, targets) {
+                    let closestDist = this.rayLength;
+                    
+                    for (let t of targets) {
+                        if (!t || t.dead) continue;
+                        
+                        const tx = t.pos ? t.pos.x : (t.x !== undefined ? t.x : 0);
+                        const ty = t.pos ? t.pos.y : (t.y !== undefined ? t.y : 0);
+                        
+                        const dx = tx - this.pos.x;
+                        const dy = ty - this.pos.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (dist < this.rayLength) {
+                            const angleToTarget = Math.atan2(dy, dx);
+                            let angleDiff = angleToTarget - angle;
+                            
+                            // Нормализация угла
+                            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                            
+                            if (Math.abs(angleDiff) < 0.3) {
+                                if (dist < closestDist) {
+                                    closestDist = dist;
+                                }
+                            }
+                        }
+                    }
+                    
+                    return 1 - (closestDist / this.rayLength);
+                }
+                
+                // Получение состояния для нейросети
+                getState(resources, enemies, allies) {
+                    const sensory = this.getSensoryInput(resources, enemies, allies);
+                    
+                    // Внутреннее состояние
+                    const internal = [
+                        this.health / this.maxHealth,
+                        this.energy / this.maxEnergy,
+                        this.age / 1000,
+                        this.attackCooldown / this.attackCooldownMax,
+                        this.carrying ? 1 : 0
+                    ];
+                    
+                    // Память из ментальной карты
+                    const nearbyThreats = this.mentalMap ? this.mentalMap.getNearbyThreats(this.pos.x, this.pos.y, 200) : [];
+                    const nearbyResources = this.mentalMap ? this.mentalMap.getNearbyResources(this.pos.x, this.pos.y, 200) : [];
+                    
+                    const memory = [
+                        Math.min(1, nearbyThreats.length / 5),
+                        Math.min(1, nearbyResources.length / 5)
+                    ];
+                    
+                    return [...sensory, ...internal, ...memory];
+                }
+                
+                // Применение действия
+                applyAction(action, resources, enemies) {
+                    let reward = 0;
+                    
+                    // action: [направление_x, направление_y, скорость, атака/сбор, тип_взаимодействия]
+                    const dirX = action[0] * 2 - 1; // от -1 до 1
+                    const dirY = action[1] * 2 - 1;
+                    const speedFactor = action[2]; // от 0 до 1
+                    const attackIntent = action[3] > 0.5;
+                    const gatherIntent = action[4] > 0.5;
+                    
+                    // Применяем силу движения
+                    if (Math.abs(dirX) > 0.1 || Math.abs(dirY) > 0.1) {
+                        const desiredDir = new Math3D.Vec2(dirX, dirY).normalize();
+                        const desiredVel = desiredDir.mult(this.maxSpeed * speedFactor);
+                        const steer = Math3D.Vec2.sub(desiredVel, this.vel);
+                        steer.limit(this.maxForce);
+                        this.applyForce(steer);
+                    }
+                    
+                    // Трата энергии на движение
+                    if (this.vel.mag() > 0.1) {
+                        this.energy -= 0.05;
+                    } else {
+                        // Восстановление энергии в покое
+                        this.energy = Math.min(this.maxEnergy, this.energy + 0.02);
+                    }
+                    
+                    // Поведение в зависимости от роли
+                    if (this.role === 'warrior' && attackIntent) {
+                        reward += this.warriorBehavior(enemies);
+                    } else if (this.role === 'worker' && gatherIntent) {
+                        reward += this.workerBehavior(resources);
+                    } else if (this.role === 'builder' && gatherIntent) {
+                        reward += this.builderBehavior(resources);
+                    }
+                    
+                    return reward;
+                }
+                
+                // Поведение воина
+                warriorBehavior(enemies) {
+                    let reward = 0;
+                    
+                    if (this.attackCooldown <= 0) {
+                        const nearbyEnemy = enemies.find(e => 
+                            !e.dead && this.pos.dist(e.pos) < 30
+                        );
+                        
+                        if (nearbyEnemy) {
+                            nearbyEnemy.health -= this.damage;
+                            this.attackCooldown = this.attackCooldownMax;
+                            
+                            if (nearbyEnemy.health <= 0) {
+                                nearbyEnemy.dead = true;
+                                this.kills++;
+                                reward += 50;
+                                this.fitness += 50;
+                                
+                                // Запоминаем угрозу
+                                if (this.mentalMap) {
+                                    this.mentalMap.addThreat(nearbyEnemy.pos.x, nearbyEnemy.pos.y, 10);
+                                }
+                            } else {
+                                reward += 10;
+                            }
+                        }
+                    }
+                    
+                    if (this.attackCooldown > 0) {
+                        this.attackCooldown--;
+                    }
+                    
+                    return reward;
+                }
+                
+                // Поведение рабочего
+                workerBehavior(resources) {
+                    let reward = 0;
+                    
+                    if (this.carrying) {
+                        // Возвращаем ресурс в базу
+                        const distToBase = this.pos.dist(this.basePos);
+                        
+                        if (distToBase < 20) {
+                            // Сдаем ресурс
+                            if (this.colony === 'green') {
+                                Simulation.greenResources += this.carrying.amount;
+                            } else {
+                                Simulation.redResources += this.carrying.amount;
+                            }
+                            
+                            this.resourcesGathered++;
+                            this.fitness += 5;
+                            reward += 20;
+                            this.carrying = null;
+                        } else {
+                            // Двигаемся к базе
+                            const toBase = Math3D.Vec2.sub(this.basePos, this.pos);
+                            toBase.normalize().mult(this.maxSpeed);
+                            const steer = Math3D.Vec2.sub(toBase, this.vel);
+                            steer.limit(this.maxForce);
+                            this.applyForce(steer);
+                        }
+                    } else {
+                        // Ищем ресурсы (только еда для рабочих)
+                        const foodResources = resources.filter(r => !r.carried && !r.dead && r.type === 'food');
+                        
+                        if (foodResources.length > 0) {
+                            // Находим ближайший ресурс
+                            let closest = null;
+                            let closestDist = Infinity;
+                            
+                            for (let r of foodResources) {
+                                const d = this.pos.dist(r);
+                                if (d < closestDist) {
+                                    closestDist = d;
+                                    closest = r;
+                                }
+                            }
+                            
+                            if (closest && closestDist < 15) {
+                                // Собираем ресурс
+                                this.carrying = { type: 'food', amount: closest.amount };
+                                closest.dead = true;
+                                reward += 10;
+                                
+                                // Запоминаем место ресурса
+                                if (this.mentalMap) {
+                                    this.mentalMap.addResource(closest.x, closest.y, 'food', closest.amount);
+                                }
+                            } else if (closest) {
+                                // Двигаемся к ресурсу
+                                const toResource = Math3D.Vec2.sub(closest, this.pos);
+                                toResource.normalize().mult(this.maxSpeed);
+                                const steer = Math3D.Vec2.sub(toResource, this.vel);
+                                steer.limit(this.maxForce);
+                                this.applyForce(steer);
+                            }
+                        } else {
+                            // Случайное блуждание
+                            if (this.stateTimer <= 0 || Math.random() < 0.01) {
+                                this.target = new Math3D.Vec2(
+                                    this.basePos.x + (Math.random() - 0.5) * 300,
+                                    this.basePos.y + (Math.random() - 0.5) * 300
+                                );
+                                this.stateTimer = 100;
+                            }
+                            
+                            if (this.target) {
+                                const toTarget = Math3D.Vec2.sub(this.target, this.pos);
+                                if (toTarget.mag() < 20) {
+                                    this.stateTimer = 0;
+                                } else {
+                                    toTarget.normalize().mult(this.maxSpeed * 0.7);
+                                    const steer = Math3D.Vec2.sub(toTarget, this.vel);
+                                    steer.limit(this.maxForce);
+                                    this.applyForce(steer);
+                                }
+                            }
+                            
+                            this.stateTimer--;
+                        }
+                    }
+                    
+                    return reward;
+                }
+                
+                // Поведение строителя
+                builderBehavior(resources) {
+                    let reward = 0;
+                    
+                    if (this.carrying) {
+                        // Возвращаем ресурс в базу
+                        const distToBase = this.pos.dist(this.basePos);
+                        
+                        if (distToBase < 20) {
+                            // Сдаем ресурс
+                            if (this.colony === 'green') {
+                                Simulation.greenResources += this.carrying.amount;
+                            } else {
+                                Simulation.redResources += this.carrying.amount;
+                            }
+                            
+                            this.resourcesGathered++;
+                            this.fitness += 5;
+                            reward += 20;
+                            this.carrying = null;
+                        } else {
+                            // Двигаемся к базе
+                            const toBase = Math3D.Vec2.sub(this.basePos, this.pos);
+                            toBase.normalize().mult(this.maxSpeed);
+                            const steer = Math3D.Vec2.sub(toBase, this.vel);
+                            steer.limit(this.maxForce);
+                            this.applyForce(steer);
+                        }
+                    } else {
+                        // Ищем строительные ресурсы (wood, stone)
+                        const buildResources = resources.filter(r => !r.carried && !r.dead && (r.type === 'wood' || r.type === 'stone'));
+                        
+                        if (buildResources.length > 0) {
+                            // Находим ближайший ресурс
+                            let closest = null;
+                            let closestDist = Infinity;
+                            
+                            for (let r of buildResources) {
+                                const d = this.pos.dist(r);
+                                if (d < closestDist) {
+                                    closestDist = d;
+                                    closest = r;
+                                }
+                            }
+                            
+                            if (closest && closestDist < 15) {
+                                // Собираем ресурс
+                                this.carrying = { type: closest.type, amount: closest.amount };
+                                closest.dead = true;
+                                reward += 15;
+                                
+                                // Запоминаем место ресурса
+                                if (this.mentalMap) {
+                                    this.mentalMap.addResource(closest.x, closest.y, closest.type, closest.amount);
+                                }
+                            } else if (closest) {
+                                // Двигаемся к ресурсу
+                                const toResource = Math3D.Vec2.sub(closest, this.pos);
+                                toResource.normalize().mult(this.maxSpeed);
+                                const steer = Math3D.Vec2.sub(toResource, this.vel);
+                                steer.limit(this.maxForce);
+                                this.applyForce(steer);
+                            }
+                        }
+                    }
+                    
+                    return reward;
+                }
+                
+                // Основной цикл мышления
+                think(resources, enemies, allies) {
+                    if (this.dead) return;
+                    
+                    // Получаем текущее состояние
+                    const state = this.getState(resources, enemies, allies);
+                    
+                    // Применяем внимание
+                    const attendedState = this.attention.attend(state);
+                    
+                    // Выбираем действие через DQL
+                    const actionIndex = this.dqlAgent.act(attendedState);
+                    
+                    // Преобразуем индекс действия в вектор действий
+                    const actionMap = [
+                        [0.2, 0.5, 0.3, 0.0, 0.0], // исследование
+                        [0.8, 0.5, 0.8, 0.0, 0.5], // сбор ресурсов
+                        [0.5, 0.8, 0.6, 0.0, 0.3], // движение вправо-вверх
+                        [0.3, 0.2, 0.4, 0.8, 0.0], // атака
+                        [0.5, 0.5, 0.5, 0.0, 0.8]  // возврат в базу
+                    ];
+                    
+                    const action = actionMap[actionIndex];
+                    
+                    // Выполняем действие и получаем награду
+                    const reward = this.applyAction(action, resources, enemies);
+                    
+                    // Получаем следующее состояние
+                    const nextState = this.getState(resources, enemies, allies);
+                    
+                    // Проверка на завершение
+                    const done = this.health <= 0;
+                    
+                    // Запоминаем опыт
+                    this.dqlAgent.remember(state, actionIndex, reward, nextState, done);
+                    
+                    // Обучаемся
+                    this.dqlAgent.learn();
+                    
+                    // Бонус за выживание
+                    this.fitness += 0.1;
+                    
+                    // Возраст
+                    this.age++;
+                    
+                    // Проверка на смерть от голода
+                    if (this.energy <= 0) {
+                        this.health -= 5;
+                    }
+                    
+                    if (this.health <= 0) {
+                        this.dead = true;
+                    }
+                    
+                    // Обновляем UI для выбранного муравья
+                    if (Simulation.selectedAnt === this) {
+                        this.updateUI();
+                    }
+                }
+                
+                // Обновление UI для выбранного муравья
+                updateUI() {
+                    const elements = {
+                        'brain-unit-id': this.id.substring(0, 6),
+                        'brain-colony': this.colony === 'green' ? 'GREEN' : 'RED',
+                        'brain-role': this.role.toUpperCase(),
+                        'brain-age': this.age,
+                        'brain-fitness': Math.floor(this.fitness),
+                        'brain-kills': this.kills
+                    };
+                    
+                    for (let [id, value] of Object.entries(elements)) {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = value;
+                    }
+                }
+                
+                // Отрисовка
+                draw(ctx) {
+                    if (this.dead) return;
+                    
+                    ctx.save();
+                    ctx.translate(this.pos.x, this.pos.y);
+                    ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
+                    
+                    // Тень
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                    
+                    // Тело
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.moveTo(this.r + 2, 0);
+                    ctx.lineTo(-this.r, -this.r / 1.5);
+                    ctx.lineTo(-this.r, this.r / 1.5);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Значок роли
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '8px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    let symbol = '';
+                    if (this.role === 'warrior') symbol = '⚔';
+                    else if (this.role === 'builder') symbol = '🏗';
+                    else symbol = '🌾';
+                    
+                    ctx.fillText(symbol, 0, -this.r - 2);
+                    
+                    // Полоска здоровья
+                    ctx.fillStyle = '#333333';
+                    ctx.fillRect(-this.r, -this.r - 6, this.r * 2, 2);
+                    
+                    ctx.fillStyle = this.health > 60 ? '#00ff00' : (this.health > 30 ? '#ffff00' : '#ff0000');
+                    ctx.fillRect(-this.r, -this.r - 6, (this.r * 2) * (this.health / this.maxHealth), 2);
+                    
+                    // Индикатор ноши
+                    if (this.carrying) {
+                        ctx.fillStyle = '#ffaa00';
+                        ctx.beginPath();
+                        ctx.arc(0, -this.r - 10, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // Рамка для выбранного муравья
+                    if (Simulation.selectedAnt === this) {
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([2, 2]);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.r + 4, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ============================================================================
+            // МОДУЛЬ 12: СИМУЛЯЦИЯ (главный модуль)
+            // ============================================================================
+            const Simulation = {
+                // Свойства
+                canvas: null,
+                ctx: null,
+                width: 800,
+                height: 600,
+                
+                ants: [],
+                resources: [],
+                
+                greenMentalMap: null,
+                redMentalMap: null,
+                
+                greenResources: 100,
+                redResources: 100,
+                
+                generation: 1,
+                bestFitness: 0,
+                bestFitnessHistory: [],
+                
+                paused: false,
+                timeScale: 1,
+                
+                config: {
+                    popSize: 30,
+                    mutationRate: 0.05,
+                    eliteCount: 3,
+                    foodSpawnRate: 0.01,
+                    resourceSpawnRate: 0.005
+                },
+                
+                stats: {
+                    totalKills: 0,
+                    totalGathered: 0,
+                    avgFitness: 0
+                },
+                
+                particleSystem: null,
+                quadtree: null,
+                
+                selectedAnt: null,
+                
+                // Инициализация
+                init() {
+                    this.canvas = document.getElementById('sim-canvas');
+                    this.ctx = this.canvas.getContext('2d');
+                    
+                    this.resize();
+                    window.addEventListener('resize', () => this.resize());
+                    
+                    this.particleSystem = new ParticleSystem(500);
+                    
+                    this.hardReset();
+                    
+                    // Запуск цикла
+                    requestAnimationFrame(() => this.loop());
+                    
+                    // Скрываем загрузку
+                    setTimeout(() => {
+                        const loading = document.getElementById('loading');
+                        if (loading) {
+                            loading.style.opacity = '0';
+                            setTimeout(() => loading.remove(), 500);
+                        }
+                    }, 1000);
+                },
+                
+                // Изменение размера
+                resize() {
+                    const container = document.getElementById('viewport');
+                    if (!container) return;
+                    
+                    this.width = container.clientWidth;
+                    this.height = container.clientHeight;
+                    
+                    this.canvas.width = this.width;
+                    this.canvas.height = this.height;
+                },
+                
+                // Полный сброс
+                hardReset() {
+                    this.ants = [];
+                    this.resources = [];
+                    this.generation = 1;
+                    this.bestFitness = 0;
+                    this.bestFitnessHistory = [];
+                    this.greenResources = 100;
+                    this.redResources = 100;
+                    this.stats = { totalKills: 0, totalGathered: 0, avgFitness: 0 };
+                    
+                    this.greenMentalMap = new MentalMap('green');
+                    this.redMentalMap = new MentalMap('red');
+                    
+                    // Создание муравьев
+                    for (let i = 0; i < 15; i++) {
+                        const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
+                        this.ants.push(new Ant(
+                            100 + Math.random() * 50,
+                            this.height / 2 - 50 + Math.random() * 100,
+                            'green',
+                            role
                         ));
                     }
-                    this.log(`Spawned ${count} food`, 'sys');
-                } else if (type === 'wood' || type === 'stone') {
+                    
+                    for (let i = 0; i < 15; i++) {
+                        const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
+                        this.ants.push(new Ant(
+                            this.width - 150 + Math.random() * 50,
+                            this.height / 2 - 50 + Math.random() * 100,
+                            'red',
+                            role
+                        ));
+                    }
+                    
+                    // Ресурсы
+                    this.spawnResources(30);
+                    
+                    this.selectedAnt = this.ants[0];
+                    UI.updateStats();
+                    UI.log('Simulation reset', 'sys');
+                },
+                
+                // Спавн ресурсов
+                spawnResources(count) {
                     for (let i = 0; i < count; i++) {
-                        Simulation.resources.push(new Resource(
-                            200 + Math.random() * (Simulation.width - 400),
-                            50 + Math.random() * (Simulation.height - 100),
+                        const rand = Math.random();
+                        let type;
+                        if (rand < 0.5) type = 'food';
+                        else if (rand < 0.8) type = 'wood';
+                        else type = 'stone';
+                        
+                        this.resources.push(new Resource(
+                            100 + Math.random() * (this.width - 200),
+                            100 + Math.random() * (this.height - 200),
                             type
                         ));
                     }
-                    this.log(`Spawned ${count} ${type}`, 'sys');
-                } else if (type === 'enemy') {
-                    for (let i = 0; i < count; i++) {
-                        Simulation.enemies.push(new Enemy(
-                            Simulation.width/2 - 50 + Math.random() * 100,
-                            Simulation.height/2 - 50 + Math.random() * 100
+                },
+                
+                // Эволюция
+                evolve() {
+                    // Сортировка по фитнесу
+                    this.ants.sort((a, b) => b.fitness - a.fitness);
+                    
+                    const best = this.ants[0];
+                    this.bestFitnessHistory.push(best.fitness);
+                    if (this.bestFitnessHistory.length > 100) {
+                        this.bestFitnessHistory.shift();
+                    }
+                    
+                    UI.log(`Generation ${this.generation} complete. Best fitness: ${Math.floor(best.fitness)}`, 'sys');
+                    
+                    // Разделение по колониям
+                    const greenAnts = this.ants.filter(a => a.colony === 'green');
+                    const redAnts = this.ants.filter(a => a.colony === 'red');
+                    
+                    const newAnts = [];
+                    
+                    // Элита зеленых
+                    greenAnts.sort((a, b) => b.fitness - a.fitness);
+                    for (let i = 0; i < Math.min(this.config.eliteCount, greenAnts.length); i++) {
+                        const elite = greenAnts[i];
+                        const child = new Ant(
+                            elite.basePos.x + (Math.random() - 0.5) * 40,
+                            elite.basePos.y + (Math.random() - 0.5) * 40,
+                            'green',
+                            elite.role,
+                            elite.brain
+                        );
+                        child.fitness = 0;
+                        newAnts.push(child);
+                    }
+                    
+                    // Остальные зеленые - кроссовер и мутация
+                    for (let i = this.config.eliteCount; i < 15; i++) {
+                        if (greenAnts.length < 2) break;
+                        
+                        const p1 = greenAnts[Math.floor(Math.random() * Math.min(5, greenAnts.length))];
+                        const p2 = greenAnts[Math.floor(Math.random() * Math.min(5, greenAnts.length))];
+                        
+                        const childBrain = p1.brain.crossover(p2.brain);
+                        childBrain.mutate(this.config.mutationRate);
+                        
+                        const role = Math.random() < 0.33 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+                        
+                        const child = new Ant(
+                            100 + Math.random() * 50,
+                            this.height / 2 - 50 + Math.random() * 100,
+                            'green',
+                            role,
+                            childBrain
+                        );
+                        newAnts.push(child);
+                    }
+                    
+                    // Элита красных
+                    redAnts.sort((a, b) => b.fitness - a.fitness);
+                    for (let i = 0; i < Math.min(this.config.eliteCount, redAnts.length); i++) {
+                        const elite = redAnts[i];
+                        const child = new Ant(
+                            elite.basePos.x + (Math.random() - 0.5) * 40,
+                            elite.basePos.y + (Math.random() - 0.5) * 40,
+                            'red',
+                            elite.role,
+                            elite.brain
+                        );
+                        child.fitness = 0;
+                        newAnts.push(child);
+                    }
+                    
+                    // Остальные красные
+                    for (let i = this.config.eliteCount; i < 15; i++) {
+                        if (redAnts.length < 2) break;
+                        
+                        const p1 = redAnts[Math.floor(Math.random() * Math.min(5, redAnts.length))];
+                        const p2 = redAnts[Math.floor(Math.random() * Math.min(5, redAnts.length))];
+                        
+                        const childBrain = p1.brain.crossover(p2.brain);
+                        childBrain.mutate(this.config.mutationRate);
+                        
+                        const role = Math.random() < 0.33 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+                        
+                        const child = new Ant(
+                            this.width - 150 + Math.random() * 50,
+                            this.height / 2 - 50 + Math.random() * 100,
+                            'red',
+                            role,
+                            childBrain
+                        );
+                        newAnts.push(child);
+                    }
+                    
+                    this.ants = newAnts;
+                    this.generation++;
+                    this.spawnResources(20);
+                    
+                    // Очистка памяти
+                    if (this.greenMentalMap) this.greenMentalMap.cleanup();
+                    if (this.redMentalMap) this.redMentalMap.cleanup();
+                    
+                    UI.updateStats();
+                },
+                
+                // Переключение паузы
+                togglePause() {
+                    this.paused = !this.paused;
+                    const btn = document.getElementById('btn-pause');
+                    if (btn) {
+                        btn.textContent = this.paused ? 'Resume' : 'Pause';
+                    }
+                    UI.log(this.paused ? 'Paused' : 'Resumed', 'sys');
+                },
+                
+                // Принудительная эволюция
+                forceEvolution() {
+                    this.evolve();
+                },
+                
+                // Основной цикл
+                loop() {
+                    if (!this.paused) {
+                        // Обновление с учетом timeScale
+                        for (let t = 0; t < this.timeScale; t++) {
+                            this.update();
+                        }
+                    }
+                    
+                    // Отрисовка
+                    this.draw();
+                    
+                    // Обновление UI
+                    UI.updateRuntimeStats();
+                    UI.updateOverlay();
+                    UI.drawFitnessChart();
+                    UI.drawMentalMap();
+                    
+                    // Выбор лучшего муравья для отображения, если текущий умер
+                    if (!this.selectedAnt || this.selectedAnt.dead) {
+                        const best = this.ants.filter(a => !a.dead)
+                                              .sort((a, b) => b.fitness - a.fitness)[0];
+                        if (best) {
+                            this.selectedAnt = best;
+                        }
+                    }
+                    
+                    // Отрисовка мозга выбранного муравья
+                    if (this.selectedAnt && !this.selectedAnt.dead) {
+                        UI.drawBrain(this.selectedAnt);
+                    }
+                    
+                    requestAnimationFrame(() => this.loop());
+                },
+                
+                // Обновление логики
+                update() {
+                    // Построение quadtree для оптимизации
+                    this.quadtree = new Quadtree(0, 0, this.width, this.height, 4);
+                    
+                    // Добавляем всех живых муравьев в quadtree
+                    for (let ant of this.ants) {
+                        if (!ant.dead) {
+                            this.quadtree.insert(ant);
+                        }
+                    }
+                    
+                    // Добавляем ресурсы в quadtree
+                    for (let res of this.resources) {
+                        if (!res.dead && !res.carried) {
+                            this.quadtree.insert(res);
+                        }
+                    }
+                    
+                    // Обновление муравьев
+                    const aliveAnts = this.ants.filter(a => !a.dead);
+                    
+                    for (let ant of aliveAnts) {
+                        // Поиск ближайших объектов через quadtree
+                        const searchRange = {
+                            x: ant.pos.x - 200,
+                            y: ant.pos.y - 200,
+                            width: 400,
+                            height: 400
+                        };
+                        
+                        const nearby = this.quadtree.query(searchRange);
+                        
+                        const nearbyResources = nearby.filter(obj => obj instanceof Resource);
+                        const nearbyEnemies = nearby.filter(obj => 
+                            obj instanceof Ant && obj.colony !== ant.colony && !obj.dead
+                        );
+                        const nearbyAllies = nearby.filter(obj => 
+                            obj instanceof Ant && obj.colony === ant.colony && obj !== ant && !obj.dead
+                        );
+                        
+                        ant.think(nearbyResources, nearbyEnemies, nearbyAllies);
+                    }
+                    
+                    // Удаление мертвых муравьев
+                    this.ants = this.ants.filter(a => {
+                        if (a.dead) {
+                            this.particleSystem.spawn(a.pos.x, a.pos.y, a.color, 8);
+                            this.stats.totalKills++;
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    // Удаление мертвых ресурсов
+                    this.resources = this.resources.filter(r => {
+                        if (r.dead) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    
+                    // Спавн новых ресурсов
+                    if (Math.random() < this.config.foodSpawnRate && this.resources.length < 50) {
+                        this.resources.push(new Resource(
+                            Math.random() * this.width,
+                            Math.random() * this.height,
+                            'food'
                         ));
                     }
-                    this.log(`Spawned ${count} enemies`, 'warn');
-                } else {
-                    this.log('Unknown type. Use: food, wood, stone, enemy', 'error');
-                }
-                break;
-
-            case 'aggression':
-                const agg = parseFloat(parts[1]);
-                if (agg >= 0 && agg <= 1) {
-                    Simulation.directives.aggression = agg;
-                    this.log(`Aggression level set to ${agg}`, 'sys');
-                } else {
-                    this.log('Invalid aggression. Use 0-1', 'error');
-                }
-                break;
-
-            case 'mutation':
-                const mut = parseFloat(parts[1]);
-                if (mut >= 0 && mut <= 1) {
-                    Simulation.config.mutationRate = mut;
-                    this.log(`Mutation rate set to ${(mut * 100).toFixed(1)}%`, 'sys');
+                    
+                    if (Math.random() < this.config.resourceSpawnRate && this.resources.length < 50) {
+                        const type = Math.random() < 0.6 ? 'wood' : 'stone';
+                        this.resources.push(new Resource(
+                            Math.random() * this.width,
+                            Math.random() * this.height,
+                            type
+                        ));
+                    }
+                    
+                    // Спавн новых муравьев, если достаточно ресурсов
+                    const greenCount = this.ants.filter(a => a.colony === 'green').length;
+                    const redCount = this.ants.filter(a => a.colony === 'red').length;
+                    
+                    if (this.greenResources >= 50 && greenCount < 20 && Math.random() < 0.02) {
+                        const role = Math.random() < 0.4 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+                        this.ants.push(new Ant(
+                            100 + Math.random() * 50,
+                            this.height / 2 - 50 + Math.random() * 100,
+                            'green',
+                            role
+                        ));
+                        this.greenResources -= 50;
+                    }
+                    
+                    if (this.redResources >= 50 && redCount < 20 && Math.random() < 0.02) {
+                        const role = Math.random() < 0.4 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
+                        this.ants.push(new Ant(
+                            this.width - 150 + Math.random() * 50,
+                            this.height / 2 - 50 + Math.random() * 100,
+                            'red',
+                            role
+                        ));
+                        this.redResources -= 50;
+                    }
+                    
+                    // Обновление частиц
+                    this.particleSystem.update();
+                    
+                    // Обновление статистики
                     this.updateStats();
-                } else {
-                    this.log('Invalid mutation rate. Use 0-1', 'error');
+                },
+                
+                // Обновление статистики
+                updateStats() {
+                    this.stats.totalGathered = this.ants.reduce((sum, a) => sum + a.resourcesGathered, 0);
+                    
+                    const totalFitness = this.ants.reduce((sum, a) => sum + a.fitness, 0);
+                    this.stats.avgFitness = this.ants.length > 0 ? totalFitness / this.ants.length : 0;
+                    
+                    this.bestFitness = Math.max(...this.ants.map(a => a.fitness), 0);
+                },
+                
+                // Отрисовка
+                draw() {
+                    this.ctx.clearRect(0, 0, this.width, this.height);
+                    
+                    // Фон
+                    this.ctx.fillStyle = '#0a0a0f';
+                    this.ctx.fillRect(0, 0, this.width, this.height);
+                    
+                    // Сетка
+                    this.ctx.strokeStyle = '#1a1a2a';
+                    this.ctx.lineWidth = 1;
+                    
+                    for (let x = 0; x < this.width; x += 50) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x, 0);
+                        this.ctx.lineTo(x, this.height);
+                        this.ctx.stroke();
+                    }
+                    
+                    for (let y = 0; y < this.height; y += 50) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, y);
+                        this.ctx.lineTo(this.width, y);
+                        this.ctx.stroke();
+                    }
+                    
+                    // Базы колоний
+                    this.ctx.fillStyle = '#00ff88';
+                    this.ctx.shadowBlur = 20;
+                    this.ctx.shadowColor = '#00ff88';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(100 - 25, this.height/2 - 25);
+                    this.ctx.lineTo(100 + 25, this.height/2);
+                    this.ctx.lineTo(100 - 25, this.height/2 + 25);
+                    this.ctx.fill();
+                    
+                    this.ctx.fillStyle = '#ff3366';
+                    this.ctx.shadowColor = '#ff3366';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.width - 100 + 25, this.height/2 - 25);
+                    this.ctx.lineTo(this.width - 100 - 25, this.height/2);
+                    this.ctx.lineTo(this.width - 100 + 25, this.height/2 + 25);
+                    this.ctx.fill();
+                    
+                    this.ctx.shadowBlur = 0;
+                    
+                    // Ресурсы
+                    for (let res of this.resources) {
+                        res.draw(this.ctx);
+                    }
+                    
+                    // Муравьи
+                    for (let ant of this.ants) {
+                        ant.draw(this.ctx);
+                    }
+                    
+                    // Частицы
+                    this.particleSystem.draw(this.ctx);
                 }
-                break;
+            };
 
-            case 'reset':
-                Simulation.hardReset();
-                this.log('Simulation reset complete', 'sys');
-                break;
+            // ============================================================================
+            // МОДУЛЬ 13: UI (интерфейс пользователя)
+            // ============================================================================
+            const UI = {
+                terminal: null,
+                cmdInput: null,
+                fpsCounter: 0,
+                lastTime: 0,
+                frameCount: 0,
+                
+                init() {
+                    this.terminal = document.getElementById('terminal');
+                    this.cmdInput = document.getElementById('cmd-input');
+                    
+                    // Кнопки
+                    document.getElementById('btn-pause').addEventListener('click', () => {
+                        Simulation.togglePause();
+                    });
+                    
+                    document.getElementById('btn-evolve').addEventListener('click', () => {
+                        Simulation.forceEvolution();
+                    });
+                    
+                    document.getElementById('btn-reset').addEventListener('click', () => {
+                        Simulation.hardReset();
+                    });
+                    
+                    // Командная строка
+                    this.cmdInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            const cmd = this.cmdInput.value.trim();
+                            if (cmd) {
+                                this.log(`# ${cmd}`, 'cmd');
+                                this.parseCommand(cmd);
+                                this.cmdInput.value = '';
+                            }
+                        }
+                    });
+                    
+                    // Выбор муравья по клику
+                    Simulation.canvas.addEventListener('click', (e) => {
+                        const rect = Simulation.canvas.getBoundingClientRect();
+                        const x = (e.clientX - rect.left) * (Simulation.width / rect.width);
+                        const y = (e.clientY - rect.top) * (Simulation.height / rect.height);
+                        
+                        // Поиск ближайшего муравья
+                        let closest = null;
+                        let closestDist = 50;
+                        
+                        for (let ant of Simulation.ants) {
+                            if (ant.dead) continue;
+                            const dist = Math.sqrt((ant.pos.x - x)**2 + (ant.pos.y - y)**2);
+                            if (dist < closestDist) {
+                                closestDist = dist;
+                                closest = ant;
+                            }
+                        }
+                        
+                        if (closest) {
+                            Simulation.selectedAnt = closest;
+                            this.log(`Selected ant ${closest.id.substring(0,6)} (${closest.role})`, 'info');
+                        }
+                    });
+                    
+                    this.updateStats();
+                },
+                
+                log(msg, type = 'info') {
+                    if (!this.terminal) return;
+                    
+                    const entry = document.createElement('div');
+                    entry.className = `log-entry log-${type}`;
+                    
+                    const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+                    entry.textContent = `[${time}] ${msg}`;
+                    
+                    this.terminal.appendChild(entry);
+                    this.terminal.scrollTop = this.terminal.scrollHeight;
+                    
+                    // Ограничение количества строк
+                    while (this.terminal.children.length > 200) {
+                        this.terminal.removeChild(this.terminal.firstChild);
+                    }
+                },
+                
+                updateStats() {
+                    document.getElementById('stat-mutation').textContent = (Simulation.config.mutationRate * 100).toFixed(1) + '%';
+                    document.getElementById('stat-elite').textContent = Simulation.config.eliteCount;
+                    document.getElementById('stat-population').textContent = Simulation.ants.length;
+                    document.getElementById('stat-generation').textContent = Simulation.generation;
+                },
+                
+                updateRuntimeStats() {
+                    const greenAnts = Simulation.ants.filter(a => a.colony === 'green' && !a.dead);
+                    const redAnts = Simulation.ants.filter(a => a.colony === 'red' && !a.dead);
+                    
+                    document.getElementById('stat-colonies').textContent = `${greenAnts.length}/${redAnts.length}`;
+                    document.getElementById('stat-green-alive').textContent = greenAnts.length;
+                    document.getElementById('stat-red-alive').textContent = redAnts.length;
+                    
+                    document.getElementById('stat-green-res').textContent = Math.floor(Simulation.greenResources);
+                    document.getElementById('stat-red-res').textContent = Math.floor(Simulation.redResources);
+                    
+                    document.getElementById('stat-green-war').textContent = greenAnts.filter(a => a.role === 'warrior').length;
+                    document.getElementById('stat-green-worker').textContent = greenAnts.filter(a => a.role === 'worker').length;
+                    document.getElementById('stat-green-builder').textContent = greenAnts.filter(a => a.role === 'builder').length;
+                    
+                    document.getElementById('stat-red-war').textContent = redAnts.filter(a => a.role === 'warrior').length;
+                    document.getElementById('stat-red-worker').textContent = redAnts.filter(a => a.role === 'worker').length;
+                    document.getElementById('stat-red-builder').textContent = redAnts.filter(a => a.role === 'builder').length;
+                    
+                    document.getElementById('stat-kills').textContent = Simulation.stats.totalKills;
+                    document.getElementById('stat-gathered').textContent = Simulation.stats.totalGathered;
+                    document.getElementById('stat-avg-fitness').textContent = Math.floor(Simulation.stats.avgFitness);
+                    
+                    const bestDQL = Simulation.ants.filter(a => !a.dead)
+                                          .map(a => a.dqlAgent.getEpsilon())[0] || 1;
+                    document.getElementById('stat-epsilon').textContent = bestDQL.toFixed(2);
+                },
+                
+                updateOverlay() {
+                    document.getElementById('overlay-timescale').textContent = Simulation.timeScale + 'x';
+                    document.getElementById('overlay-entities').textContent = 
+                        Simulation.ants.filter(a => !a.dead).length + Simulation.resources.length;
+                },
+                
+                updateFPS() {
+                    const now = performance.now();
+                    this.frameCount++;
+                    
+                    if (now - this.lastTime >= 1000) {
+                        this.fpsCounter = this.frameCount;
+                        this.frameCount = 0;
+                        this.lastTime = now;
+                        
+                        document.getElementById('stat-fps').textContent = this.fpsCounter;
+                        document.getElementById('overlay-fps').textContent = this.fpsCounter;
+                    }
+                },
+                
+                drawBrain(ant) {
+                    const canvas = document.getElementById('brain-canvas');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const w = canvas.width = canvas.offsetWidth;
+                    const h = canvas.height = canvas.offsetHeight;
+                    
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(0, 0, w, h);
+                    
+                    if (!ant || !ant.brain) return;
+                    
+                    const layers = ant.brain.layerSizes;
+                    const xStep = w / (layers.length);
+                    
+                    // Отрисовка связей
+                    for (let l = 0; l < layers.length - 1; l++) {
+                        const x1 = l * xStep + xStep / 2;
+                        const x2 = (l + 1) * xStep + xStep / 2;
+                        
+                        for (let i = 0; i < layers[l]; i++) {
+                            for (let j = 0; j < layers[l + 1]; j++) {
+                                const y1 = (i + 0.5) * (h / (layers[l] + 1));
+                                const y2 = (j + 0.5) * (h / (layers[l + 1] + 1));
+                                
+                                if (ant.brain.weights[l]) {
+                                    const weight = ant.brain.weights[l].data[j * layers[l] + i] || 0;
+                                    
+                                    if (Math.abs(weight) > 0.1) {
+                                        ctx.strokeStyle = weight > 0 
+                                            ? `rgba(0, 255, 136, ${Math.abs(weight)})` 
+                                            : `rgba(255, 51, 102, ${Math.abs(weight)})`;
+                                        ctx.lineWidth = Math.abs(weight) * 2;
+                                        
+                                        ctx.beginPath();
+                                        ctx.moveTo(x1, y1);
+                                        ctx.lineTo(x2, y2);
+                                        ctx.stroke();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Отрисовка нейронов
+                    for (let l = 0; l < layers.length; l++) {
+                        const x = l * xStep + xStep / 2;
+                        
+                        for (let i = 0; i < layers[l]; i++) {
+                            const y = (i + 0.5) * (h / (layers[l] + 1));
+                            
+                            let activation = 0.5;
+                            if (ant.brain.lastActivation && ant.brain.lastActivation[l]) {
+                                activation = ant.brain.lastActivation[l][i] || 0;
+                                activation = (activation + 1) / 2; // Нормализация
+                            }
+                            
+                            ctx.shadowBlur = 10;
+                            ctx.shadowColor = `rgba(0, 255, 136, ${activation})`;
+                            ctx.fillStyle = `rgba(0, 255, 136, ${activation})`;
+                            
+                            ctx.beginPath();
+                            ctx.arc(x, y, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                },
+                
+                drawMentalMap() {
+                    const canvas = document.getElementById('mental-canvas');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const w = canvas.width = canvas.offsetWidth;
+                    const h = canvas.height = canvas.offsetHeight;
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(0, 0, w, h);
+                    
+                    // Отрисовка угроз
+                    if (Simulation.greenMentalMap) {
+                        ctx.fillStyle = '#00ff88';
+                        Simulation.greenMentalMap.getThreats().forEach(t => {
+                            const x = (t.x / Simulation.width) * w;
+                            const y = (t.y / Simulation.height) * h;
+                            
+                            ctx.globalAlpha = 0.5;
+                            ctx.beginPath();
+                            ctx.arc(x, y, 3, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                    }
+                    
+                    if (Simulation.redMentalMap) {
+                        ctx.fillStyle = '#ff3366';
+                        Simulation.redMentalMap.getThreats().forEach(t => {
+                            const x = (t.x / Simulation.width) * w;
+                            const y = (t.y / Simulation.height) * h;
+                            
+                            ctx.globalAlpha = 0.5;
+                            ctx.beginPath();
+                            ctx.arc(x, y, 3, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                    }
+                    
+                    // Отрисовка ресурсов
+                    ctx.fillStyle = '#ffff00';
+                    ctx.globalAlpha = 0.7;
+                    
+                    if (Simulation.greenMentalMap) {
+                        Simulation.greenMentalMap.getResources().forEach(r => {
+                            const x = (r.x / Simulation.width) * w;
+                            const y = (r.y / Simulation.height) * h;
+                            
+                            ctx.beginPath();
+                            ctx.arc(x, y, 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                        
+                        Simulation.greenMentalMap.getFood().forEach(f => {
+                            const x = (f.x / Simulation.width) * w;
+                            const y = (f.y / Simulation.height) * h;
+                            
+                            ctx.beginPath();
+                            ctx.arc(x, y, 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                    }
+                    
+                    ctx.globalAlpha = 1;
+                },
+                
+                drawFitnessChart() {
+                    const canvas = document.getElementById('fitness-chart');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const w = canvas.width = canvas.offsetWidth;
+                    const h = canvas.height = canvas.offsetHeight;
+                    
+                    ctx.clearRect(0, 0, w, h);
+                    
+                    if (Simulation.bestFitnessHistory.length < 2) return;
+                    
+                    const maxFit = Math.max(...Simulation.bestFitnessHistory, 1);
+                    const minFit = Math.min(...Simulation.bestFitnessHistory, 0);
+                    const range = maxFit - minFit || 1;
+                    
+                    // Сетка
+                    ctx.strokeStyle = '#1a1a2a';
+                    ctx.lineWidth = 1;
+                    
+                    for (let i = 0; i <= 4; i++) {
+                        const y = h - (i / 4) * h;
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(w, y);
+                        ctx.stroke();
+                    }
+                    
+                    // График
+                    ctx.strokeStyle = '#00ff88';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    
+                    const xStep = w / (Simulation.bestFitnessHistory.length - 1);
+                    
+                    Simulation.bestFitnessHistory.forEach((fit, i) => {
+                        const x = i * xStep;
+                        const y = h - ((fit - minFit) / range) * (h - 10) - 5;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    
+                    ctx.stroke();
+                    
+                    // Заполнение
+                    ctx.strokeStyle = '#00ff88';
+                    ctx.lineTo(w, h);
+                    ctx.lineTo(0, h);
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
+                    ctx.fill();
+                },
+                
+                parseCommand(cmd) {
+                    const parts = cmd.toLowerCase().split(/\s+/);
+                    const action = parts[0];
+                    
+                    switch(action) {
+                        case 'help':
+                            this.log('Available commands:', 'sys');
+                            this.log('  speed [1-20] - set simulation speed', 'sys');
+                            this.log('  spawn [food/wood/stone] [count] - spawn resources', 'sys');
+                            this.log('  mutation [0-1] - set mutation rate', 'sys');
+                            this.log('  elite [1-10] - set elite count', 'sys');
+                            this.log('  reset - reset simulation', 'sys');
+                            this.log('  pause - toggle pause', 'sys');
+                            this.log('  evolve - force evolution', 'sys');
+                            break;
+                            
+                        case 'speed':
+                            const s = parseInt(parts[1]);
+                            if (s >= 1 && s <= 20) {
+                                Simulation.timeScale = s;
+                                this.log(`Speed set to ${s}x`, 'sys');
+                            } else {
+                                this.log('Invalid speed (1-20)', 'error');
+                            }
+                            break;
+                            
+                        case 'spawn':
+                            const type = parts[1];
+                            const count = parseInt(parts[2]) || 5;
+                            
+                            if (['food', 'wood', 'stone'].includes(type)) {
+                                for (let i = 0; i < count; i++) {
+                                    Simulation.resources.push(new Resource(
+                                        200 + Math.random() * (Simulation.width - 400),
+                                        100 + Math.random() * (Simulation.height - 200),
+                                        type
+                                    ));
+                                }
+                                this.log(`Spawned ${count} ${type}`, 'sys');
+                            } else {
+                                this.log('Unknown type. Use: food, wood, stone', 'error');
+                            }
+                            break;
+                            
+                        case 'mutation':
+                            const m = parseFloat(parts[1]);
+                            if (m >= 0 && m <= 1) {
+                                Simulation.config.mutationRate = m;
+                                this.log(`Mutation rate set to ${(m*100).toFixed(1)}%`, 'sys');
+                                this.updateStats();
+                            } else {
+                                this.log('Invalid value (0-1)', 'error');
+                            }
+                            break;
+                            
+                        case 'elite':
+                            const e = parseInt(parts[1]);
+                            if (e >= 1 && e <= 10) {
+                                Simulation.config.eliteCount = e;
+                                this.log(`Elite count set to ${e}`, 'sys');
+                                this.updateStats();
+                            } else {
+                                this.log('Invalid value (1-10)', 'error');
+                            }
+                            break;
+                            
+                        case 'reset':
+                            Simulation.hardReset();
+                            this.log('Simulation reset', 'sys');
+                            break;
+                            
+                        case 'pause':
+                            Simulation.togglePause();
+                            break;
+                            
+                        case 'evolve':
+                            Simulation.forceEvolution();
+                            break;
+                            
+                        default:
+                            this.log(`Unknown command: ${action}`, 'error');
+                            this.log('Type "help" for available commands', 'info');
+                    }
+                }
+            };
 
-            case 'pause':
-                Simulation.togglePause();
-                this.log(Simulation.paused ? 'Simulation paused' : 'Simulation resumed', 'sys');
-                break;
+            // ============================================================================
+            // МОДУЛЬ 14: ЗАПУСК
+            // ============================================================================
+            window.addEventListener('DOMContentLoaded', () => {
+                try {
+                    Simulation.init();
+                    UI.init();
+                    
+                    // Запуск FPS счетчика
+                    setInterval(() => UI.updateFPS(), 100);
+                    
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    document.getElementById('loading').innerHTML = `
+                        <div style="color: #ff3366; text-align: center;">
+                            <h2>Initialization Error</h2>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            });
 
-            case 'evolve':
-                Simulation.forceEvolution();
-                break;
-
-            default:
-                this.log(`Unknown command: ${action}. Type 'help' for commands.`, 'error');
-        }
-    }
-};
-
-window.addEventListener('DOMContentLoaded', () => {
-    try {
-        Simulation.init();
-    } catch (error) {
-        console.error('Initialization error:', error);
-        document.getElementById('loading').innerHTML = 
-            '<div style="color: #ff3366; font-family: monospace;">FATAL ERROR<br>' + error.message + '</div>';
-    }
-});
-</script>
+            // Экспорт в глобальную область для отладки
+            window.Simulation = Simulation;
+            window.UI = UI;
+        })();
+    </script>
 </body>
     </html>
