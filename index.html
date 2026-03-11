@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSwarm Enterprise — ВОЙНА КОЛОНИЙ</title>
+    <title>NeuroSwarm Enterprise — War Edition (Две колонии, ресурсы, ментальная карта)</title>
     <style>
         :root {
             --bg-primary: #0a0a0f;
@@ -202,14 +202,6 @@
             font-weight: 600;
         }
 
-        .colony-green {
-            color: #00ff88;
-        }
-
-        .colony-red {
-            color: #ff3366;
-        }
-
         .progress-bar {
             height: 4px;
             background: var(--bg-tertiary);
@@ -323,8 +315,6 @@
         .log-warn { color: var(--accent-warning); }
         .log-error { color: var(--accent-danger); }
         .log-info { color: var(--accent-secondary); }
-        .log-green { color: #00ff88; }
-        .log-red { color: #ff3366; }
 
         #command-row {
             display: flex;
@@ -379,16 +369,6 @@
             margin-top: 10px;
         }
 
-        /* MENTAL MAP */
-        #mental-canvas {
-            width: 100%;
-            height: 150px;
-            background: #000;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
         /* NETWORK TOPOLOGY */
         .network-topology {
             display: grid;
@@ -415,6 +395,24 @@
             font-family: var(--font-mono);
             font-size: 12px;
             color: var(--accent-primary);
+        }
+
+        /* MENTAL MAP */
+        #mental-canvas {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .mental-legend {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 8px;
+            font-size: 10px;
         }
 
         /* LOADING */
@@ -492,8 +490,9 @@
         </header>
 
         <aside id="sidebar-left" class="sidebar">
+            <!-- ===== СЕКЦИЯ: ЗЕЛЕНАЯ КОЛОНИЯ ===== -->
             <div class="panel-section">
-                <div class="panel-title">GREEN COLONY <span style="color:#0f0;">●</span></div>
+                <div class="panel-title" style="color: #00ff88;">◉ GREEN COLONY</div>
                 <div class="stat-item">
                     <span class="stat-label">Alive</span>
                     <span class="stat-value" id="stat-green-alive">0</span>
@@ -516,8 +515,9 @@
                 </div>
             </div>
 
+            <!-- ===== СЕКЦИЯ: КРАСНАЯ КОЛОНИЯ ===== -->
             <div class="panel-section">
-                <div class="panel-title">RED COLONY <span style="color:#f33;">●</span></div>
+                <div class="panel-title" style="color: #ff3366;">◉ RED COLONY</div>
                 <div class="stat-item">
                     <span class="stat-label">Alive</span>
                     <span class="stat-value" id="stat-red-alive">0</span>
@@ -540,6 +540,7 @@
                 </div>
             </div>
 
+            <!-- ===== СЕКЦИЯ: ОБЩАЯ СТАТИСТИКА ===== -->
             <div class="panel-section">
                 <div class="panel-title">Performance Metrics</div>
                 <div class="stat-item">
@@ -547,9 +548,19 @@
                     <span class="stat-value" id="stat-kills">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Resources Gathered</span>
+                    <span class="stat-label">Total Gathered</span>
                     <span class="stat-value" id="stat-gathered">0</span>
                 </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg Fitness</span>
+                    <span class="stat-value" id="stat-avg-fitness">0</span>
+                </div>
+            </div>
+
+            <!-- ===== СЕКЦИЯ: FITNESS HISTORY ===== -->
+            <div class="panel-section">
+                <div class="panel-title">Fitness History</div>
+                <canvas id="fitness-chart"></canvas>
             </div>
         </aside>
 
@@ -562,6 +573,7 @@
         </main>
 
         <aside id="sidebar-right" class="sidebar">
+            <!-- ===== СЕКЦИЯ: НЕЙРОСЕТЬ ===== -->
             <div class="panel-section">
                 <div class="panel-title">Neural Activity Monitor</div>
                 <div id="brain-container">
@@ -587,16 +599,18 @@
                 </div>
             </div>
 
+            <!-- ===== СЕКЦИЯ: МЕНТАЛЬНАЯ КАРТА ===== -->
             <div class="panel-section">
                 <div class="panel-title">Mental Map</div>
                 <canvas id="mental-canvas"></canvas>
-                <div style="display: flex; gap: 10px; justify-content: space-around;">
-                    <span style="color:#f33;">●</span> Threats
-                    <span style="color:#0f0;">●</span> Food
-                    <span style="color:#ff0;">●</span> Resources
+                <div class="mental-legend">
+                    <span style="color:#00ff88;">● Green threats</span>
+                    <span style="color:#ff3366;">● Red threats</span>
+                    <span style="color:#ffff00;">● Resources</span>
                 </div>
             </div>
 
+            <!-- ===== СЕКЦИЯ: ГЕНЕТИЧЕСКИЕ ПАРАМЕТРЫ ===== -->
             <div class="panel-section">
                 <div class="panel-title">Genetic Parameters</div>
                 <div class="stat-item">
@@ -610,6 +624,29 @@
                 <div class="stat-item">
                     <span class="stat-label">Population</span>
                     <span class="stat-value" id="stat-pop-size">50</span>
+                </div>
+            </div>
+
+            <!-- ===== СЕКЦИЯ: NETWORK ARCHITECTURE ===== -->
+            <div class="panel-section">
+                <div class="panel-title">Network Architecture</div>
+                <div class="network-topology">
+                    <div class="topology-node">
+                        <div class="topology-node-label">Input</div>
+                        <div class="topology-node-value">24</div>
+                    </div>
+                    <div class="topology-node">
+                        <div class="topology-node-label">Hidden 1</div>
+                        <div class="topology-node-value">64</div>
+                    </div>
+                    <div class="topology-node">
+                        <div class="topology-node-label">Hidden 2</div>
+                        <div class="topology-node-value">32</div>
+                    </div>
+                    <div class="topology-node">
+                        <div class="topology-node-label">Output</div>
+                        <div class="topology-node-value">5</div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -626,48 +663,170 @@
 <script>
 /**
  * NEUROSWARM ENTERPRISE - WAR EDITION
- * Доработанная версия с двумя колониями, ресурсами и ментальной картой
+ * ============================================
+ * ДВЕ КОЛОНИИ (зеленая и красная)
+ * РЕСУРСЫ (еда, дерево, камень)
+ * МЕНТАЛЬНАЯ КАРТА (общая для колонии)
+ * РОЛИ (воин, рабочий, строитель)
+ * СМЕРТЬ ТОЛЬКО В БОЮ (энергия не убивает)
+ * 
+ * Оригинальный код сохранен полностью,
+ * добавлены новые классы и методы.
  */
 
 'use strict';
 
-// ============================================
-// MATH LIBRARY (без изменений)
-// ============================================
+// ============================================================================
+// 1. МАТЕМАТИЧЕСКАЯ БИБЛИОТЕКА (Оригинал, без изменений)
+// ============================================================================
+
 const Math3D = {
     Vec2: class {
         constructor(x = 0, y = 0) {
             this.x = x;
             this.y = y;
         }
-        add(v) { this.x += v.x; this.y += v.y; return this; }
-        sub(v) { this.x -= v.x; this.y -= v.y; return this; }
-        mult(n) { this.x *= n; this.y *= n; return this; }
-        div(n) { if (n !== 0) { this.x /= n; this.y /= n; } return this; }
-        mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
-        normalize() { const m = this.mag(); if (m > 0.0001) this.div(m); return this; }
-        limit(max) { if (this.mag() > max) { this.normalize(); this.mult(max); } return this; }
-        dist(v) { const dx = this.x - v.x; const dy = this.y - v.y; return Math.sqrt(dx*dx + dy*dy); }
-        copy() { return new Math3D.Vec2(this.x, this.y); }
-        static random2D() { const angle = Math.random() * Math.PI * 2; return new Math3D.Vec2(Math.cos(angle), Math.sin(angle)); }
-        static sub(v1, v2) { return new Math3D.Vec2(v1.x - v2.x, v1.y - v2.y); }
-        static dot(v1, v2) { return v1.x * v2.x + v1.y * v2.y; }
+
+        add(v) {
+            this.x += v.x;
+            this.y += v.y;
+            return this;
+        }
+
+        sub(v) {
+            this.x -= v.x;
+            this.y -= v.y;
+            return this;
+        }
+
+        mult(n) {
+            this.x *= n;
+            this.y *= n;
+            return this;
+        }
+
+        div(n) {
+            if (n !== 0) {
+                this.x /= n;
+                this.y /= n;
+            }
+            return this;
+        }
+
+        mag() {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        }
+
+        normalize() {
+            const m = this.mag();
+            if (m > 0.0001) {
+                this.div(m);
+            }
+            return this;
+        }
+
+        limit(max) {
+            if (this.mag() > max) {
+                this.normalize();
+                this.mult(max);
+            }
+            return this;
+        }
+
+        dist(v) {
+            const dx = this.x - v.x;
+            const dy = this.y - v.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        copy() {
+            return new Math3D.Vec2(this.x, this.y);
+        }
+
+        static random2D() {
+            const angle = Math.random() * Math.PI * 2;
+            return new Math3D.Vec2(Math.cos(angle), Math.sin(angle));
+        }
+
+        static sub(v1, v2) {
+            return new Math3D.Vec2(v1.x - v2.x, v1.y - v2.y);
+        }
+
+        static dot(v1, v2) {
+            return v1.x * v2.x + v1.y * v2.y;
+        }
     },
+
     Matrix: class {
-        constructor(rows, cols) { this.rows = rows; this.cols = cols; this.data = new Float64Array(rows * cols); }
-        static fromArray(arr) { const m = new Math3D.Matrix(arr.length, 1); for (let i=0; i<arr.length; i++) m.data[i] = arr[i]; return m; }
-        toArray() { const arr = []; for (let i=0; i<this.data.length; i++) arr.push(this.data[i]); return arr; }
-        randomize() { for (let i=0; i<this.data.length; i++) this.data[i] = Math.random() * 2 - 1; }
-        map(func) { for (let i=0; i<this.data.length; i++) this.data[i] = func(this.data[i]); }
-        static multiply(a, b) { if (a.cols !== b.rows) return null; const result = new Math3D.Matrix(a.rows, b.cols); for (let i=0; i<a.rows; i++) { for (let j=0; j<b.cols; j++) { let sum = 0; for (let k=0; k<a.cols; k++) sum += a.data[i*a.cols + k] * b.data[k*b.cols + j]; result.data[i*result.cols + j] = sum; } } return result; }
-        copy() { const m = new Math3D.Matrix(this.rows, this.cols); m.data.set(this.data); return m; }
-        mutate(rate) { for (let i=0; i<this.data.length; i++) if (Math.random() < rate) this.data[i] += (Math.random() * 0.4 - 0.2); }
+        constructor(rows, cols) {
+            this.rows = rows;
+            this.cols = cols;
+            this.data = new Float64Array(rows * cols);
+        }
+
+        static fromArray(arr) {
+            const m = new Math3D.Matrix(arr.length, 1);
+            for (let i = 0; i < arr.length; i++) {
+                m.data[i] = arr[i];
+            }
+            return m;
+        }
+
+        toArray() {
+            const arr = [];
+            for (let i = 0; i < this.data.length; i++) {
+                arr.push(this.data[i]);
+            }
+            return arr;
+        }
+
+        randomize() {
+            for (let i = 0; i < this.data.length; i++) {
+                this.data[i] = Math.random() * 2 - 1;
+            }
+        }
+
+        map(func) {
+            for (let i = 0; i < this.data.length; i++) {
+                this.data[i] = func(this.data[i]);
+            }
+        }
+
+        static multiply(a, b) {
+            if (a.cols !== b.rows) return null;
+            const result = new Math3D.Matrix(a.rows, b.cols);
+            for (let i = 0; i < a.rows; i++) {
+                for (let j = 0; j < b.cols; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < a.cols; k++) {
+                        sum += a.data[i * a.cols + k] * b.data[k * b.cols + j];
+                    }
+                    result.data[i * result.cols + j] = sum;
+                }
+            }
+            return result;
+        }
+
+        copy() {
+            const m = new Math3D.Matrix(this.rows, this.cols);
+            m.data.set(this.data);
+            return m;
+        }
+
+        mutate(rate) {
+            for (let i = 0; i < this.data.length; i++) {
+                if (Math.random() < rate) {
+                    this.data[i] += (Math.random() * 0.4 - 0.2);
+                }
+            }
+        }
     }
 };
 
-// ============================================
-// NEURAL NETWORK (без изменений)
-// ============================================
+// ============================================================================
+// 2. НЕЙРОННАЯ СЕТЬ (Оригинал, без изменений)
+// ============================================================================
+
 class NeuralNetwork {
     constructor(inputNodes, hiddenLayers, outputNodes) {
         this.inputNodes = inputNodes;
@@ -675,42 +834,85 @@ class NeuralNetwork {
         this.layers = [];
         this.layerSizes = [inputNodes, ...hiddenLayers, outputNodes];
         this.biases = [];
+
+        // Initialize weights
         for (let i = 0; i < hiddenLayers.length; i++) {
             this.layers.push(new Math3D.Matrix(hiddenLayers[i], this.layerSizes[i]));
             this.biases.push(new Math3D.Matrix(hiddenLayers[i], 1));
         }
         this.layers.push(new Math3D.Matrix(outputNodes, this.layerSizes[hiddenLayers.length]));
         this.biases.push(new Math3D.Matrix(outputNodes, 1));
+
         this.randomize();
         this.lastInputs = new Float64Array(inputNodes);
         this.lastActivations = [];
         this.lastOutputs = [];
     }
-    randomize() { this.layers.forEach(l => l.randomize()); this.biases.forEach(b => b.randomize()); }
+
+    randomize() {
+        this.layers.forEach(l => l.randomize());
+        this.biases.forEach(b => b.randomize());
+    }
+
     predict(inputArray) {
         this.lastInputs.set(inputArray);
         let current = Math3D.Matrix.fromArray(inputArray);
         this.lastActivations = [current.toArray()];
+
         for (let i = 0; i < this.layers.length; i++) {
             let weighted = Math3D.Matrix.multiply(this.layers[i], current);
             if (!weighted) break;
-            for (let j = 0; j < weighted.rows; j++) weighted.data[j] += this.biases[i].data[j];
+            
+            // Add bias
+            for (let j = 0; j < weighted.rows; j++) {
+                weighted.data[j] += this.biases[i].data[j];
+            }
+            
+            // Activation function (tanh)
             weighted.map(x => Math.tanh(x));
             current = weighted;
             this.lastActivations.push(current.toArray());
         }
+
         this.lastOutputs = current ? current.toArray() : new Array(this.outputNodes).fill(0);
         return this.lastOutputs;
     }
-    copy() { const newNet = new NeuralNetwork(this.inputNodes, this.layerSizes.slice(1, -1), this.outputNodes); for (let i=0; i<this.layers.length; i++) { newNet.layers[i] = this.layers[i].copy(); newNet.biases[i] = this.biases[i].copy(); } return newNet; }
-    mutate(rate) { this.layers.forEach(l => l.mutate(rate)); this.biases.forEach(b => b.mutate(rate)); }
-    getTotalNeurons() { return this.layerSizes.reduce((a,b)=>a+b,0); }
-    getTotalConnections() { let total=0; for (let l of this.layers) total += l.data.length; return total; }
+
+    copy() {
+        const newNet = new NeuralNetwork(
+            this.inputNodes,
+            this.layerSizes.slice(1, -1),
+            this.outputNodes
+        );
+        for (let i = 0; i < this.layers.length; i++) {
+            newNet.layers[i] = this.layers[i].copy();
+            newNet.biases[i] = this.biases[i].copy();
+        }
+        return newNet;
+    }
+
+    mutate(rate) {
+        this.layers.forEach(l => l.mutate(rate));
+        this.biases.forEach(b => b.mutate(rate));
+    }
+
+    getTotalNeurons() {
+        return this.layerSizes.reduce((a, b) => a + b, 0);
+    }
+
+    getTotalConnections() {
+        let total = 0;
+        for (let i = 0; i < this.layers.length; i++) {
+            total += this.layers[i].data.length;
+        }
+        return total;
+    }
 }
 
-// ============================================
-// ATTENTION MECHANISM (без изменений)
-// ============================================
+// ============================================================================
+// 3. МЕХАНИЗМ ВНИМАНИЯ (Оригинал, без изменений)
+// ============================================================================
+
 class AttentionHead {
     constructor(size) {
         this.size = size;
@@ -721,21 +923,114 @@ class AttentionHead {
         this.keyWeights.randomize();
         this.valueWeights.randomize();
     }
+
     attend(input) {
         const query = Math3D.Matrix.multiply(this.queryWeights, Math3D.Matrix.fromArray(input));
         const key = Math3D.Matrix.multiply(this.keyWeights, Math3D.Matrix.fromArray(input));
         const value = Math3D.Matrix.multiply(this.valueWeights, Math3D.Matrix.fromArray(input));
+        
+        // Simplified attention score
         const score = Math3D.Matrix.multiply(query, key);
-        if (score) score.map(x => Math.max(0, x));
+        if (score) {
+            score.map(x => Math.max(0, x)); // ReLU
+        }
+        
         return value ? value.toArray() : input;
     }
-    copy() { const newHead = new AttentionHead(this.size); newHead.queryWeights = this.queryWeights.copy(); newHead.keyWeights = this.keyWeights.copy(); newHead.valueWeights = this.valueWeights.copy(); return newHead; }
-    mutate(rate) { this.queryWeights.mutate(rate); this.keyWeights.mutate(rate); this.valueWeights.mutate(rate); }
+
+    copy() {
+        const newHead = new AttentionHead(this.size);
+        newHead.queryWeights = this.queryWeights.copy();
+        newHead.keyWeights = this.keyWeights.copy();
+        newHead.valueWeights = this.valueWeights.copy();
+        return newHead;
+    }
+
+    mutate(rate) {
+        this.queryWeights.mutate(rate);
+        this.keyWeights.mutate(rate);
+        this.valueWeights.mutate(rate);
+    }
 }
 
-// ============================================
-// ENTITY BASE CLASS
-// ============================================
+// ============================================================================
+// 4. НОВЫЕ КЛАССЫ: МЕНТАЛЬНАЯ КАРТА И РЕСУРСЫ
+// ============================================================================
+
+// ===== 4.1 Ментальная карта (общая для колонии) =====
+class MentalMap {
+    constructor(colonyId) {
+        this.colonyId = colonyId; // 'green' или 'red'
+        this.threats = [];         // враги
+        this.foodSpots = [];       // еда
+        this.resourceSpots = [];    // стройматериалы
+    }
+
+    addThreat(x, y, count, strength) {
+        this.threats.push({ x, y, count, strength, time: Date.now() });
+        // Ограничиваем размер
+        if (this.threats.length > 20) this.threats = this.threats.slice(-20);
+    }
+
+    addFood(x, y, amount) {
+        this.foodSpots.push({ x, y, amount, time: Date.now() });
+        if (this.foodSpots.length > 20) this.foodSpots = this.foodSpots.slice(-20);
+    }
+
+    addResource(x, y, type) {
+        this.resourceSpots.push({ x, y, type, time: Date.now() });
+        if (this.resourceSpots.length > 20) this.resourceSpots = this.resourceSpots.slice(-20);
+    }
+
+    getNearbyThreats(x, y, radius = 200) {
+        return this.threats.filter(t => {
+            const dx = t.x - x;
+            const dy = t.y - y;
+            return Math.sqrt(dx*dx + dy*dy) < radius;
+        });
+    }
+
+    cleanup() {
+        const now = Date.now();
+        // Удаляем метки старше 30 секунд
+        this.threats = this.threats.filter(t => now - t.time < 30000);
+        this.foodSpots = this.foodSpots.filter(f => now - f.time < 30000);
+        this.resourceSpots = this.resourceSpots.filter(r => now - r.time < 30000);
+    }
+}
+
+// ===== 4.2 Класс ресурсов =====
+class Resource extends Math3D.Vec2 {
+    constructor(x, y, type) {
+        super(x, y);
+        this.type = type; // 'food', 'wood', 'stone'
+        this.amount = type === 'food' ? 5 : 3;
+        this.carried = false;
+        this.r = 4;
+        this.dead = false;
+        
+        // Цвет в зависимости от типа
+        if (type === 'food') this.color = '#00ff88';
+        else if (type === 'wood') this.color = '#8B4513';
+        else this.color = '#808080';
+    }
+
+    draw(ctx) {
+        if (this.carried) return;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+// ============================================================================
+// 5. БАЗОВЫЙ КЛАСС ENTITY (Оригинал, без изменений)
+// ============================================================================
+
 class Entity {
     constructor(x, y) {
         this.pos = new Math3D.Vec2(x, y);
@@ -748,6 +1043,7 @@ class Entity {
         this.color = '#fff';
         this.id = Math.random().toString(36).substr(2, 9);
     }
+
     update() {
         this.vel.add(this.acc);
         this.vel.limit(this.maxSpeed);
@@ -755,15 +1051,18 @@ class Entity {
         this.acc.mult(0);
         this.boundaries();
     }
+
     boundaries() {
         const margin = 10;
         const w = Simulation.width;
         const h = Simulation.height;
         let desired = null;
+
         if (this.pos.x < margin) desired = new Math3D.Vec2(this.maxSpeed, this.vel.y);
         else if (this.pos.x > w - margin) desired = new Math3D.Vec2(-this.maxSpeed, this.vel.y);
         if (this.pos.y < margin) desired = new Math3D.Vec2(this.vel.x, this.maxSpeed);
         else if (this.pos.y > h - margin) desired = new Math3D.Vec2(this.vel.x, -this.maxSpeed);
+
         if (desired) {
             desired.normalize();
             desired.mult(this.maxSpeed);
@@ -772,6 +1071,7 @@ class Entity {
             this.acc.add(steer);
         }
     }
+
     draw(ctx) {
         if (this.dead) return;
         ctx.save();
@@ -787,81 +1087,26 @@ class Entity {
     }
 }
 
-// ============================================
-// RESOURCE CLASS (НОВОЕ)
-// ============================================
-class Resource extends Entity {
-    constructor(x, y, type) {
-        super(x, y);
-        this.type = type; // 'food', 'wood', 'stone'
-        this.amount = type === 'food' ? 5 : 3;
-        this.carried = false;
-        this.vel = new Math3D.Vec2(0, 0);
-        this.r = 4;
-        if (type === 'food') this.color = '#00ff88';
-        else if (type === 'wood') this.color = '#8B4513';
-        else this.color = '#808080';
-    }
-    draw(ctx) {
-        if (this.carried) return;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, this.r, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    }
-}
+// ============================================================================
+// 6. МОДИФИЦИРОВАННЫЙ КЛАСС ANT (Две колонии, роли, ресурсы)
+// ============================================================================
 
-// ============================================
-// MENTAL MAP (НОВОЕ)
-// ============================================
-class MentalMap {
-    constructor(colonyId) {
-        this.colonyId = colonyId;
-        this.threats = [];
-        this.foodSpots = [];
-        this.resourceSpots = [];
-    }
-    addThreat(x, y, count, strength) {
-        this.threats.push({ x, y, count, strength, time: Date.now() });
-        if (this.threats.length > 20) this.threats = this.threats.slice(-20);
-    }
-    addFood(x, y, amount) {
-        this.foodSpots.push({ x, y, amount, time: Date.now() });
-        if (this.foodSpots.length > 20) this.foodSpots = this.foodSpots.slice(-20);
-    }
-    addResource(x, y, type) {
-        this.resourceSpots.push({ x, y, type, time: Date.now() });
-        if (this.resourceSpots.length > 20) this.resourceSpots = this.resourceSpots.slice(-20);
-    }
-    getNearbyThreats(x, y, radius = 200) {
-        return this.threats.filter(t => {
-            const dx = t.x - x;
-            const dy = t.y - y;
-            return Math.sqrt(dx*dx + dy*dy) < radius;
-        });
-    }
-    cleanup() {
-        const now = Date.now();
-        this.threats = this.threats.filter(t => now - t.time < 30000);
-        this.foodSpots = this.foodSpots.filter(f => now - f.time < 30000);
-        this.resourceSpots = this.resourceSpots.filter(r => now - r.time < 30000);
-    }
-}
-
-// ============================================
-// ANT CLASS (ДОРАБОТАН)
-// ============================================
 class Ant extends Entity {
-    constructor(x, y, colony, role = 'worker', brain = null) {
+    constructor(x, y, colony = 'green', role = 'worker', brain = null) {
         super(x, y);
+        
+        // === Колония и роль ===
         this.colony = colony; // 'green' или 'red'
-        this.role = role; // 'warrior', 'worker', 'builder'
+        this.role = role;     // 'warrior', 'worker', 'builder'
         this.color = colony === 'green' ? '#00ff88' : '#ff3366';
         
-        // Stats
+        // === Характеристики ===
+        this.maxSpeed = role === 'worker' ? 3 : (role === 'warrior' ? 2.5 : 2.8);
+        this.maxForce = 0.15;
+        this.r = 6;
+        this.damage = role === 'warrior' ? 25 : 10;
+        
+        // === Stats ===
         this.health = 100;
         this.maxHealth = 100;
         this.energy = 100;
@@ -869,132 +1114,132 @@ class Ant extends Entity {
         this.fitness = 0;
         this.age = 0;
         this.kills = 0;
+        this.foodEaten = 0;
         this.resourcesGathered = 0;
         
-        // Movement
-        this.maxSpeed = role === 'worker' ? 3 : (role === 'warrior' ? 2.5 : 2.8);
-        this.maxForce = 0.15;
-        this.r = 6;
-        this.damage = role === 'warrior' ? 25 : 10;
-        
-        // Brain
+        // === Нейросеть ===
         if (brain) {
             this.brain = brain.copy();
             this.brain.mutate(Simulation.config.mutationRate);
         } else {
             this.brain = new NeuralNetwork(24, [64, 32, 16], 5);
         }
-        
-        // Attention heads
+
+        // === Attention heads ===
         this.attentionHeads = [
             new AttentionHead(8),
             new AttentionHead(8)
         ];
-        
-        // Sensors
+
+        // === Сенсоры ===
         this.rayCount = 6;
         this.rayLen = 120;
         this.rayAngle = Math.PI / 2;
         this.attackCooldown = 0;
         this.state = 'IDLE';
         
-        // Colony specific
-        this.carrying = null;
-        this.mentalMap = colony === 'green' ? greenMentalMap : redMentalMap;
+        // === Colony specific ===
+        this.carrying = null; // что несет
+        this.mentalMap = colony === 'green' ? Simulation.greenMentalMap : Simulation.redMentalMap;
         this.basePos = colony === 'green' ? 
             new Math3D.Vec2(100, Simulation.height/2) : 
             new Math3D.Vec2(Simulation.width - 100, Simulation.height/2);
     }
-    
-    think(foods, enemies, allies, resources) {
+
+    think(foods, enemies, allies) {
         if (this.dead) return;
+
+        // Враги - только муравьи другой колонии
+        const enemyAnts = allies.filter(a => a.colony !== this.colony && !a.dead);
         
+        // Сенсорные входы
         const inputs = [];
         const angle = Math.atan2(this.vel.y, this.vel.x);
-        
-        // Food sensors
+
+        // 6 лучей на еду
         for (let i = 0; i < this.rayCount; i++) {
             const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
             inputs.push(this.castRay(rayAngle, foods));
         }
-        
-        // Enemy sensors (только чужие)
-        const enemyAnts = allies.filter(a => a.colony !== this.colony && !a.dead);
+
+        // 6 лучей на врагов
         for (let i = 0; i < this.rayCount; i++) {
             const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
             inputs.push(this.castRay(rayAngle, enemyAnts));
         }
-        
-        // Resource sensors
+
+        // 6 лучей на ресурсы
         for (let i = 0; i < this.rayCount; i++) {
             const rayAngle = angle - this.rayAngle/2 + (i / (this.rayCount - 1)) * this.rayAngle;
-            inputs.push(this.castRay(rayAngle, resources.filter(r => !r.carried)));
+            inputs.push(this.castRay(rayAngle, Simulation.resources.filter(r => !r.carried)));
         }
-        
-        // Internal state
+
+        // Внутреннее состояние
         inputs.push(this.health / this.maxHealth);
         inputs.push(this.energy / this.maxEnergy);
         inputs.push(this.age / 1000);
         inputs.push(this.attackCooldown / 30);
         inputs.push(this.carrying ? 1 : 0);
         inputs.push(1); // Bias
-        
-        // Mental map inputs (ближайшие угрозы)
+
+        // Вход с ментальной карты
         const nearbyThreats = this.mentalMap.getNearbyThreats(this.pos.x, this.pos.y);
         inputs.push(nearbyThreats.length > 0 ? 1 : 0);
-        
-        // Attention
+
+        // Attention механизм
         let processedInputs = inputs.slice(0, 8);
         for (let head of this.attentionHeads) {
             processedInputs = head.attend(processedInputs);
         }
-        
-        // Neural processing
+
+        // Нейросеть
         const outputs = this.brain.predict(inputs);
-        
-        // Actuators
+
+        // Выходы нейросети
         const steerX = outputs[0] * this.maxForce;
         const steerY = outputs[1] * this.maxForce;
         const speedMod = (outputs[2] + 1) / 2;
         const attackIntent = outputs[3];
         const gatherIntent = outputs[4];
-        
+
         this.acc.add(new Math3D.Vec2(steerX, steerY));
         this.maxSpeed = (this.role === 'worker' ? 3 : (this.role === 'warrior' ? 2.5 : 2.8)) * (0.5 + speedMod * 0.5);
-        
+
         // Поведение в зависимости от роли
         if (this.role === 'warrior') {
             this.warriorBehavior(enemyAnts, attackIntent);
         } else if (this.role === 'builder') {
-            this.builderBehavior(resources, gatherIntent);
+            this.builderBehavior(gatherIntent);
         } else {
-            this.workerBehavior(foods, resources, gatherIntent);
+            this.workerBehavior(foods, gatherIntent);
         }
-        
+
         // Энергия тратится ТОЛЬКО при движении, но НЕ убивает
         if (this.vel.mag() > 0.1) {
-            this.energy -= 0.02;
-            if (this.energy < 0) this.energy = 0;
+            this.energy = Math.max(0, this.energy - 0.02);
         }
         
         this.age++;
         if (this.attackCooldown > 0) this.attackCooldown--;
     }
-    
+
     warriorBehavior(enemies, attackIntent) {
         if (attackIntent > 0.3 && enemies.length > 0) {
-            // Атакуем ближайшего врага
+            // Найти ближайшего врага
             let closest = null;
             let closestDist = Infinity;
             for (let e of enemies) {
-                const d = this.pos.dist(e.pos);
-                if (d < closestDist && !e.dead) {
-                    closestDist = d;
-                    closest = e;
+                if (!e.dead) {
+                    const d = this.pos.dist(e.pos);
+                    if (d < closestDist) {
+                        closestDist = d;
+                        closest = e;
+                    }
                 }
             }
+            
             if (closest) {
-                // Отмечаем на ментальной карте
+                // Отметить на ментальной карте
                 this.mentalMap.addThreat(closest.pos.x, closest.pos.y, 1, 10);
                 
                 if (closestDist < 35) {
@@ -1026,38 +1271,25 @@ class Ant extends Entity {
                 }
             }
         } else {
-            // Патруль или идем к угрозам с ментальной карты
-            const threats = this.mentalMap.getNearbyThreats(this.pos.x, this.pos.y);
-            if (threats.length > 0) {
-                const threat = threats[0];
-                const desired = Math3D.Vec2.sub(new Math3D.Vec2(threat.x, threat.y), this.pos);
-                if (desired.mag() > 10) {
-                    desired.normalize();
-                    desired.mult(this.maxSpeed);
-                    const steer = Math3D.Vec2.sub(desired, this.vel);
-                    steer.limit(this.maxForce);
-                    this.acc.add(steer);
-                }
-            } else {
-                // Рандомное движение
-                if (Math.random() < 0.01) {
-                    this.acc.add(Math3D.Vec2.random2D().mult(this.maxForce * 0.5));
-                }
+            // Случайное движение (патруль)
+            if (Math.random() < 0.01) {
+                this.acc.add(Math3D.Vec2.random2D().mult(this.maxForce * 0.5));
             }
         }
     }
-    
-    workerBehavior(foods, resources, gatherIntent) {
+
+    workerBehavior(foods, gatherIntent) {
         if (this.carrying) {
             // Несем в базу
             const desired = Math3D.Vec2.sub(this.basePos, this.pos);
             const dist = desired.mag();
+            
             if (dist < 20) {
                 // Сдали ресурс
                 if (this.colony === 'green') {
-                    greenResources += this.carrying.type === 'food' ? 5 : 3;
+                    Simulation.greenResources += this.carrying.type === 'food' ? 5 : 3;
                 } else {
-                    redResources += this.carrying.type === 'food' ? 5 : 3;
+                    Simulation.redResources += this.carrying.type === 'food' ? 5 : 3;
                 }
                 this.resourcesGathered++;
                 this.fitness += 2;
@@ -1082,10 +1314,13 @@ class Ant extends Entity {
                         closest = f;
                     }
                 }
+                
                 if (closest && closestDist < 30) {
                     // Берем еду
                     this.carrying = { type: 'food', amount: 5 };
-                    foods.splice(foods.indexOf(closest), 1);
+                    // Удаляем из Simulation.resources
+                    const index = Simulation.resources.findIndex(r => r === closest);
+                    if (index !== -1) Simulation.resources.splice(index, 1);
                     this.mentalMap.addFood(closest.pos.x, closest.pos.y, 5);
                     Simulation.spawnParticles(this.pos.x, this.pos.y, '#00ff88', 5);
                 } else if (closest) {
@@ -1098,34 +1333,21 @@ class Ant extends Entity {
                     this.acc.add(steer);
                 }
             }
-        } else {
-            // Ищем ресурсы по ментальной карте
-            const foodSpots = this.mentalMap.foodSpots;
-            if (foodSpots.length > 0) {
-                const spot = foodSpots[0];
-                const desired = Math3D.Vec2.sub(new Math3D.Vec2(spot.x, spot.y), this.pos);
-                if (desired.mag() > 10) {
-                    desired.normalize();
-                    desired.mult(this.maxSpeed);
-                    const steer = Math3D.Vec2.sub(desired, this.vel);
-                    steer.limit(this.maxForce);
-                    this.acc.add(steer);
-                }
-            }
         }
     }
-    
-    builderBehavior(resources, gatherIntent) {
+
+    builderBehavior(gatherIntent) {
         if (this.carrying) {
             // Несем в базу
             const desired = Math3D.Vec2.sub(this.basePos, this.pos);
             const dist = desired.mag();
+            
             if (dist < 20) {
                 // Сдали ресурс
                 if (this.colony === 'green') {
-                    greenResources += 3;
+                    Simulation.greenResources += 3;
                 } else {
-                    redResources += 3;
+                    Simulation.redResources += 3;
                 }
                 this.resourcesGathered++;
                 this.fitness += 2;
@@ -1138,28 +1360,28 @@ class Ant extends Entity {
                 this.acc.add(steer);
             }
         } else if (gatherIntent > 0.2) {
-            // Ищем стройматериалы
-            const buildResources = resources.filter(r => !r.carried && r.type !== 'food');
+            // Ищем стройматериалы (wood, stone)
+            const buildResources = Simulation.resources.filter(r => !r.carried && r.type !== 'food');
             if (buildResources.length > 0) {
                 let closest = null;
                 let closestDist = Infinity;
                 for (let r of buildResources) {
-                    const d = this.pos.dist(r.pos);
+                    const d = this.pos.dist(r);
                     if (d < closestDist) {
                         closestDist = d;
                         closest = r;
                     }
                 }
+                
                 if (closest && closestDist < 30) {
                     // Берем ресурс
                     this.carrying = { type: closest.type, amount: 3 };
                     closest.carried = true;
-                    this.mentalMap.addResource(closest.pos.x, closest.pos.y, closest.type);
-                    resources.splice(resources.indexOf(closest), 1);
+                    this.mentalMap.addResource(closest.x, closest.y, closest.type);
                     Simulation.spawnParticles(this.pos.x, this.pos.y, '#ffaa00', 5);
                 } else if (closest) {
                     // Идем к ресурсу
-                    const desired = Math3D.Vec2.sub(closest.pos, this.pos);
+                    const desired = Math3D.Vec2.sub(closest, this.pos);
                     desired.normalize();
                     desired.mult(this.maxSpeed);
                     const steer = Math3D.Vec2.sub(desired, this.vel);
@@ -1169,37 +1391,60 @@ class Ant extends Entity {
             }
         }
     }
-    
+
     castRay(angle, targets) {
         let closest = 1.0;
+        
         for (let t of targets) {
             if (!t || t.dead) continue;
-            const d = this.pos.dist(t.pos);
+            
+            // Для Resource нужен доступ к pos или x,y
+            const tx = t.pos ? t.pos.x : (t.x !== undefined ? t.x : 0);
+            const ty = t.pos ? t.pos.y : (t.y !== undefined ? t.y : 0);
+            const targetPos = new Math3D.Vec2(tx, ty);
+            
+            const d = this.pos.dist(targetPos);
             if (d < this.rayLen) {
-                const angleToTarget = Math.atan2(t.pos.y - this.pos.y, t.pos.x - this.pos.x);
+                const angleToTarget = Math.atan2(ty - this.pos.y, tx - this.pos.x);
                 let diff = angleToTarget - angle;
-                while (diff <= -Math.PI) diff += Math.PI*2;
-                while (diff > Math.PI) diff -= Math.PI*2;
+                while (diff <= -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+
                 if (Math.abs(diff) < 0.3) {
                     const norm = d / this.rayLen;
-                    if (norm < closest) closest = norm;
+                    if (norm < closest) {
+                        closest = norm;
+                    }
                 }
             }
         }
         return 1 - closest;
     }
-    
+
+    // Оригинальные методы (помечены как устаревшие, но оставлены для совместимости)
+    attemptAttack(enemies) {
+        // Заменено warriorBehavior
+    }
+
+    flee(enemies) {
+        // Заменено
+    }
+
+    eat(foods) {
+        // Заменено workerBehavior
+    }
+
     draw(ctx) {
         if (this.dead) return;
         ctx.save();
         ctx.translate(this.pos.x, this.pos.y);
         ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
         
-        // Glow
+        // Glow эффект
         ctx.shadowBlur = this.state === 'ATTACK' ? 15 : 8;
         ctx.shadowColor = this.color;
         
-        // Body
+        // Тело муравья
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.moveTo(8, 0);
@@ -1207,26 +1452,27 @@ class Ant extends Entity {
         ctx.lineTo(-6, 5);
         ctx.fill();
         
-        // Role icon
+        // Иконка роли
         ctx.fillStyle = '#fff';
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
         ctx.shadowBlur = 0;
-        if (this.role === 'warrior') ctx.fillText('⚔️', 0, -10);
-        else if (this.role === 'builder') ctx.fillText('🏗️', 0, -10);
-        else ctx.fillText('🌾', 0, -10);
         
-        // Health bar
+        if (this.role === 'warrior') ctx.fillText('⚔️', 0, -12);
+        else if (this.role === 'builder') ctx.fillText('🏗️', 0, -12);
+        else ctx.fillText('🌾', 0, -12);
+        
+        // Полоска здоровья
         ctx.fillStyle = '#333';
-        ctx.fillRect(-8, -15, 16, 2);
+        ctx.fillRect(-8, -18, 16, 2);
         ctx.fillStyle = this.health > 60 ? '#0f0' : (this.health > 30 ? '#ff0' : '#f00');
-        ctx.fillRect(-8, -15, 16 * (this.health/100), 2);
+        ctx.fillRect(-8, -18, 16 * (this.health / 100), 2);
         
-        // Carrying
+        // Индикатор переноски
         if (this.carrying) {
             ctx.fillStyle = '#ffaa00';
             ctx.beginPath();
-            ctx.arc(0, -5, 2, 0, Math.PI*2);
+            ctx.arc(0, -8, 2, 0, Math.PI * 2);
             ctx.fill();
         }
         
@@ -1234,18 +1480,120 @@ class Ant extends Entity {
     }
 }
 
-// ============================================
-// ENEMY CLASS (теперь это просто другой цвет, удаляем)
-// ============================================
-// Враги не нужны, используем красную колонию
+// ============================================================================
+// 7. ENEMY CLASS (Оставлен для совместимости, но не используется)
+// ============================================================================
 
-// ============================================
-// FOOD CLASS (заменено на Resource)
-// ============================================
+class Enemy extends Entity {
+    constructor(x, y) {
+        super(x, y);
+        this.maxSpeed = 2.5;
+        this.maxForce = 0.12;
+        this.r = 9;
+        this.color = '#ff3366';
+        this.health = 100;
+        this.maxHealth = 100;
+        this.damage = 15;
+    }
 
-// ============================================
-// PARTICLE CLASS (без изменений)
-// ============================================
+    update(ants) {
+        let closest = null;
+        let record = Infinity;
+        
+        for (let a of ants) {
+            if (!a.dead) {
+                const d = this.pos.dist(a.pos);
+                if (d < record) {
+                    record = d;
+                    closest = a;
+                }
+            }
+        }
+
+        if (closest) {
+            const desired = Math3D.Vec2.sub(closest.pos, this.pos.copy());
+            desired.normalize();
+            desired.mult(this.maxSpeed);
+            const steer = Math3D.Vec2.sub(desired, this.vel.copy());
+            steer.limit(this.maxForce);
+            this.acc.add(steer);
+        }
+
+        super.update();
+
+        // Attack ants on contact
+        for (let a of ants) {
+            if (!a.dead && this.pos.dist(a.pos) < this.r + a.r) {
+                a.health -= this.damage;
+                a.fitness -= 5;
+                const push = Math3D.Vec2.sub(a.pos, this.pos);
+                push.normalize();
+                push.mult(3);
+                a.pos.add(push);
+            }
+        }
+
+        if (this.health <= 0) {
+            this.dead = true;
+            Simulation.spawnParticles(this.pos.x, this.pos.y, '#ff3366', 12);
+        }
+    }
+
+    draw(ctx) {
+        if (this.dead) return;
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+        ctx.rotate(Math.atan2(this.vel.y, this.vel.x));
+        
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        
+        ctx.beginPath();
+        ctx.moveTo(12, 0);
+        ctx.lineTo(-8, -10);
+        ctx.lineTo(-8, 10);
+        ctx.fill();
+        
+        // Health bar
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-8, -14, 16, 3);
+        ctx.fillStyle = '#ff3366';
+        ctx.fillRect(-8, -14, 16 * (this.health / this.maxHealth), 3);
+        
+        ctx.shadowBlur = 0;
+        ctx.restore();
+    }
+}
+
+// ============================================================================
+// 8. FOOD CLASS (Оставлен для совместимости, но не используется)
+// ============================================================================
+
+class Food extends Entity {
+    constructor(x, y) {
+        super(x, y);
+        this.r = 5;
+        this.color = '#00ff88';
+        this.vel = new Math3D.Vec2(0, 0);
+        this.nutrition = 35;
+    }
+
+    draw(ctx) {
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.pos.x, this.pos.y, this.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+// ============================================================================
+// 9. PARTICLE CLASS (Оригинал, без изменений)
+// ============================================================================
+
 class Particle {
     constructor(x, y, color) {
         this.pos = new Math3D.Vec2(x, y);
@@ -1255,60 +1603,78 @@ class Particle {
         this.color = color;
         this.size = Math.random() * 3 + 1;
     }
+
     update() {
         this.pos.add(this.vel);
         this.vel.mult(0.95);
         this.life -= this.decay;
     }
+
     draw(ctx) {
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI*2);
+        ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
     }
 }
 
-// ============================================
-// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-// ============================================
-let greenBase = { x: 100, y: 300 };
-let redBase = { x: 700, y: 300 };
-let greenMentalMap = new MentalMap('green');
-let redMentalMap = new MentalMap('red');
-let greenResources = 50;
-let redResources = 50;
+// ============================================================================
+// 10. SIMULATION MANAGER (Модифицирован)
+// ============================================================================
 
-// ============================================
-// SIMULATION MANAGER (ДОРАБОТАН)
-// ============================================
 const Simulation = {
+    // === Canvas ===
     canvas: null,
     ctx: null,
     width: 0,
     height: 0,
     
+    // === Колонии ===
     ants: [],
-    resources: [],
+    enemies: [],      // оставлено для совместимости
+    foods: [],        // оставлено для совместимости
+    resources: [],    // НОВОЕ: ресурсы
     particles: [],
     
+    // === Ментальные карты (НОВОЕ) ===
+    greenMentalMap: null,
+    redMentalMap: null,
+    
+    // === Ресурсы колоний (НОВОЕ) ===
+    greenResources: 50,
+    redResources: 50,
+    
+    // === Эволюция ===
     generation: 1,
     paused: false,
     timeScale: 1,
     bestFitnessHistory: [],
     
+    // === Конфигурация ===
     config: {
-        popSize: 40,
+        popSize: 40,           // Уменьшено для двух колоний
         mutationRate: 0.05,
+        rewardFood: 10,
+        rewardKill: 50,
+        rewardAlive: 0.1,
         eliteCount: 2
+    },
+
+    directives: {
+        aggression: 0.5,
+        foodPriority: 0.5
     },
 
     stats: {
         totalKills: 0,
-        totalGathered: 0
+        totalFood: 0,
+        totalGathered: 0,
+        avgSpeed: 0
     },
 
+    // === Инициализация ===
     init() {
         this.canvas = document.getElementById('sim-canvas');
         this.ctx = this.canvas.getContext('2d', { alpha: false });
@@ -1319,6 +1685,7 @@ const Simulation = {
         this.hardReset();
         UI.init();
         
+        // Hide loading screen
         setTimeout(() => {
             const loading = document.getElementById('loading');
             loading.style.opacity = '0';
@@ -1326,7 +1693,8 @@ const Simulation = {
         }, 1000);
 
         this.loop();
-        UI.log('NeuroSwarm War Edition initialized', 'sys');
+        UI.log('Neural Engine initialized successfully', 'sys');
+        UI.log('WAR EDITION: Two colonies, resources, mental map', 'sys');
     },
 
     resize() {
@@ -1335,54 +1703,58 @@ const Simulation = {
         this.height = parent.clientHeight;
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        
-        // Обновляем базы
-        greenBase = { x: 100, y: this.height / 2 };
-        redBase = { x: this.width - 100, y: this.height / 2 };
     },
 
+    // === Сброс симуляции ===
     hardReset() {
         this.ants = [];
+        this.enemies = [];
+        this.foods = [];
         this.resources = [];
         this.particles = [];
         this.generation = 1;
         this.bestFitnessHistory = [];
-        this.stats = { totalKills: 0, totalGathered: 0 };
+        this.directives = { aggression: 0.5, foodPriority: 0.5 };
+        this.stats = { totalKills: 0, totalFood: 0, totalGathered: 0, avgSpeed: 0 };
+        
+        // Инициализация ментальных карт
+        this.greenMentalMap = new MentalMap('green');
+        this.redMentalMap = new MentalMap('red');
+        
+        // Ресурсы колоний
+        this.greenResources = 50;
+        this.redResources = 50;
 
-        greenMentalMap = new MentalMap('green');
-        redMentalMap = new MentalMap('red');
-        greenResources = 50;
-        redResources = 50;
-
-        // Создаем муравьев для зеленой колонии
+        // Зеленая колония (слева)
         for (let i = 0; i < 15; i++) {
             const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
             this.ants.push(new Ant(
                 100 + Math.random() * 50,
-                this.height/2 - 50 + Math.random() * 100,
+                this.height / 2 - 50 + Math.random() * 100,
                 'green',
                 role
             ));
         }
 
-        // Создаем муравьев для красной колонии
+        // Красная колония (справа)
         for (let i = 0; i < 15; i++) {
             const role = i < 5 ? 'warrior' : (i < 10 ? 'builder' : 'worker');
             this.ants.push(new Ant(
                 this.width - 150 + Math.random() * 50,
-                this.height/2 - 50 + Math.random() * 100,
+                this.height / 2 - 50 + Math.random() * 100,
                 'red',
                 role
             ));
         }
 
-        // Спавним ресурсы
+        // Спавн ресурсов
         this.spawnResources(40);
         
         UI.updateStats();
-        UI.log('System reset complete. Two colonies created.', 'sys');
+        UI.log('System hard reset complete. Two colonies created.', 'sys');
     },
 
+    // === Спавн ресурсов ===
     spawnResources(count) {
         for (let i = 0; i < count; i++) {
             const type = Math.random() < 0.5 ? 'food' : (Math.random() < 0.5 ? 'wood' : 'stone');
@@ -1394,12 +1766,34 @@ const Simulation = {
         }
     },
 
+    // === Спавн еды (для совместимости) ===
+    spawnFood(count) {
+        for (let i = 0; i < count; i++) {
+            this.foods.push(new Food(
+                Math.random() * this.width,
+                Math.random() * this.height
+            ));
+        }
+    },
+
+    // === Спавн врагов (для совместимости) ===
+    spawnEnemies(count) {
+        for (let i = 0; i < count; i++) {
+            this.enemies.push(new Enemy(
+                Math.random() * this.width,
+                Math.random() * this.height
+            ));
+        }
+    },
+
+    // === Спавн частиц ===
     spawnParticles(x, y, color, count) {
         for (let i = 0; i < count; i++) {
             this.particles.push(new Particle(x, y, color));
         }
     },
 
+    // === Эволюция (модифицирована для двух колоний) ===
     evolve() {
         // Сортируем по фитнесу
         this.ants.sort((a, b) => b.fitness - a.fitness);
@@ -1412,18 +1806,20 @@ const Simulation = {
 
         UI.log(`Generation ${this.generation} complete. Best fitness: ${Math.floor(best.fitness)}`, 'sys');
         
-        // Отдельно эволюционируем для каждой колонии
+        // Отдельно для каждой колонии
         const greenAnts = this.ants.filter(a => a.colony === 'green');
         const redAnts = this.ants.filter(a => a.colony === 'red');
         
         const newAnts = [];
 
-        // Элитизм для зеленых
+        // === Зеленая колония ===
         greenAnts.sort((a, b) => b.fitness - a.fitness);
+        
+        // Элитизм
         for (let i = 0; i < this.config.eliteCount && i < greenAnts.length; i++) {
             const champion = new Ant(
-                greenBase.x + Math.random() * 50,
-                greenBase.y + Math.random() * 50,
+                greenAnts[i].basePos.x + Math.random() * 50,
+                greenAnts[i].basePos.y + Math.random() * 50,
                 'green',
                 greenAnts[i].role,
                 greenAnts[i].brain
@@ -1434,26 +1830,27 @@ const Simulation = {
             newAnts.push(champion);
         }
 
-        // Остальные зеленые
+        // Остальные
         for (let i = this.config.eliteCount; i < 15; i++) {
             const parent = greenAnts[Math.floor(Math.random() * Math.min(5, greenAnts.length))];
             const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
             const child = new Ant(
-                greenBase.x + Math.random() * 50,
-                greenBase.y + Math.random() * 50,
+                greenAnts[0]?.basePos.x + Math.random() * 50 || 100,
+                greenAnts[0]?.basePos.y + Math.random() * 50 || this.height/2,
                 'green',
                 role,
-                parent.brain
+                parent?.brain
             );
             newAnts.push(child);
         }
 
-        // Элитизм для красных
+        // === Красная колония ===
         redAnts.sort((a, b) => b.fitness - a.fitness);
+        
         for (let i = 0; i < this.config.eliteCount && i < redAnts.length; i++) {
             const champion = new Ant(
-                redBase.x - 50 + Math.random() * 50,
-                redBase.y + Math.random() * 50,
+                redAnts[i].basePos.x - 50 + Math.random() * 50,
+                redAnts[i].basePos.y + Math.random() * 50,
                 'red',
                 redAnts[i].role,
                 redAnts[i].brain
@@ -1464,16 +1861,15 @@ const Simulation = {
             newAnts.push(champion);
         }
 
-        // Остальные красные
         for (let i = this.config.eliteCount; i < 15; i++) {
             const parent = redAnts[Math.floor(Math.random() * Math.min(5, redAnts.length))];
             const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
             const child = new Ant(
-                redBase.x - 50 + Math.random() * 50,
-                redBase.y + Math.random() * 50,
+                redAnts[0]?.basePos.x - 50 + Math.random() * 50 || this.width - 150,
+                redAnts[0]?.basePos.y + Math.random() * 50 || this.height/2,
                 'red',
                 role,
-                parent.brain
+                parent?.brain
             );
             newAnts.push(child);
         }
@@ -1485,22 +1881,25 @@ const Simulation = {
         UI.updateStats();
     },
 
+    // === Управление паузой ===
     togglePause() {
         this.paused = !this.paused;
         document.getElementById('btn-pause').textContent = this.paused ? 'Resume' : 'Pause';
+        document.getElementById('btn-pause').classList.toggle('active', this.paused);
     },
 
     forceEvolution() {
         this.evolve();
     },
 
+    // === Основной цикл ===
     loop() {
         if (!this.paused) {
-            // Clear canvas
+            // Очистка canvas
             this.ctx.fillStyle = '#0a0a0f';
             this.ctx.fillRect(0, 0, this.width, this.height);
 
-            // Grid
+            // Сетка
             this.ctx.strokeStyle = '#1a1a2a';
             this.ctx.lineWidth = 1;
             for (let x = 0; x < this.width; x += 50) {
@@ -1516,39 +1915,48 @@ const Simulation = {
                 this.ctx.stroke();
             }
 
-            // Draw bases
+            // Рисуем базы
             this.ctx.fillStyle = '#00ff88';
             this.ctx.beginPath();
-            this.ctx.moveTo(greenBase.x - 20, greenBase.y - 20);
-            this.ctx.lineTo(greenBase.x + 20, greenBase.y);
-            this.ctx.lineTo(greenBase.x - 20, greenBase.y + 20);
+            this.ctx.moveTo(100 - 20, this.height/2 - 20);
+            this.ctx.lineTo(100 + 20, this.height/2);
+            this.ctx.lineTo(100 - 20, this.height/2 + 20);
             this.ctx.fill();
 
             this.ctx.fillStyle = '#ff3366';
             this.ctx.beginPath();
-            this.ctx.moveTo(redBase.x + 20, redBase.y - 20);
-            this.ctx.lineTo(redBase.x - 20, redBase.y);
-            this.ctx.lineTo(redBase.x + 20, redBase.y + 20);
+            this.ctx.moveTo(this.width - 100 + 20, this.height/2 - 20);
+            this.ctx.lineTo(this.width - 100 - 20, this.height/2);
+            this.ctx.lineTo(this.width - 100 + 20, this.height/2 + 20);
             this.ctx.fill();
 
-            // Обновление
+            // Логика
+            let aliveCount = 0;
+            let maxFit = 0;
+            let bestAnt = null;
+            let totalSpeed = 0;
+
             for (let t = 0; t < this.timeScale; t++) {
                 for (let ant of this.ants) {
                     if (!ant.dead) {
+                        // Используем resources вместо foods
                         ant.think(
                             this.resources.filter(r => r.type === 'food'), 
-                            [], 
-                            this.ants,
-                            this.resources
+                            this.enemies, 
+                            this.ants
                         );
+                        ant.fitness += this.config.rewardAlive;
+                        aliveCount++;
+                        totalSpeed += ant.vel.mag();
                         
-                        // Обновляем статистику
-                        if (ant.kills > 0) this.stats.totalKills++;
-                        if (ant.resourcesGathered > 0) this.stats.totalGathered++;
+                        if (ant.fitness > maxFit) {
+                            maxFit = ant.fitness;
+                            bestAnt = ant;
+                        }
                     }
                 }
 
-                // Проверка на смерть
+                // Очистка мертвых
                 this.ants = this.ants.filter(a => {
                     if (a.health <= 0) {
                         this.spawnParticles(a.pos.x, a.pos.y, a.color, 10);
@@ -1558,37 +1966,37 @@ const Simulation = {
                 });
 
                 // Очистка ментальных карт
-                greenMentalMap.cleanup();
-                redMentalMap.cleanup();
-                
-                // Спавн новых муравьев если есть ресурсы
+                if (this.greenMentalMap) this.greenMentalMap.cleanup();
+                if (this.redMentalMap) this.redMentalMap.cleanup();
+
+                // Спавн новых муравьев
                 const greenCount = this.ants.filter(a => a.colony === 'green').length;
                 const redCount = this.ants.filter(a => a.colony === 'red').length;
                 
-                if (greenResources >= 30 && greenCount < 20) {
+                if (this.greenResources >= 30 && greenCount < 20 && Math.random() < 0.01) {
                     const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
                     this.ants.push(new Ant(
-                        greenBase.x + Math.random() * 50,
-                        greenBase.y + Math.random() * 50,
+                        100 + Math.random() * 50,
+                        this.height/2 + Math.random() * 50,
                         'green',
                         role
                     ));
-                    greenResources -= 30;
+                    this.greenResources -= 30;
                 }
                 
-                if (redResources >= 30 && redCount < 20) {
+                if (this.redResources >= 30 && redCount < 20 && Math.random() < 0.01) {
                     const role = Math.random() < 0.3 ? 'warrior' : (Math.random() < 0.5 ? 'builder' : 'worker');
                     this.ants.push(new Ant(
-                        redBase.x - 50 + Math.random() * 50,
-                        redBase.y + Math.random() * 50,
+                        this.width - 150 + Math.random() * 50,
+                        this.height/2 + Math.random() * 50,
                         'red',
                         role
                     ));
-                    redResources -= 30;
+                    this.redResources -= 30;
                 }
                 
-                // Спавн ресурсов
-                if (this.resources.length < 30 && Math.random() < 0.01) {
+                // Спавн новых ресурсов
+                if (this.resources.length < 30 && Math.random() < 0.005) {
                     const type = Math.random() < 0.5 ? 'food' : (Math.random() < 0.5 ? 'wood' : 'stone');
                     this.resources.push(new Resource(
                         200 + Math.random() * (this.width - 400),
@@ -1596,12 +2004,26 @@ const Simulation = {
                         type
                     ));
                 }
+
+                // Эволюция если все умерли
+                if (aliveCount === 0) {
+                    this.evolve();
+                    break;
+                }
             }
+
+            // Обновление статистики
+            this.stats.totalKills = this.ants.reduce((sum, a) => sum + a.kills, 0);
+            this.stats.totalGathered = this.ants.reduce((sum, a) => sum + a.resourcesGathered, 0);
+            this.stats.avgSpeed = aliveCount > 0 ? totalSpeed / aliveCount : 0;
 
             // Отрисовка
             this.resources.forEach(r => r.draw(this.ctx));
+            this.foods.forEach(f => f.draw(this.ctx));
+            this.enemies.forEach(e => e.draw(this.ctx));
             this.ants.forEach(a => a.draw(this.ctx));
-            
+
+            // Частицы
             for (let i = this.particles.length - 1; i >= 0; i--) {
                 this.particles[i].update();
                 this.particles[i].draw(this.ctx);
@@ -1610,20 +2032,26 @@ const Simulation = {
                 }
             }
 
-            UI.updateRuntimeStats();
+            // Визуализация мозга лучшего муравья
+            if (bestAnt) {
+                UI.drawBrain(bestAnt);
+            }
+
+            UI.updateRuntimeStats(aliveCount, this.config.popSize);
             UI.updateOverlay();
         }
 
         UI.drawChart();
-        UI.drawMentalMap();
+        UI.drawMentalMap(); // НОВОЕ
         UI.updateFPS();
         requestAnimationFrame(() => this.loop());
     }
 };
 
-// ============================================
-// UI MANAGER (ДОРАБОТАН)
-// ============================================
+// ============================================================================
+// 11. UI MANAGER (Модифицирован)
+// ============================================================================
+
 const UI = {
     terminal: null,
     cmdInput: null,
@@ -1635,6 +2063,7 @@ const UI = {
         this.terminal = document.getElementById('terminal');
         this.cmdInput = document.getElementById('cmd-input');
 
+        // Button handlers
         document.getElementById('btn-pause').addEventListener('click', () => Simulation.togglePause());
         document.getElementById('btn-evolve').addEventListener('click', () => Simulation.forceEvolution());
         document.getElementById('btn-reset').addEventListener('click', () => {
@@ -1642,6 +2071,7 @@ const UI = {
             this.log('System hard reset complete', 'sys');
         });
 
+        // Command input handler
         this.cmdInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const cmd = this.cmdInput.value.trim();
@@ -1661,6 +2091,8 @@ const UI = {
         div.textContent = `[${timestamp}] ${msg}`;
         this.terminal.appendChild(div);
         this.terminal.scrollTop = this.terminal.scrollHeight;
+
+        // Limit log entries
         while (this.terminal.children.length > 200) {
             this.terminal.removeChild(this.terminal.firstChild);
         }
@@ -1668,43 +2100,58 @@ const UI = {
 
     updateStats() {
         document.getElementById('stat-generation').textContent = Simulation.generation;
-        document.getElementById('stat-pop-size').textContent = Simulation.ants.length;
+        document.getElementById('stat-pop-size').textContent = Simulation.config.popSize;
         document.getElementById('stat-mutation').textContent = (Simulation.config.mutationRate * 100).toFixed(1) + '%';
         document.getElementById('stat-elite').textContent = Simulation.config.eliteCount;
     },
 
-    updateRuntimeStats() {
-        const green = Simulation.ants.filter(a => a.colony === 'green');
-        const red = Simulation.ants.filter(a => a.colony === 'red');
+    updateRuntimeStats(alive, total) {
+        // Общая статистика
+        document.getElementById('stat-population').textContent = alive;
         
-        document.getElementById('stat-green-alive').textContent = green.length;
-        document.getElementById('stat-red-alive').textContent = red.length;
-        document.getElementById('stat-colonies').textContent = `${green.length}/${red.length}`;
+        // Статистика по колониям
+        const greenAnts = Simulation.ants.filter(a => a.colony === 'green');
+        const redAnts = Simulation.ants.filter(a => a.colony === 'red');
         
-        document.getElementById('stat-green-res').textContent = Math.floor(greenResources);
-        document.getElementById('stat-red-res').textContent = Math.floor(redResources);
+        document.getElementById('stat-green-alive').textContent = greenAnts.length;
+        document.getElementById('stat-red-alive').textContent = redAnts.length;
+        document.getElementById('stat-colonies').textContent = `${greenAnts.length}/${redAnts.length}`;
         
-        document.getElementById('stat-green-war').textContent = green.filter(a => a.role === 'warrior').length;
-        document.getElementById('stat-green-worker').textContent = green.filter(a => a.role === 'worker').length;
-        document.getElementById('stat-green-builder').textContent = green.filter(a => a.role === 'builder').length;
+        document.getElementById('stat-green-res').textContent = Math.floor(Simulation.greenResources);
+        document.getElementById('stat-red-res').textContent = Math.floor(Simulation.redResources);
         
-        document.getElementById('stat-red-war').textContent = red.filter(a => a.role === 'warrior').length;
-        document.getElementById('stat-red-worker').textContent = red.filter(a => a.role === 'worker').length;
-        document.getElementById('stat-red-builder').textContent = red.filter(a => a.role === 'builder').length;
+        document.getElementById('stat-green-war').textContent = greenAnts.filter(a => a.role === 'warrior').length;
+        document.getElementById('stat-green-worker').textContent = greenAnts.filter(a => a.role === 'worker').length;
+        document.getElementById('stat-green-builder').textContent = greenAnts.filter(a => a.role === 'builder').length;
         
-        document.getElementById('stat-population').textContent = Simulation.ants.length;
+        document.getElementById('stat-red-war').textContent = redAnts.filter(a => a.role === 'warrior').length;
+        document.getElementById('stat-red-worker').textContent = redAnts.filter(a => a.role === 'worker').length;
+        document.getElementById('stat-red-builder').textContent = redAnts.filter(a => a.role === 'builder').length;
+        
+        // Fitness
+        const best = Simulation.ants.reduce((prev, curr) => 
+            (prev.fitness > curr.fitness) ? prev : curr, Simulation.ants[0]);
+        
+        if (best) {
+            document.getElementById('stat-avg-fitness').textContent = Math.floor(
+                Simulation.ants.reduce((sum, a) => sum + a.fitness, 0) / Simulation.ants.length
+            );
+        }
+        
         document.getElementById('stat-kills').textContent = Simulation.stats.totalKills;
         document.getElementById('stat-gathered').textContent = Simulation.stats.totalGathered;
     },
 
     updateOverlay() {
         document.getElementById('overlay-timescale').textContent = Simulation.timeScale + 'x';
-        document.getElementById('overlay-entities').textContent = Simulation.ants.length + Simulation.resources.length;
+        document.getElementById('overlay-entities').textContent = 
+            Simulation.ants.length + Simulation.resources.length;
     },
 
     updateFPS() {
         const now = performance.now();
         this.frameCount++;
+        
         if (now - this.lastTime >= 1000) {
             this.fps = this.frameCount;
             this.frameCount = 0;
@@ -1714,7 +2161,6 @@ const UI = {
     },
 
     drawBrain(ant) {
-        if (!ant) return;
         const canvas = document.getElementById('brain-canvas');
         const ctx = canvas.getContext('2d');
         const w = canvas.width = canvas.offsetWidth;
@@ -1772,12 +2218,15 @@ const UI = {
                 const val = (nodes[n] + 1) / 2;
                 const y = 20 + n * yGap;
 
+                // Glow
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = `rgba(0, 255, 136, ${val})`;
+                
                 ctx.fillStyle = `rgba(0, 255, 136, ${val})`;
                 ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI*2);
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
                 ctx.fill();
+                
                 ctx.shadowBlur = 0;
             }
         }
@@ -1785,6 +2234,7 @@ const UI = {
 
     drawMentalMap() {
         const canvas = document.getElementById('mental-canvas');
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
@@ -1792,35 +2242,50 @@ const UI = {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Рисуем угрозы зеленых
-        ctx.fillStyle = '#00ff88';
-        greenMentalMap.threats.forEach(t => {
-            const x = (t.x / Simulation.width) * canvas.width;
-            const y = (t.y / Simulation.height) * canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI*2);
-            ctx.fill();
-        });
+        // Threats зеленой колонии
+        if (Simulation.greenMentalMap) {
+            ctx.fillStyle = '#00ff88';
+            Simulation.greenMentalMap.threats.forEach(t => {
+                const x = (t.x / Simulation.width) * canvas.width;
+                const y = (t.y / Simulation.height) * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
 
-        // Рисуем угрозы красных
-        ctx.fillStyle = '#ff3366';
-        redMentalMap.threats.forEach(t => {
-            const x = (t.x / Simulation.width) * canvas.width;
-            const y = (t.y / Simulation.height) * canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI*2);
-            ctx.fill();
-        });
+        // Threats красной колонии
+        if (Simulation.redMentalMap) {
+            ctx.fillStyle = '#ff3366';
+            Simulation.redMentalMap.threats.forEach(t => {
+                const x = (t.x / Simulation.width) * canvas.width;
+                const y = (t.y / Simulation.height) * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
 
-        // Рисуем еду
-        ctx.fillStyle = '#00ff88';
-        greenMentalMap.foodSpots.concat(redMentalMap.foodSpots).forEach(f => {
-            const x = (f.x / Simulation.width) * canvas.width;
-            const y = (f.y / Simulation.height) * canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI*2);
-            ctx.fill();
-        });
+        // Ресурсы (обе колонии видят)
+        ctx.fillStyle = '#ffff00';
+        if (Simulation.greenMentalMap) {
+            Simulation.greenMentalMap.resourceSpots.forEach(r => {
+                const x = (r.x / Simulation.width) * canvas.width;
+                const y = (r.y / Simulation.height) * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        if (Simulation.redMentalMap) {
+            Simulation.redMentalMap.resourceSpots.forEach(r => {
+                const x = (r.x / Simulation.width) * canvas.width;
+                const y = (r.y / Simulation.height) * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
     },
 
     drawChart() {
@@ -1838,6 +2303,7 @@ const UI = {
         const maxFit = Math.max(...Simulation.bestFitnessHistory, 1);
         const xStep = w / (Simulation.bestFitnessHistory.length - 1);
 
+        // Grid
         ctx.strokeStyle = '#1a1a2a';
         ctx.lineWidth = 1;
         for (let i = 0; i < 5; i++) {
@@ -1848,6 +2314,7 @@ const UI = {
             ctx.stroke();
         }
 
+        // Fitness line
         ctx.strokeStyle = '#00ff88';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -1857,6 +2324,13 @@ const UI = {
             else ctx.lineTo(i * xStep, y);
         });
         ctx.stroke();
+
+        // Area fill
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
+        ctx.fill();
     },
 
     parseCommand(cmd) {
@@ -1866,12 +2340,13 @@ const UI = {
         switch (action) {
             case 'help':
                 this.log('Available commands:', 'sys');
-                this.log('  speed [1-20]     - Set time scale', 'info');
-                this.log('  spawn food [n]    - Add food', 'info');
-                this.log('  spawn wood [n]    - Add wood', 'info');
-                this.log('  spawn stone [n]   - Add stone', 'info');
-                this.log('  mutation [0-1]    - Set mutation rate', 'info');
-                this.log('  reset             - Hard reset', 'info');
+                this.log('  speed [1-20]        - Set time scale', 'info');
+                this.log('  spawn food [n]       - Add food', 'info');
+                this.log('  spawn wood [n]       - Add wood', 'info');
+                this.log('  spawn stone [n]      - Add stone', 'info');
+                this.log('  aggression [0-1]     - Set aggression', 'info');
+                this.log('  mutation [0-1]       - Set mutation rate', 'info');
+                this.log('  reset                - Hard reset', 'info');
                 break;
 
             case 'speed':
@@ -1901,12 +2376,22 @@ const UI = {
                 }
                 break;
 
+            case 'aggression':
+                const agg = parseFloat(parts[1]);
+                if (agg >= 0 && agg <= 1) {
+                    Simulation.directives.aggression = agg;
+                    this.log(`Aggression level set to ${agg}`, 'sys');
+                } else {
+                    this.log('Invalid aggression. Use 0-1', 'error');
+                }
+                break;
+
             case 'mutation':
                 const mut = parseFloat(parts[1]);
                 if (mut >= 0 && mut <= 1) {
                     Simulation.config.mutationRate = mut;
                     this.log(`Mutation rate set to ${(mut * 100).toFixed(1)}%`, 'sys');
-                    UI.updateStats();
+                    this.updateStats();
                 } else {
                     this.log('Invalid mutation rate. Use 0-1', 'error');
                 }
@@ -1932,9 +2417,10 @@ const UI = {
     }
 };
 
-// ============================================
-// INITIALIZATION
-// ============================================
+// ============================================================================
+// 12. INITIALIZATION
+// ============================================================================
+
 window.addEventListener('DOMContentLoaded', () => {
     try {
         Simulation.init();
@@ -1946,4 +2432,4 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 </body>
-</html>
+    </html>
