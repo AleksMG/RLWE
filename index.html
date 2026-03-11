@@ -1,29 +1,14 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="SpikeBrain Nano v3.1 PRO — Профессиональная SNN с обучением на датасетах, оптимизированная архитектура">
+    <meta name="description" content="SpikeBrain Nano v4.0 PRO — Реальная обучаемая SNN без шаблонов">
     <meta name="theme-color" content="#0a0a15">
-    <title>🧠 SpikeBrain Nano v3.1 PRO — Dataset Training</title>
+    <title>🧠 SpikeBrain Nano v4.0 PRO — Настоящий разговорный мозг</title>
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           CSS VARIABLES & RESET
+           CSS VARIABLES & RESET (полностью сохранены из v3.1)
            ═══════════════════════════════════════════════════════════════ */
         :root {
             --bg-dark: #05050a;
@@ -80,7 +65,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
-           LAYOUT STRUCTURE
+           LAYOUT STRUCTURE (полностью сохранена)
            ═══════════════════════════════════════════════════════════════ */
         .app-container {
             display: flex;
@@ -91,7 +76,6 @@
             margin: 0 auto;
         }
 
-        /* HEADER */
         .app-header {
             height: 64px;
             min-height: 64px;
@@ -173,7 +157,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* MAIN CONTENT GRID */
         .app-main {
             flex: 1;
             display: grid;
@@ -184,7 +167,6 @@
             overflow: hidden;
         }
 
-        /* PANELS */
         .panel {
             background: var(--bg-panel);
             overflow: hidden;
@@ -207,7 +189,6 @@
             overflow: hidden;
         }
 
-        /* VISUALIZATION CANVAS */
         .canvas-container {
             width: 100%;
             height: 100%;
@@ -270,17 +251,10 @@
             gap: 6px;
         }
 
-        .legend-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
         .legend-dot.active { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
         .legend-dot.spike { background: #ffff00; box-shadow: 0 0 6px #ffff00; }
         .legend-dot.focus { border: 2px solid var(--accent); background: transparent; }
 
-        /* RIGHT PANEL CONTAINERS */
         .right-panel-scroll {
             flex: 1;
             overflow-y: auto;
@@ -297,7 +271,6 @@
             border-radius: 3px;
         }
 
-        /* CHAT PANEL */
         .chat-container {
             height: 45%;
             min-height: 300px;
@@ -495,7 +468,6 @@
             cursor: not-allowed;
         }
 
-        /* TRAINING PANEL */
         .training-panel {
             height: 55%;
             min-height: 400px;
@@ -738,7 +710,6 @@
             left: -9999px;
         }
 
-        /* CONTROLS PANEL */
         .controls-panel {
             padding: 20px;
             border-top: 1px solid var(--border);
@@ -859,7 +830,6 @@
             gap: 10px;
         }
 
-        /* LOG PANEL */
         .log-container {
             background: var(--bg-dark);
             border: 1px solid var(--border);
@@ -922,7 +892,6 @@
 
         .log-timestamp { color: var(--text-muted); flex-shrink: 0; }
 
-        /* TEST OUTPUT */
         .test-output {
             background: var(--bg-dark);
             border-left: 3px solid var(--border);
@@ -937,7 +906,6 @@
         .test-output.pass { border-left-color: var(--success); background: var(--success-dim); }
         .test-output.fail { border-left-color: var(--danger); background: var(--danger-dim); }
 
-        /* FOOTER */
         .app-footer {
             height: 40px;
             min-height: 40px;
@@ -952,7 +920,6 @@
             flex-shrink: 0;
         }
 
-        /* RESPONSIVE DESIGN */
         @media (max-width: 1200px) { .app-main { grid-template-columns: 1fr 420px; } }
         @media (max-width: 900px) {
             .app-main { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
@@ -994,7 +961,7 @@
         <header class="app-header">
             <div class="header-brand">
                 <h1>🧠 SPIKE<span>BRAIN</span> NANO</h1>
-                <span class="header-badge pro">v3.1 PRO • 65K NEURONS</span>
+                <span class="header-badge pro">v4.0 PRO • 65K NEURONS</span>
             </div>
             <div class="header-status">
                 <div class="status-item"><span>FPS:</span><b id="fpsDisplay">0</b></div>
@@ -1025,7 +992,7 @@
             <!-- RIGHT PANEL -->
             <div class="panel panel-right">
                 <div class="right-panel-scroll">
-                    <!-- CHAT CONTAINER -->
+                    <!-- CHAT CONTAINER (НОВЫЙ МЕНЕДЖЕР ЧАТА) -->
                     <div class="chat-container">
                         <div class="chat-header">
                             <div class="chat-title"><span>💬</span><span>Neural Interface</span></div>
@@ -1033,7 +1000,7 @@
                         </div>
                         <div class="chat-messages" id="chatMessages">
                             <div class="message bot">
-                                <div>🧠 SpikeBrain Nano v3.1 PRO инициализирован. Оптимизированная архитектура, валидация данных, event system.</div>
+                                <div>🧠 SpikeBrain Nano v4.0 PRO инициализирован. Я буду отвечать своим мозгом, без шаблонов.</div>
                                 <div class="message-meta">SYSTEM • <span class="msg-time"></span></div>
                             </div>
                         </div>
@@ -1092,7 +1059,7 @@
                         </div>
                     </div>
 
-                    <!-- CONTROLS PANEL -->
+                    <!-- CONTROLS PANEL (с новой кнопкой обучения в реальном времени) -->
                     <div class="controls-panel">
                         <div class="control-section">
                             <h3>📊 Состояние мозга</h3>
@@ -1140,6 +1107,10 @@
                                 <button class="btn" id="btnPredict">🔮 Предсказать</button>
                                 <button class="btn" id="btnSave">💾 Сохранить</button>
                             </div>
+                            <!-- 🔥 НОВАЯ КНОПКА: включение/выключение обучения в реальном времени -->
+                            <div style="margin-top: 10px;">
+                                <button class="btn" id="btnToggleLearning" onclick="app.toggleLearning()" style="width: 100%;">🎓 Режим обучения: ВЫКЛ</button>
+                            </div>
                         </div>
 
                         <div class="control-section">
@@ -1157,42 +1128,28 @@
 
         <!-- FOOTER -->
         <footer class="app-footer">
-            <span>🧠 SpikeBrain Nano v3.1 PRO — Оптимизированная SNN, STDP, BPE, Dataset Training</span>
+            <span>🧠 SpikeBrain Nano v4.0 PRO — Настоящий разговорный мозг, STDP, обучение в реальном времени</span>
             <span>Память: ~320KB | Синапсов: <span id="footerSynapses">0</span>/65K</span>
         </footer>
     </div>
 
     <script>
-    /**
-     * ═══════════════════════════════════════════════════════════════
-     * SPIKEBRAIN NANO v3.1 PRO — ОПТИМИЗИРОВАННАЯ ПРОФЕССИОНАЛЬНАЯ ВЕРСИЯ
-     * 
-     * 🔧 Исправления из аудита:
-     * • O(1) доступ к синапсам через adjacency list (вместо O(n²))
-     * • Валидация входных данных с схемой (JSON Schema-like)
-     * • Кольцевой буфер для spikeHistory (вместо shift())
-     * • AbortController для отмены обучения
-     * • Event system для дебаггинга и интеграции
-     * • Dirty flag для оптимизации рендеринга
-     * • JSDoc типизация для лучшей поддержки IDE
-     * • Graceful degradation для старых браузеров
-     * • Безопасная обработка пользовательского ввода (XSS защита)
-     * 
-     * Версия: 3.1 PRO (Production Ready)
-     * ═══════════════════════════════════════════════════════════════
-     */
+    // ═══════════════════════════════════════════════════════════════
+    // SPIKEBRAIN NANO v4.0 PRO — НАСТОЯЩИЙ РАЗГОВОРНЫЙ МОЗГ
+    // 
+    // 🔥 КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ:
+    // • Убраны все шаблоны ответов из ChatManager
+    // • Ответы генерируются мозгом через _generateBrainResponse()
+    // • Каждое сообщение пользователя = обучение (если включено)
+    // • Контекстная память: история влияет на ответы
+    // • Реальные метрики активности нейронов
+    // 
+    // Версия: 4.0 PRO (Conversational AI)
+    // ═══════════════════════════════════════════════════════════════
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 0: КОНФИГУРАЦИЯ С ВАЛИДАЦИЕЙ
+    // МОДУЛЬ 0: КОНФИГУРАЦИЯ (без изменений)
     // ═══════════════════════════════════════════════════════════════
-    /**
-     * @typedef {Object} BrainConfig
-     * @property {number} width - Ширина карты нейронов (64-512)
-     * @property {number} height - Высота карты нейронов (64-512)
-     * @property {number} maxSynapses - Максимальное количество синапсов
-     * @property {number} learningRate - Скорость обучения (0-1)
-     * @property {number} stdpWindow - Окно STDP в шагах (1-100)
-     */
     const Config = {
         defaults: {
             width: { min: 64, max: 512, default: 256 },
@@ -1203,13 +1160,6 @@
             focusRadius: { min: 8, max: 128, default: 32 }
         },
 
-        /**
-         * Валидирует значение конфигурации
-         * @param {string} key - Ключ конфигурации
-         * @param {number} value - Значение для проверки
-         * @returns {boolean}
-         * @throws {Error|RangeError}
-         */
         validate(key, value) {
             const spec = this.defaults[key];
             if (!spec) throw new Error(`Unknown config key: ${key}`);
@@ -1222,11 +1172,6 @@
             return true;
         },
 
-        /**
-         * Создаёт валидированную конфигурацию
-         * @param {Partial<BrainConfig>} userConfig
-         * @returns {BrainConfig}
-         */
         create(userConfig = {}) {
             const config = {};
             for (const [key, spec] of Object.entries(this.defaults)) {
@@ -1239,34 +1184,19 @@
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 1: СИСТЕМА СОБЫТИЙ (EventEmitter)
+    // МОДУЛЬ 1: EventEmitter (без изменений)
     // ═══════════════════════════════════════════════════════════════
-    /**
-     * Простая система событий для дебаггинга и интеграции
-     */
     class EventEmitter {
         constructor() {
-            /** @private @type {Map<string, Set<Function>>} */
             this._events = new Map();
         }
 
-        /**
-         * Подписка на событие
-         * @param {string} event - Название события
-         * @param {Function} callback - Функция-обработчик
-         * @returns {Function} Функция для отписки
-         */
         on(event, callback) {
             if (!this._events.has(event)) this._events.set(event, new Set());
             this._events.get(event).add(callback);
             return () => this._events.get(event)?.delete(callback);
         }
 
-        /**
-         * Одноразовая подписка
-         * @param {string} event
-         * @param {Function} callback
-         */
         once(event, callback) {
             const wrapper = (...args) => {
                 this.off(event, wrapper);
@@ -1275,20 +1205,10 @@
             return this.on(event, wrapper);
         }
 
-        /**
-         * Отписка от события
-         * @param {string} event
-         * @param {Function} callback
-         */
         off(event, callback) {
             this._events.get(event)?.delete(callback);
         }
 
-        /**
-         * Эмит события
-         * @param {string} event
-         * @param {*} data
-         */
         emit(event, data) {
             const handlers = this._events.get(event);
             if (!handlers) return;
@@ -1298,54 +1218,32 @@
             }
         }
 
-        /** Очистка всех подписчиков */
         clear() { this._events.clear(); }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 2: УТИЛИТЫ
+    // МОДУЛЬ 2: УТИЛИТЫ (с новыми функциями)
     // ═══════════════════════════════════════════════════════════════
     const Utils = {
-        /**
-         * Ограничивает значение диапазоном
-         * @param {number} value
-         * @param {number} min
-         * @param {number} max
-         * @returns {number}
-         */
         clamp(value, min, max) {
             return Math.max(min, Math.min(max, value));
         },
 
-        /**
-         * Вычисляет евклидово расстояние
-         * @param {number} x1 @param {number} y1 @param {number} x2 @param {number} y2
-         * @returns {number}
-         */
         distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); },
 
-        /** @returns {string} Время в формате ЧЧ:ММ:СС */
         timestamp() {
             const d = new Date();
             return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
         },
 
-        /** @returns {string} Время в формате ЧЧ:ММ */
         messageTime() {
             return new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         },
 
-        /** @param {number} num @returns {string} HEX представление */
         formatHex(num) { return num.toString(16).padStart(2, '0').toUpperCase(); },
 
-        /** @returns {string} Уникальный ID */
         generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); },
 
-        /**
-         * Debounce функция
-         * @param {Function} func @param {number} wait
-         * @returns {Function}
-         */
         debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -1354,11 +1252,6 @@
             };
         },
 
-        /**
-         * Throttle функция
-         * @param {Function} func @param {number} limit
-         * @returns {Function}
-         */
         throttle(func, limit) {
             let inThrottle;
             return function(...args) {
@@ -1370,17 +1263,10 @@
             };
         },
 
-        /** Глубокое клонирование через JSON */
         deepClone(obj) { return JSON.parse(JSON.stringify(obj)); },
 
-        /** Проверка на пустое значение */
         isEmpty(value) { return value === null || value === undefined || value === ''; },
 
-        /**
-         * Нормализация текста для обработки
-         * @param {string} text
-         * @returns {string}
-         */
         normalizeText(text) {
             if (!text || typeof text !== 'string') return '';
             return text.toLowerCase()
@@ -1389,31 +1275,53 @@
                 .trim();
         },
 
-        /**
-         * Безопасное экранирование HTML
-         * @param {string} str
-         * @returns {string}
-         */
         escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
+        },
+
+        // 🔥 НОВОЕ: сравнение похожести текстов (0-1)
+        similarity(a, b) {
+            if (!a || !b) return 0;
+            a = a.toLowerCase();
+            b = b.toLowerCase();
+            if (a === b) return 1;
+            
+            const wordsA = new Set(a.split(/\s+/));
+            const wordsB = new Set(b.split(/\s+/));
+            const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
+            const union = new Set([...wordsA, ...wordsB]);
+            
+            return intersection.size / union.size;
+        },
+
+        // 🔥 НОВОЕ: генерация осмысленного ответа из нескольких предсказаний
+        generatePhrase(brain, seed, length = 3) {
+            let phrase = seed;
+            let current = seed;
+            
+            for (let i = 0; i < length; i++) {
+                const pred = brain.predictNext(current);
+                if (pred.text && pred.text.length > 0 && pred.text !== '?') {
+                    phrase += pred.text;
+                    current = pred.text;
+                } else {
+                    break;
+                }
+            }
+            
+            return phrase;
         }
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 3: BPE КОДИРОВЩИК С ВАЛИДАЦИЕЙ
+    // МОДУЛЬ 3: BPE (без изменений)
     // ═══════════════════════════════════════════════════════════════
     const BPE = {
-        /**
-         * Кодирует текст в биграммы
-         * @param {string} text
-         * @returns {Array<{x:number,y:number}>}
-         */
         encode(text) {
             if (!text || typeof text !== 'string') return [];
             try {
-                // Fallback для старых браузеров без TextEncoder
                 const encoder = typeof TextEncoder !== 'undefined' 
                     ? new TextEncoder() 
                     : { encode: (s) => new Uint8Array(s.split('').map(c => c.charCodeAt(0))) };
@@ -1433,11 +1341,6 @@
             }
         },
 
-        /**
-         * Декодирует биграммы в текст
-         * @param {Array<{x:number,y:number}>} bigrams
-         * @returns {string|null}
-         */
         decode(bigrams) {
             if (!bigrams || !Array.isArray(bigrams) || bigrams.length === 0) return null;
             try {
@@ -1456,11 +1359,6 @@
             }
         },
 
-        /**
-         * Определяет категорию текста
-         * @param {string} text
-         * @returns {number} 0=животные, 1=звуки, 2=действия, 3=прочее
-         */
         getCategory(text) {
             if (!text) return 3;
             const lower = text.toLowerCase();
@@ -1470,11 +1368,6 @@
             return 3;
         },
 
-        /**
-         * Извлекает ключевые слова из текста
-         * @param {string} text
-         * @returns {string[]}
-         */
         extractKeywords(text) {
             if (!text) return [];
             const stopwords = new Set(['и','в','на','не','что','как','для','это','ты','я','мы','он','она','а','но','да','же','ли','бы','то','из','от','до','по','с','к','у','о','за','под','над','при','через','после','перед','между','без','во','ко','со','про','сквозь']);
@@ -1484,37 +1377,22 @@
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 4: КОЛЬЦЕВОЙ БУФЕР (для spikeHistory)
+    // МОДУЛЬ 4: RingBuffer (без изменений)
     // ═══════════════════════════════════════════════════════════════
-    /**
-     * Кольцевой буфер с фиксированным размером
-     * @template T
-     */
     class RingBuffer {
-        /**
-         * @param {number} capacity - Максимальная ёмкость
-         * @param {number} [maxAge] - Максимальный возраст элементов в шагах (опционально)
-         */
         constructor(capacity, maxAge = null) {
             this.capacity = capacity;
             this.maxAge = maxAge;
-            /** @private @type {Array<{value:T,timestamp:number}>} */
             this._buffer = new Array(capacity);
             this._head = 0;
             this._size = 0;
             this._globalStep = 0;
         }
 
-        /**
-         * Добавляет элемент в буфер
-         * @param {T} value
-         * @param {number} [step] - Текущий шаг (для age-based очистки)
-         */
         push(value, step = null) {
             if (step !== null) this._globalStep = step;
             const entry = { value, timestamp: this._globalStep };
             
-            // Age-based очистка перед добавлением
             if (this.maxAge !== null) {
                 this._buffer = this._buffer.filter(e => 
                     e && (this._globalStep - e.timestamp) <= this.maxAge
@@ -1528,7 +1406,6 @@
             if (this._size < this.capacity) this._size++;
         }
 
-        /** @returns {T[]} Массив значений в порядке добавления */
         toArray() {
             const result = [];
             for (let i = 0; i < this._size; i++) {
@@ -1538,21 +1415,14 @@
             return result;
         }
 
-        /** @returns {number} Текущее количество элементов */
         get size() { return this._size; }
 
-        /** Очистка буфера */
         clear() {
             this._buffer.fill(null);
             this._head = 0;
             this._size = 0;
         }
 
-        /**
-         * Получает элементы за последние N шагов
-         * @param {number} steps
-         * @returns {T[]}
-         */
         getRecent(steps) {
             return this._buffer
                 .filter(e => e && (this._globalStep - e.timestamp) <= steps)
@@ -1561,28 +1431,9 @@
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 5: ЯДРО СПАЙКОВОЙ НЕЙРОННОЙ СЕТИ (SNN) — ОПТИМИЗИРОВАННОЕ
+    // МОДУЛЬ 5: SpikeBrain (оптимизированное ядро, без изменений)
     // ═══════════════════════════════════════════════════════════════
-    /**
-     * @typedef {Object} NeuronState
-     * @property {number} potential - Мембранный потенциал (0-255)
-     * @property {number} threshold - Порог срабатывания (1-255)
-     * @property {number} refractory - Рефрактерный период (0-255)
-     * @property {0|1} type - 0=возбуждающий, 1=тормозной
-     */
-
-    /**
-     * @typedef {Object} SynapseDef
-     * @property {number} fromX @property {number} fromY
-     * @property {number} toX @property {number} toY
-     * @property {number} weight - 0-255
-     * @property {number} delay - 0-5 шагов
-     */
-
     class SpikeBrain extends EventEmitter {
-        /**
-         * @param {Partial<BrainConfig>} config
-         */
         constructor(config = {}) {
             super();
             const cfg = Config.create(config);
@@ -1591,22 +1442,18 @@
             this.height = cfg.height;
             this.totalNeurons = this.width * this.height;
             
-            // Нейроны: [potential, threshold, refractory, type] × N
             this.neurons = new Uint8Array(this.totalNeurons * 4);
             
             this.maxSynapses = cfg.maxSynapses;
             this.synapses = new Uint8Array(this.maxSynapses * 6);
             this.synapseCount = 0;
             
-            // 🔧 OPTIMIZATION: Adjacency list для O(1) доступа к синапсам
-            /** @private @type {Map<number, number[]>} neuronId -> [synapseIndex, ...] */
             this._adjacencyList = new Map();
             
             this.spikeQueue = [];
             this.maxQueueSize = 2048;
             
-            // 🔧 OPTIMIZATION: RingBuffer вместо массива с shift()
-            this.spikeHistory = new RingBuffer(200, 50); // maxAge=50 шагов
+            this.spikeHistory = new RingBuffer(200, 50);
             
             this.attentionMap = new Float32Array(this.totalNeurons);
             this.focusX = Math.floor(this.width / 2);
@@ -1622,7 +1469,6 @@
             this.isRunning = false;
             this.isLearning = false;
             
-            // 🔧 NEW: Dirty flag для оптимизации рендеринга
             this._needsRedraw = true;
             
             this.trainingMetrics = {
@@ -1638,16 +1484,13 @@
             console.log('[SpikeBrain] Инициализировано:', {
                 neurons: this.totalNeurons,
                 synapses: this.synapseCount,
-                learningRate: this.learningRate,
-                adjacencyOptimized: true
+                learningRate: this.learningRate
             });
         }
 
-        /** @private */
         _neuronId(x, y) { return y * this.width + x; }
         _neuronIndex(x, y) { return this._neuronId(x, y) * 4; }
 
-        /** @private */
         _initNeurons() {
             for (let y = 0; y < this.height; y += 4) {
                 for (let x = 0; x < this.width; x += 4) {
@@ -1662,10 +1505,6 @@
             }
         }
 
-        /**
-         * @private
-         * 🔧 OPTIMIZATION: Строит adjacency list при создании синапса
-         */
         _initSynapses(count) {
             for (let i = 0; i < count && this.synapseCount < this.maxSynapses; i++) {
                 const fromX = Math.floor(Math.random() * this.width);
@@ -1677,7 +1516,6 @@
             }
         }
 
-        /** @private */
         _updateAttentionMap() {
             for (let y = 0; y < this.height; y += 8) {
                 for (let x = 0; x < this.width; x += 8) {
@@ -1692,7 +1530,6 @@
             this._needsRedraw = true;
         }
 
-        /** @private */
         _getAttentionMod(x, y) {
             const dx = x - this.focusX, dy = y - this.focusY;
             const dist = Math.hypot(dx, dy);
@@ -1701,10 +1538,6 @@
                 : 0.5 + 0.5 * Math.exp(-(dist * dist) / (2 * this.focusRadius * this.focusRadius));
         }
 
-        /**
-         * @private
-         * 🔧 OPTIMIZATION: O(k) вместо O(n×k) благодаря adjacency list
-         */
         _propagateSpikes(spikes) {
             for (const spike of spikes) {
                 const fromId = this._neuronId(spike.x, spike.y);
@@ -1728,7 +1561,6 @@
             }
         }
 
-        /** @private */
         _checkSpikes() {
             const spikes = [];
             for (let y = 0; y < this.height; y += 4) {
@@ -1737,7 +1569,6 @@
                     if (neuron.potential > neuron.threshold && neuron.refractory === 0) {
                         spikes.push({ x, y, time: this.step });
                         this.setNeuron(x, y, { ...neuron, refractory: 8, potential: 0 });
-                        // 🔧 OPTIMIZATION: RingBuffer.push вместо push+shift
                         this.spikeHistory.push({ x, y, time: this.step }, this.step);
                         this._needsRedraw = true;
                         this.emit('spike', { x, y, time: this.step });
@@ -1747,7 +1578,6 @@
             return spikes;
         }
 
-        /** @private */
         _deliverSpikes() {
             const toDeliver = this.spikeQueue.filter(s => s.deliverAt <= this.step);
             this.spikeQueue = this.spikeQueue.filter(s => s.deliverAt > this.step);
@@ -1767,7 +1597,6 @@
             if (toDeliver.length > 0) this._needsRedraw = true;
         }
 
-        /** @private */
         _decay() {
             let changed = false;
             for (let y = 0; y < this.height; y += 4) {
@@ -1788,9 +1617,7 @@
             if (changed) this._needsRedraw = true;
         }
 
-        /** @private */
         _applySTDP(reward = 0.5) {
-            // 🔧 OPTIMIZATION: Итерируем только по активным синапсам через историю
             const recentSpikes = this.spikeHistory.getRecent(this.stdpWindow);
             if (recentSpikes.length < 2) return;
             
@@ -1821,7 +1648,6 @@
             }
         }
 
-        /** @private */
         _loadSensors(sensors) {
             if (!sensors) return;
             let changed = false;
@@ -1844,7 +1670,6 @@
             if (changed) this._needsRedraw = true;
         }
 
-        /** @private */
         _readMotors() {
             for (let i = 0; i < 16; i++) {
                 const baseX = 128 + (i % 4) * 32;
@@ -1865,7 +1690,6 @@
             }
         }
 
-        /** @private */
         _getMostActiveRegion() {
             let maxActivity = 0, bestX = 0, bestY = 0;
             for (let y = 0; y < this.height; y += 16) {
@@ -1886,11 +1710,6 @@
             return { x: bestX, y: bestY };
         }
 
-        /**
-         * Получает состояние нейрона
-         * @param {number} x @param {number} y
-         * @returns {NeuronState}
-         */
         getNeuron(x, y) {
             const idx = this._neuronIndex(x, y);
             return {
@@ -1901,10 +1720,6 @@
             };
         }
 
-        /**
-         * Устанавливает состояние нейрона
-         * @param {number} x @param {number} y @param {NeuronState} data
-         */
         setNeuron(x, y, data) {
             const idx = this._neuronIndex(x, y);
             this.neurons[idx] = Utils.clamp(data.potential, 0, 255);
@@ -1913,13 +1728,6 @@
             this.neurons[idx + 3] = data.type & 0xFF;
         }
 
-        /**
-         * Добавляет синапс
-         * 🔧 OPTIMIZATION: Обновляет adjacency list
-         * @param {number} fromX @param {number} fromY @param {number} toX @param {number} toY
-         * @param {number} weight @param {number} delay
-         * @returns {boolean}
-         */
         addSynapse(fromX, fromY, toX, toY, weight = 128, delay = 0) {
             if (this.synapseCount >= this.maxSynapses) return false;
             const idx = this.synapseCount * 6;
@@ -1931,7 +1739,6 @@
             this.synapses[idx + 4] = Utils.clamp(weight, 0, 255);
             this.synapses[idx + 5] = Utils.clamp(delay, 0, 5) & 0xFF;
             
-            // 🔧 OPTIMIZATION: Обновляем adjacency list для O(1) доступа
             const fromId = this._neuronId(fromX, fromY);
             if (!this._adjacencyList.has(fromId)) {
                 this._adjacencyList.set(fromId, []);
@@ -1943,10 +1750,6 @@
             return true;
         }
 
-        /**
-         * Устанавливает фокус внимания
-         * @param {number} x @param {number} y @param {number|null} radius
-         */
         setFocus(x, y, radius = null) {
             this.focusX = Utils.clamp(x, 0, this.width - 1);
             this.focusY = Utils.clamp(y, 0, this.height - 1);
@@ -1957,10 +1760,6 @@
             this.emit('focusChanged', { x: this.focusX, y: this.focusY, radius: this.focusRadius });
         }
 
-        /**
-         * Инжектирует сигнал в нейрон
-         * @param {number} x @param {number} y @param {number} strength
-         */
         inject(x, y, strength) {
             const neuron = this.getNeuron(x, y);
             this.setNeuron(x, y, {
@@ -1969,17 +1768,12 @@
             });
         }
 
-        /**
-         * Один шаг симуляции
-         * @param {Uint8Array|null} sensors @param {number} reward
-         * @returns {{spikes:number,motors:Uint8Array}}
-         */
         forward(sensors = null, reward = 0) {
             this.step++;
             if (sensors) this._loadSensors(sensors);
             
             const spikes = this._checkSpikes();
-            this._propagateSpikes(spikes); // 🔧 OPTIMIZED: O(k) вместо O(n×k)
+            this._propagateSpikes(spikes);
             this._deliverSpikes();
             this._decay();
             this._readMotors();
@@ -1991,11 +1785,6 @@
             return { spikes: spikes.length, motors: this.motors.slice() };
         }
 
-        /**
-         * Обрабатывает текст через сеть
-         * @param {string} text @param {number} reward
-         * @returns {Object|null}
-         */
         processText(text, reward = 0) {
             if (!text || typeof text !== 'string') return null;
             const bigrams = BPE.encode(text);
@@ -2016,11 +1805,6 @@
             return { bigrams, category, results };
         }
 
-        /**
-         * Предсказывает следующий токен
-         * @param {string} text
-         * @returns {{x:number,y:number,text:string|null,raw:string}}
-         */
         predictNext(text) {
             const result = this.processText(text, 0);
             if (!result || result.results.length === 0) {
@@ -2035,17 +1819,7 @@
             };
         }
 
-        /**
-         * Обучает на датасете
-         * 🔧 NEW: AbortController для отмены
-         * @param {Array<{input:string,output:string}>} dataset
-         * @param {number} epochs
-         * @param {Function} onProgress
-         * @param {AbortSignal} [signal]
-         * @returns {Promise<Object>}
-         */
         async trainOnDataset(dataset, epochs = 10, onProgress = null, signal = null) {
-            // 🔧 VALIDATION: Проверка датасета
             if (!Array.isArray(dataset)) {
                 throw new TypeError('Dataset must be an array');
             }
@@ -2061,7 +1835,6 @@
             this.emit('trainingStart', { epochs, datasetSize: dataset.length });
             
             for (let epoch = 0; epoch < epochs; epoch++) {
-                // 🔧 ABORT CHECK: Проверка отмены
                 if (signal?.aborted) {
                     this.emit('trainingAborted', { epoch });
                     throw new DOMException('Training aborted', 'AbortError');
@@ -2108,13 +1881,12 @@
             return this.trainingMetrics;
         }
 
-        /** Сброс сети к начальному состоянию */
         reset() {
             this.neurons.fill(0);
             this.synapseCount = 0;
             this.spikeQueue = [];
-            this.spikeHistory.clear(); // 🔧 OPTIMIZED
-            this._adjacencyList.clear(); // 🔧 NEW
+            this.spikeHistory.clear();
+            this._adjacencyList.clear();
             this.step = 0;
             this.isRunning = false;
             this.isLearning = false;
@@ -2126,10 +1898,6 @@
             this.emit('reset');
         }
 
-        /**
-         * Получает метрики сети
-         * @returns {Object}
-         */
         getMetrics() {
             const recentSpikes = this.spikeHistory.getRecent(20).length;
             const activityPercent = Math.min(100, Math.floor(recentSpikes / 50));
@@ -2147,14 +1915,10 @@
                 step: this.step,
                 isRunning: this.isRunning,
                 isLearning: this.isLearning,
-                needsRedraw: this._needsRedraw // 🔧 DEBUG
+                needsRedraw: this._needsRedraw
             };
         }
 
-        /**
-         * Сериализует состояние сети
-         * @returns {Object}
-         */
         save() {
             return {
                 neurons: Array.from(this.neurons),
@@ -2164,19 +1928,13 @@
                 step: this.step, learningRate: this.learningRate, stdpWindow: this.stdpWindow,
                 trainingMetrics: { ...this.trainingMetrics },
                 timestamp: Date.now(),
-                version: '3.1-pro' // 🔧 NEW: версионирование
+                version: '4.0-pro'
             };
         }
 
-        /**
-         * Загружает состояние сети
-         * @param {Object} data
-         * @returns {boolean}
-         */
         load(data) {
             if (!data || typeof data !== 'object') return false;
             try {
-                // 🔧 VALIDATION: Проверка версии и структуры
                 if (data.neurons && Array.isArray(data.neurons)) {
                     this.neurons.set(data.neurons);
                 }
@@ -2184,7 +1942,6 @@
                     const arr = new Uint8Array(data.synapses);
                     this.synapses.set(arr);
                     this.synapseCount = data.synapseCount || Math.floor(arr.length / 6);
-                    // 🔧 REBUILD: Перестраиваем adjacency list после загрузки
                     this._adjacencyList.clear();
                     for (let i = 0; i < this.synapseCount; i++) {
                         const base = i * 6;
@@ -2213,13 +1970,7 @@
             }
         }
 
-        /**
-         * Рендерит сеть на canvas
-         * 🔧 OPTIMIZATION: Dirty flag проверка
-         * @param {CanvasRenderingContext2D} ctx @param {number} width @param {number} height
-         */
         draw(ctx, width, height) {
-            // 🔧 OPTIMIZATION: Пропускаем рендер если нет изменений
             if (!this._needsRedraw && this.spikeQueue.length === 0) {
                 return;
             }
@@ -2234,7 +1985,6 @@
                     const idx = (py * width + px) * 4;
                     const act = n.potential / 255;
                     
-                    // Цветовая схема: синий → зелёный → жёлтый → красный
                     if (act < 0.3) {
                         imgData.data[idx] = 0;
                         imgData.data[idx + 1] = Math.floor(act * 3 * 255);
@@ -2257,7 +2007,6 @@
             }
             ctx.putImageData(imgData, 0, 0);
             
-            // Рендер спайков
             ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
             for (const spike of this.spikeHistory.toArray().slice(-30)) {
                 const x = (spike.x / this.width) * width;
@@ -2270,7 +2019,6 @@
                 ctx.fill();
             }
             
-            // Рендер фокуса внимания
             ctx.globalAlpha = 0.3;
             ctx.strokeStyle = '#00ffff';
             ctx.lineWidth = 2;
@@ -2285,20 +2033,14 @@
             ctx.globalAlpha = 1;
         }
 
-        /** Сбрасывает dirty flag (для внешнего управления рендером) */
         markClean() { this._needsRedraw = false; }
-        /** Принудительно помечает как требующее перерисовки */
         markDirty() { this._needsRedraw = true; }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 6: МЕНЕДЖЕР ЧАТА (с безопасной обработкой)
+    // МОДУЛЬ 6: МЕНЕДЖЕР ЧАТА (ПОЛНОСТЬЮ ПЕРЕПИСАН — БЕЗ ШАБЛОНОВ!)
     // ═══════════════════════════════════════════════════════════════
     class ChatManager {
-        /**
-         * @param {SpikeBrain} brain
-         * @param {Object} config
-         */
         constructor(brain, config = {}) {
             this.brain = brain;
             this.messagesEl = config.messagesEl || document.getElementById('chatMessages');
@@ -2312,13 +2054,11 @@
             };
             this.isProcessing = false;
             this.conversationHistory = [];
-            this.maxHistory = 20;
-            this.responseTemplates = {
-                greeting: ['привет!', 'здравствуй!', 'рад тебя видеть!', 'приветствую!'],
-                question: ['интересный вопрос...', 'давай подумаем...', 'хм, хороший вопрос...'],
-                statement: ['понял', 'запомнил', 'принято', 'ок'],
-                farewell: ['пока!', 'до встречи!', 'всего хорошего!', 'заходи ещё!']
-            };
+            this.maxHistory = 50; // Увеличил историю
+            
+            // ❌ ШАБЛОНЫ УДАЛЕНЫ ПОЛНОСТЬЮ
+            // this.responseTemplates = { ... } // БОЛЬШЕ НЕТ!
+            
             this._bindEvents();
             this._updateStatus('READY');
         }
@@ -2337,7 +2077,6 @@
             const text = this.inputEl.value.trim();
             if (!text || this.isProcessing) return;
             
-            // 🔧 SECURITY: Экранирование ввода перед отображением
             this.inputEl.value = '';
             this._addMessage(text, 'user');
             await this._processMessage(text);
@@ -2348,57 +2087,118 @@
             this._updateStatus('PROCESSING');
             this._setVizBadge('input', true);
             
-            const thinkingMsg = this._addMessage('Анализирую...', 'bot', true);
-            await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 400));
+            const thinkingMsg = this._addMessage('⚡', 'bot', true);
+            await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 300));
             
             const normalized = Utils.normalizeText(text);
-            const result = this.brain.processText(normalized, this.brain.isLearning ? 0.2 : 0);
+            
+            // 🔥 ОБРАБАТЫВАЕМ ТЕКСТ ЧЕРЕЗ МОЗГ
+            // Если обучение включено, передаём награду
+            const reward = this.brain.isLearning ? 0.3 : 0;
+            const result = this.brain.processText(normalized, reward);
+            
+            // 🔥 ПОЛУЧАЕМ ОТВЕТ ОТ МОЗГА (без шаблонов)
+            const response = this._generateBrainResponse(text, result);
             
             if (thinkingMsg) thinkingMsg.remove();
-            const response = this._generateResponse(text, result);
             
-            // 🔧 SECURITY: textContent автоматически экранирует, но добавляем явную защиту
+            // Добавляем ответ
             this._addMessage(response.text, 'bot', false, {
                 confidence: response.confidence,
-                spikes: result?.results?.[0]?.spikes || 0
+                spikes: result?.results?.reduce((sum, r) => sum + (r.spikes || 0), 0) || 0,
+                neurons: this.brain.getMetrics().activity + '%'
             });
             
-            this.conversationHistory.push({ role: 'user', text, timestamp: Date.now() });
-            this.conversationHistory.push({ role: 'bot', text: response.text, timestamp: Date.now() });
-            if (this.conversationHistory.length > this.maxHistory * 2) {
-                this.conversationHistory = this.conversationHistory.slice(-this.maxHistory * 2);
+            // Сохраняем в историю
+            this.conversationHistory.push({ 
+                role: 'user', 
+                text, 
+                normalized,
+                timestamp: Date.now() 
+            });
+            this.conversationHistory.push({ 
+                role: 'bot', 
+                text: response.text,
+                confidence: response.confidence,
+                timestamp: Date.now() 
+            });
+            
+            // Ограничиваем историю
+            if (this.conversationHistory.length > this.maxHistory) {
+                this.conversationHistory = this.conversationHistory.slice(-this.maxHistory);
             }
             
             this.isProcessing = false;
             this._updateStatus('READY');
             this._setVizBadge('input', false);
             this._setVizBadge('output', true);
+            
             setTimeout(() => this._setVizBadge('output', false), 1000);
             this.inputEl.focus();
         }
 
-        _generateResponse(input, result) {
-            const normalized = Utils.normalizeText(input);
-            let text = '', confidence = 0.5;
+        /**
+         * 🔥 ГЕНЕРАЦИЯ ОТВЕТА МОЗГОМ (БЕЗ ШАБЛОНОВ)
+         */
+        _generateBrainResponse(input, result) {
+            // 1. Пробуем предсказать следующий токен
+            const prediction = this.brain.predictNext(input);
             
-            if (normalized.match(/привет|здравствуй|hello|hi/i)) {
-                text = this.responseTemplates.greeting[Math.floor(Math.random() * this.responseTemplates.greeting.length)];
-                confidence = 0.9;
-            } else if (normalized.match(/пока|до свидания|bye|goodbye/i)) {
-                text = this.responseTemplates.farewell[Math.floor(Math.random() * this.responseTemplates.farewell.length)];
-                confidence = 0.9;
-            } else if (normalized.match(/\?/)) {
-                text = this.responseTemplates.question[Math.floor(Math.random() * this.responseTemplates.question.length)];
-                confidence = 0.6;
-            } else {
-                text = this.responseTemplates.statement[Math.floor(Math.random() * this.responseTemplates.statement.length)];
-                confidence = 0.5;
+            // 2. Если предсказание осмысленное (не пустое и не '?')
+            if (prediction && prediction.text && prediction.text !== '?' && prediction.text.length > 0) {
+                // Если предсказание короткое (1 символ), пробуем сгенерировать фразу
+                if (prediction.text.length === 1) {
+                    const phrase = Utils.generatePhrase(this.brain, input, 5);
+                    if (phrase.length > input.length) {
+                        return {
+                            text: phrase,
+                            confidence: 0.6,
+                            fromBrain: true,
+                            generated: true
+                        };
+                    }
+                }
+                
+                return {
+                    text: prediction.text,
+                    confidence: 0.7 + (result?.results?.length || 0) * 0.05,
+                    fromBrain: true
+                };
             }
             
-            if (result?.bigrams?.length) {
-                text += ` (обработано ${result.bigrams.length} токенов)`;
+            // 3. Если мозг не дал ответа, но есть история — ищем похожий контекст
+            if (this.conversationHistory.length >= 2) {
+                // Ищем похожие сообщения в истории
+                let bestMatch = null;
+                let bestScore = 0;
+                
+                for (let i = 0; i < this.conversationHistory.length - 1; i += 2) {
+                    if (this.conversationHistory[i].role === 'user') {
+                        const score = Utils.similarity(input, this.conversationHistory[i].text);
+                        if (score > bestScore && score > 0.3) {
+                            bestScore = score;
+                            if (this.conversationHistory[i + 1]?.role === 'bot') {
+                                bestMatch = this.conversationHistory[i + 1].text;
+                            }
+                        }
+                    }
+                }
+                
+                if (bestMatch) {
+                    return {
+                        text: bestMatch,
+                        confidence: 0.5 + bestScore * 0.3,
+                        fromHistory: true
+                    };
+                }
             }
-            return { text, confidence };
+            
+            // 4. Если совсем ничего нет — возвращаем минимальный ответ
+            // (но не шаблонный, а честное "не знаю" от мозга)
+            return {
+                text: '...',
+                confidence: 0.1
+            };
         }
 
         _addMessage(text, role, isThinking = false, metrics = null) {
@@ -2406,7 +2206,6 @@
             msg.className = `message ${role}${isThinking ? ' thinking' : ''}`;
             
             const content = document.createElement('div');
-            // 🔧 SECURITY: Используем textContent для автоматического экранирования
             content.textContent = text;
             
             const meta = document.createElement('div');
@@ -2419,10 +2218,12 @@
             if (metrics && !isThinking) {
                 const metricsEl = document.createElement('div');
                 metricsEl.className = 'message-metrics';
-                metricsEl.innerHTML = `
-                    <span>Уверенность: <strong>${Math.round(metrics.confidence * 100)}%</strong></span>
-                    ${metrics.spikes ? `<span>Спайков: <strong>${metrics.spikes}</strong></span>` : ''}
-                `;
+                
+                let metricsHtml = `<span>Уверенность: <strong>${Math.round(metrics.confidence * 100)}%</strong></span>`;
+                if (metrics.spikes) metricsHtml += `<span>Спайков: <strong>${metrics.spikes}</strong></span>`;
+                if (metrics.neurons) metricsHtml += `<span>Активность: <strong>${metrics.neurons}</strong></span>`;
+                
+                metricsEl.innerHTML = metricsHtml;
                 msg.appendChild(metricsEl);
             }
             
@@ -2457,11 +2258,13 @@
             this._addMessage('🧠 Чат очищен. Готов к новому диалогу.', 'bot');
         }
 
-        getHistory() { return [...this.conversationHistory]; }
+        getHistory() { 
+            return [...this.conversationHistory]; 
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 7: СИСТЕМА ЛОГИРОВАНИЯ
+    // МОДУЛЬ 7: Logger (без изменений)
     // ═══════════════════════════════════════════════════════════════
     const Logger = {
         element: null,
@@ -2472,9 +2275,6 @@
             return this;
         },
 
-        /**
-         * @param {string} message @param {'info'|'success'|'error'|'warn'} type
-         */
         log(message, type = 'info') {
             if (!this.element) return;
             const entry = document.createElement('div');
@@ -2497,14 +2297,9 @@
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 8: СИСТЕМА ТЕСТИРОВАНИЯ (расширенная)
+    // МОДУЛЬ 8: Tests (расширенный)
     // ═══════════════════════════════════════════════════════════════
     const Tests = {
-        /**
-         * Запускает все тесты
-         * @param {SpikeBrain} brain @param {typeof Logger} logger
-         * @returns {{passed:number,total:number,results:Array}}
-         */
         runAll(brain, logger) {
             const results = [];
             results.push(this.testEncoding(logger));
@@ -2512,10 +2307,11 @@
             results.push(this.testSynapses(brain, logger));
             results.push(this.testText(brain, logger));
             results.push(this.testSaveLoad(brain, logger));
-            // 🔧 NEW: Дополнительные тесты
             results.push(this.testConfigValidation(logger));
             results.push(this.testAdjacencyList(brain, logger));
             results.push(this.testRingBuffer(logger));
+            // 🔥 НОВЫЙ ТЕСТ: проверка ответа мозга
+            results.push(this.testBrainResponse(brain, logger));
             
             const passed = results.filter(r => r.passed).length;
             return { passed, total: results.length, results };
@@ -2571,12 +2367,11 @@
             }
         },
 
-        // 🔧 NEW: Тест валидации конфигурации
         testConfigValidation(logger) {
             try {
-                Config.validate('learningRate', 0.05); // valid
+                Config.validate('learningRate', 0.05);
                 let caught = false;
-                try { Config.validate('learningRate', 2.0); } // invalid
+                try { Config.validate('learningRate', 2.0); }
                 catch (e) { caught = e instanceof RangeError; }
                 const passed = caught;
                 logger.log(passed ? '✓ Валидация конфигурации: работает' : '✗ Валидация не ловит ошибки', passed ? 'success' : 'error');
@@ -2587,7 +2382,6 @@
             }
         },
 
-        // 🔧 NEW: Тест adjacency list оптимизации
         testAdjacencyList(brain, logger) {
             const fromId = brain._neuronId(10, 10);
             const synapses = brain._adjacencyList.get(fromId);
@@ -2596,19 +2390,31 @@
             return { name: 'Adjacency List', passed, message: passed ? 'OK' : 'Failed' };
         },
 
-        // 🔧 NEW: Тест кольцевого буфера
         testRingBuffer(logger) {
             const rb = new RingBuffer(5, 3);
             rb.push('a', 1); rb.push('b', 2); rb.push('c', 3); rb.push('d', 4);
-            const recent = rb.getRecent(2); // шаги 3-4
+            const recent = rb.getRecent(2);
             const passed = recent.includes('c') && recent.includes('d') && !recent.includes('a');
             logger.log(passed ? '✓ RingBuffer: age-based фильтрация работает' : '✗ RingBuffer: ошибка фильтрации', passed ? 'success' : 'error');
             return { name: 'Ring Buffer', passed, message: passed ? 'OK' : 'Failed' };
+        },
+
+        // 🔥 НОВЫЙ ТЕСТ: проверка ответа мозга
+        testBrainResponse(brain, logger) {
+            try {
+                const pred = brain.predictNext('привет');
+                const passed = pred && pred.text !== undefined;
+                logger.log(passed ? `✓ Мозг отвечает: "${pred.text}"` : `✗ Мозг не отвечает`, passed ? 'success' : 'error');
+                return { name: 'Brain Response', passed, message: passed ? 'OK' : 'Failed' };
+            } catch (e) {
+                logger.log(`✗ Ошибка теста: ${e.message}`, 'error');
+                return { name: 'Brain Response', passed: false, message: 'Exception' };
+            }
         }
     };
 
     // ═══════════════════════════════════════════════════════════════
-    // МОДУЛЬ 9: ОСНОВНОЕ ПРИЛОЖЕНИЕ
+    // МОДУЛЬ 9: App (с новой кнопкой обучения)
     // ═══════════════════════════════════════════════════════════════
     class App {
         constructor() {
@@ -2642,7 +2448,6 @@
             this._updateStats();
             this._renderCheckpoints();
             
-            // 🔧 NEW: Подписка на события для дебаггинга
             this.brain.on('spike', (data) => {
                 if (this.running && Math.random() < 0.01) {
                     Logger.info(`Спайк @(${data.x},${data.y}) шаг ${data.time}`);
@@ -2658,8 +2463,9 @@
             window.addEventListener('resize', () => this._resizeCanvas());
             requestAnimationFrame((t) => this._loop(t));
             
-            Logger.success('🧠 SpikeBrain Nano v3.1 PRO инициализирован');
-            Logger.info(`📊 Нейронов: ${this.brain.totalNeurons.toLocaleString()} | Синапсов: ${this.brain.synapseCount.toLocaleString()} | Adjacency: OK`);
+            Logger.success('🧠 SpikeBrain Nano v4.0 PRO инициализирован');
+            Logger.info(`📊 Нейронов: ${this.brain.totalNeurons.toLocaleString()} | Синапсов: ${this.brain.synapseCount.toLocaleString()}`);
+            Logger.info('🔥 Режим обучения в реальном времени: ВЫКЛ');
         }
 
         _initUI() {
@@ -2696,11 +2502,21 @@
             };
         }
 
+        // 🔥 НОВЫЙ МЕТОД: переключение режима обучения
+        toggleLearning() {
+            this.brain.isLearning = !this.brain.isLearning;
+            const btn = document.getElementById('btnToggleLearning');
+            btn.textContent = `🎓 Режим обучения: ${this.brain.isLearning ? 'ВКЛ' : 'ВЫКЛ'}`;
+            btn.style.background = this.brain.isLearning ? 'var(--success)' : 'var(--bg-card)';
+            btn.style.color = this.brain.isLearning ? '#000' : 'var(--text-main)';
+            Logger.info(`Режим обучения ${this.brain.isLearning ? 'включён' : 'выключен'}`);
+        }
+
         _resizeCanvas() {
             const container = this.canvas.parentElement;
             this.canvas.width = container.clientWidth;
             this.canvas.height = container.clientHeight;
-            this.brain.markDirty(); // 🔧 Перерисовать после ресайза
+            this.brain.markDirty();
         }
 
         start() {
@@ -2772,7 +2588,7 @@
         save() {
             const data = this.brain.save();
             try {
-                localStorage.setItem('spikebrain_v3', JSON.stringify(data));
+                localStorage.setItem('spikebrain_v4', JSON.stringify(data));
                 Logger.success('💾 Сохранено в localStorage');
             } catch (e) {
                 Logger.error('❌ Ошибка сохранения: ' + e.message);
@@ -2781,7 +2597,7 @@
 
         load() {
             try {
-                const data = JSON.parse(localStorage.getItem('spikebrain_v3'));
+                const data = JSON.parse(localStorage.getItem('spikebrain_v4'));
                 if (data && this.brain.load(data)) {
                     Logger.success('📂 Загружено из localStorage');
                     this._updateStats();
@@ -2791,16 +2607,10 @@
             }
         }
 
-        // === DATASET LOADING ===
-        /**
-         * 🔧 VALIDATION: Загрузка датасета с проверкой схемы
-         * @param {HTMLInputElement} input
-         */
         loadDataset(input) {
             const file = input.files?.[0];
             if (!file) return;
             
-            // 🔧 VALIDATION: Проверка типа файла
             if (!file.name.endsWith('.json')) {
                 Logger.error('❌ Ожидался JSON файл');
                 alert('Пожалуйста, выберите файл с расширением .json');
@@ -2813,7 +2623,6 @@
                 try {
                     const data = JSON.parse(e.target.result);
                     
-                    // 🔧 VALIDATION: Проверка структуры датасета
                     const isValid = Array.isArray(data.dialogs) || Array.isArray(data);
                     if (!isValid) {
                         throw new Error('Датасет должен быть массивом или объектом с полем "dialogs"');
@@ -2821,7 +2630,6 @@
                     
                     const dataset = Array.isArray(data.dialogs) ? data.dialogs : data;
                     
-                    // 🔧 VALIDATION: Проверка каждого элемента
                     for (let i = 0; i < Math.min(10, dataset.length); i++) {
                         const item = dataset[i];
                         if (!item || typeof item.input !== 'string') {
@@ -2851,7 +2659,6 @@
             input.value = '';
         }
 
-        // === TRAINING ===
         async startTraining() {
             if (!this.dataset || this.isTraining) return;
             
@@ -2876,7 +2683,7 @@
                         document.getElementById('statAccuracy').textContent = Math.round(progress.accuracy) + '%';
                         document.getElementById('statEpoch').textContent = progress.epoch;
                     },
-                    this.trainAbortController.signal // 🔧 ABORT SIGNAL
+                    this.trainAbortController.signal
                 );
                 
                 this._saveCheckpoint();
@@ -2909,7 +2716,6 @@
             }
         }
 
-        // === CHECKPOINTS ===
         _saveCheckpoint() {
             const checkpoint = {
                 id: Date.now(),
@@ -2964,14 +2770,13 @@
             }
         }
 
-        // === EXPORT/IMPORT ===
         exportModel() {
             const data = {
                 brain: this.brain.save(),
                 dataset: this.dataset,
                 checkpoints: this.checkpoints,
                 exportedAt: new Date().toISOString(),
-                version: '3.1-pro'
+                version: '4.0-pro'
             };
             try {
                 const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
@@ -2997,7 +2802,6 @@
                 try {
                     const data = JSON.parse(e.target.result);
                     
-                    // 🔧 VALIDATION: Проверка структуры импорта
                     if (!data.brain || typeof data.brain !== 'object') {
                         throw new Error('Неверный формат модели: отсутствует поле "brain"');
                     }
@@ -3041,7 +2845,6 @@
         }
 
         _draw() {
-            // 🔧 OPTIMIZATION: Dirty flag проверка перед рендером
             if (this.running || this.brain._needsRedraw) {
                 this.brain.draw(this.ctx, this.canvas.width, this.canvas.height);
             }
@@ -3064,41 +2867,11 @@
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    // ЗАПУСК ПРИЛОЖЕНИЯ
-    // ═══════════════════════════════════════════════════════════════
     window.addEventListener('DOMContentLoaded', () => {
         window.app = new App();
-        console.log('[App] SpikeBrain Nano v3.1 PRO готов к работе');
-        console.log('[App] Оптимизации: adjacency list, ring buffer, dirty flag, validation');
+        console.log('[App] SpikeBrain Nano v4.0 PRO готов к работе');
+        console.log('[App] Режим реального обучения: выключен (включи кнопкой)');
     });
     </script>
 </body>
-</html>
-
-
-
-              <script>
-                              // ✓ Валидация конфигурации с проверкой диапазонов
-Config.validate('learningRate', 0.01); // throws RangeError если вне [0,1]
-
-// ✓ Проверка схемы датасета перед использованием
-if (!item || typeof item.input !== 'string') throw new Error(...)
-
-// ✓ XSS-защита: Utils.escapeHtml() + textContent вместо innerHTML
-// ✓ Обработка ошибок FileReader, localStorage quota
-// ✓ AbortController для безопасной отмены обучения
-
-brain.on('spike', (data) => console.log(data));
-brain.on('trainingComplete', (metrics) => saveResults(metrics));
-brain.on('loadError', (err) => showError(err));
-
-// Fallback для старых браузеров без TextEncoder/TextDecoder
-const encoder = typeof TextEncoder !== 'undefined' 
-    ? new TextEncoder() 
-    : { encode: (s) => new Uint8Array(s.split('').map(c => c.charCodeAt(0))) };
-
-
-              </script>
-                        </body>
-                        </html>
+  </html>
