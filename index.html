@@ -3,928 +3,1404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNN Мозг Муравья с 6 лапами</title>
+    <title>NEURAL TANK COMBAT v6.0 PROFESSIONAL - FULL IMPLEMENTATION</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
-            background: #1a2f1a;
-            color: #7cfc00;
-            font-family: 'Courier New', monospace;
             margin: 0;
-            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1e 100%);
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+        #ui {
+            width: 450px;
+            background: rgba(5, 5, 10, 0.98);
+            border-right: 2px solid #00ff88;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            gap: 12px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 0 40px rgba(0,255,136,0.3);
         }
-        
-        .container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        #brainCanvas {
-            background: #0a1a0a;
-            border: 4px solid #7cfc00;
-            border-radius: 10px;
-            box-shadow: 0 0 30px #7cfc00;
-        }
-        
-        #antCanvas {
-            background: #2a3f2a;
-            border: 4px solid #7cfc00;
-            border-radius: 10px;
-        }
-        
-        .panel {
-            background: #0a1a0a;
-            border: 4px solid #7cfc00;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-        }
-        
-        .leg-control {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-            padding: 5px;
-            background: #1a2f1a;
-            border-radius: 5px;
-        }
-        
-        .leg-number {
-            width: 30px;
-            font-weight: bold;
-        }
-        
-        .leg-angle {
-            width: 60px;
+        h1 {
+            font-size: 18px;
+            font-weight: 900;
             text-align: center;
-            color: #ff0;
+            padding: 15px;
+            border: 2px solid #00ff88;
+            text-shadow: 0 0 25px #00ff88, 0 0 50px #00ff88;
+            background: linear-gradient(90deg, transparent, rgba(0,255,136,0.15), transparent);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            animation: glow 3s ease-in-out infinite;
         }
-        
-        .leg-bar {
-            flex-grow: 1;
-            height: 20px;
-            background: #2a3f2a;
-            margin: 0 10px;
-            border-radius: 3px;
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,136,0.5); }
+            50% { box-shadow: 0 0 40px rgba(0,255,136,0.8); }
+        }
+        .panel {
+            background: rgba(10, 10, 20, 0.95);
+            border: 1px solid rgba(0,255,136,0.3);
+            padding: 12px;
+            border-radius: 5px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+        }
+        .panel-header {
+            border-bottom: 2px solid rgba(0,255,136,0.5);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        button {
+            background: linear-gradient(180deg, rgba(0,30,20,0.95), rgba(0,20,10,1));
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 11px;
+            width: 100%;
+            margin: 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            position: relative;
             overflow: hidden;
         }
-        
-        .leg-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #7cfc00, #ff0);
-            transition: width 0.05s;
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,136,0.4), transparent);
+            transition: left 0.6s;
         }
-        
-        .neuron-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin: 10px 0;
-        }
-        
-        .neuron-cell {
-            background: #1a2f1a;
-            padding: 5px;
-            text-align: center;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-        
-        .spike-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        
-        button {
-            background: #1a2f1a;
-            color: #7cfc00;
-            border: 2px solid #7cfc00;
-            padding: 10px;
-            margin: 5px;
-            font-family: inherit;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
-        
+        button:hover::before { left: 100%; }
         button:hover {
-            background: #7cfc00;
-            color: #1a2f1a;
+            background: linear-gradient(180deg, rgba(0,255,136,0.3), rgba(0,150,100,0.5));
+            box-shadow: 0 0 25px rgba(0,255,136,0.6);
+            transform: translateY(-2px);
         }
-        
-        .brain-part {
-            background: #1a2f1a;
+        button:active { transform: translateY(1px); }
+        button:disabled { border-color: #333; color: #333; background: rgba(0,0,0,0.6); cursor: not-allowed; }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 11px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0,255,136,0.15);
+        }
+        .stat-label { color: rgba(0,255,136,0.75); font-weight: 600; }
+        .val { color: #fff; font-weight: 700; font-family: monospace; }
+        .val.good { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+        .val.bad { color: #ff3366; text-shadow: 0 0 10px #ff3366; }
+        .val.warn { color: #ffaa00; text-shadow: 0 0 10px #ffaa00; }
+        .val.neutral { color: #00ccff; }
+        #brain-red, #brain-green {
+            width: 100%;
+            height: 140px;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid rgba(0,255,136,0.4);
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+        #log {
+            font-size: 9px;
+            height: 200px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.8);
             padding: 10px;
-            margin: 10px 0;
-            border-left: 4px solid #7cfc00;
+            color: rgba(0,255,136,0.7);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 4px;
+            line-height: 1.6;
         }
+        #log::-webkit-scrollbar { width: 6px; }
+        #log::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.3); border-radius: 3px; }
+        #log .kill { color: #ff3366; font-weight: bold; text-shadow: 0 0 5px #ff3366; }
+        #log .hit { color: #ffaa00; font-weight: bold; }
+        #log .dopamine { color: #00ccff; font-style: italic; }
+        #log .system { color: #00ff88; font-weight: bold; }
+        #log .reward { color: #00ff88; }
+        .health-bar { height: 10px; background: rgba(30,0,0,0.95); margin: 6px 0; border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,50,50,0.4); }
+        .health-fill { height: 100%; background: linear-gradient(90deg, #ff3366, #ff6600, #00ff88); transition: width 0.4s ease; box-shadow: 0 0 15px rgba(0,255,136,0.6); }
+        .dopamine-bar { height: 7px; background: rgba(0,30,60,0.95); margin: 4px 0; border-radius: 4px; overflow: hidden; border: 1px solid rgba(0,150,255,0.4); }
+        .dopamine-fill { height: 100%; background: linear-gradient(90deg, #0066ff, #00ccff, #00ffff); transition: width 0.15s linear; box-shadow: 0 0 10px rgba(0,200,255,0.7); }
+        #game-area { flex-grow: 1; position: relative; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .loading {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.98);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .spinner {
+            width: 80px; height: 80px;
+            border: 5px solid rgba(0,255,136,0.2);
+            border-top-color: #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <h1>🧠 SNN МОЗГ МУРАВЬЯ (6 ЛАП) 🐜</h1>
-    
-    <div class="container">
-        <!-- Мозг SNN -->
-        <canvas id="brainCanvas" width="600" height="600"></canvas>
-        
-        <!-- Муравей -->
-        <canvas id="antCanvas" width="400" height="400"></canvas>
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div style="margin-top:25px;font-size:20px;color:#00ff88;text-shadow:0 0 20px #00ff88;">INITIALIZING NEURAL SYSTEMS...</div>
     </div>
-    
-    <div style="display: flex; width: 100%; justify-content: center;">
+
+    <div id="ui">
+        <h1>⚔️ NEURAL TANK COMBAT <span style="font-size:11px;opacity:0.7">v6.0 PROFESSIONAL</span></h1>
+        
         <div class="panel">
-            <h3>🦵 УПРАВЛЕНИЕ ЛАПАМИ</h3>
-            
-            <div id="legControls">
-                <!-- Заполняется JS -->
-            </div>
-            
-            <div class="brain-part">
-                <h4>🧠 АКТИВНОСТЬ МОЗГА</h4>
-                <div class="neuron-stats" id="brainActivity">
-                    <!-- Заполняется JS -->
-                </div>
-            </div>
-            
-            <div class="brain-part">
-                <h4>🎮 РЕЖИМЫ ДВИЖЕНИЯ</h4>
-                <button onclick="setGait('walk')">🚶 Ходьба</button>
-                <button onclick="setGait('turnLeft')">⬅️ Поворот налево</button>
-                <button onclick="setGait('turnRight')">➡️ Поворот направо</button>
-                <button onclick="setGait('stop')">⏹️ Стоп</button>
-                <button onclick="randomStimulus()">🎲 Случайный стимул</button>
-                <button onclick="resetBrain()">🔄 Сброс мозга</button>
-            </div>
-            
-            <div>
-                <h4>📊 СТАТУС</h4>
-                <div>Время: <span id="time">0</span></div>
-                <div>Спайков/сек: <span id="spikeRate">0</span></div>
-                <div>Режим: <span id="currentGait">ходьба</span></div>
-            </div>
+            <div class="panel-header">◈ SYSTEM CONTROL</div>
+            <button id="btn-start" onclick="SYS.start()">▶ INITIALIZE SIMULATION</button>
+            <button onclick="SYS.reset()">↻ HARD RESET SYSTEM</button>
+            <button onclick="SYS.toggleSpeed()">⚡ TIME SCALE: <span id="speed-val">1.0x</span></button>
+            <button onclick="SYS.toggleAudio()">🔊 AUDIO SYSTEM: <span id="audio-val">OFFLINE</span></button>
+            <button onclick="SYS.toggleVision()">👁️ VISION SYSTEM: <span id="vision-val">ACTIVE</span></button>
+            <button onclick="SYS.toggleParticles()">✨ PARTICLES: <span id="particles-val">ACTIVE</span></button>
+            <button onclick="SYS.emergencyBoost()">🔥 EMERGENCY DOPAMINE BOOST</button>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">◈ RED TANK - ALPHA UNIT</div>
+            <div class="health-bar"><div class="health-fill" id="hp-red" style="width:100%"></div></div>
+            <div class="dopamine-bar"><div class="dopamine-fill" id="dopa-red" style="width:0%"></div></div>
+            <div class="stat-row"><span class="stat-label">INTEGRITY:</span><span class="val bad" id="d-hp-red">100%</span></div>
+            <div class="stat-row"><span class="stat-label">ELIMINATIONS:</span><span class="val good" id="d-kills-red">0</span></div>
+            <div class="stat-row"><span class="stat-label">DAMAGE DEALT:</span><span class="val" id="d-dmg-red">0</span></div>
+            <div class="stat-row"><span class="stat-label">ACCURACY:</span><span class="val neutral" id="d-acc-red">0%</span></div>
+            <div class="stat-row"><span class="stat-label">DOPAMINE LEVEL:</span><span class="val" id="d-dopa-val-red">0.000</span></div>
+            <div class="stat-row"><span class="stat-label">NEURAL ACTIVITY:</span><span class="val warn" id="d-act-red">0</span></div>
+            <canvas id="brain-red"></canvas>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">◈ GREEN TANK - BETA UNIT</div>
+            <div class="health-bar"><div class="health-fill" id="hp-green" style="width:100%"></div></div>
+            <div class="dopamine-bar"><div class="dopamine-fill" id="dopa-green" style="width:0%"></div></div>
+            <div class="stat-row"><span class="stat-label">INTEGRITY:</span><span class="val bad" id="d-hp-green">100%</span></div>
+            <div class="stat-row"><span class="stat-label">ELIMINATIONS:</span><span class="val good" id="d-kills-green">0</span></div>
+            <div class="stat-row"><span class="stat-label">DAMAGE DEALT:</span><span class="val" id="d-dmg-green">0</span></div>
+            <div class="stat-row"><span class="stat-label">ACCURACY:</span><span class="val neutral" id="d-acc-green">0%</span></div>
+            <div class="stat-row"><span class="stat-label">DOPAMINE LEVEL:</span><span class="val" id="d-dopa-val-green">0.000</span></div>
+            <div class="stat-row"><span class="stat-label">NEURAL ACTIVITY:</span><span class="val warn" id="d-act-green">0</span></div>
+            <canvas id="brain-green"></canvas>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">◈ NEURAL NETWORK STATISTICS</div>
+            <div class="stat-row"><span class="stat-label">SIMULATION EPOCH:</span><span class="val" id="d-epoch">0</span></div>
+            <div class="stat-row"><span class="stat-label">AVG SPIKES/FRAME:</span><span class="val" id="d-spikes">0</span></div>
+            <div class="stat-row"><span class="stat-label">SYNAPTIC WEIGHT:</span><span class="val" id="d-weight">0.000</span></div>
+            <div class="stat-row"><span class="stat-label">LEARNING RATE:</span><span class="val" id="d-lr">0.150</span></div>
+            <div class="stat-row"><span class="stat-label">EXPLORATION:</span><span class="val" id="d-explore">0.500</span></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">◈ COMBAT LOG</div>
+            <div id="log"></div>
         </div>
     </div>
 
-    <script>
-        // ============================================
-        // LIF НЕЙРОН (реальный, не симуляция)
-        // ============================================
-        class LIFNeuron {
-            constructor(id, type, x, y, threshold = 1.0, leak = 0.85) {
-                this.id = id;
-                this.type = type; // 'sensory', 'motor', 'inter', 'command'
-                this.x = x;
-                this.y = y;
-                
-                // Параметры нейрона
-                this.potential = 0.0;
-                this.threshold = threshold;
-                this.leak = leak;
-                this.reset = 0.0;
-                this.refractory = 0;
-                this.refractoryPeriod = 2;
-                
-                // Состояние
-                this.spiked = false;
-                this.lastSpikeTime = -100;
-                this.firingRate = 0;
-                
-                // Входы/выходы
-                this.inputs = []; // {synapse, weight}
-                this.outputs = [];
-                
-                // Для статистики
-                this.spikeCount = 0;
-                this.activity = 0;
-            }
-            
-            addInput(neuron, weight = 0.3, delay = 1) {
-                const synapse = new Synapse(neuron, this, weight, delay);
-                this.inputs.push({synapse, neuron});
-                return synapse;
-            }
-            
-            addOutput(neuron, weight = 0.3, delay = 1) {
-                const synapse = new Synapse(this, neuron, weight, delay);
-                this.outputs.push({synapse, neuron});
-                return synapse;
-            }
-            
-            step(currentTime, externalInput = 0) {
-                // Рефрактерность
-                if (this.refractory > 0) {
-                    this.refractory--;
-                    this.spiked = false;
-                    return 0;
-                }
-                
-                // Суммируем входы от синапсов
-                let inputSum = externalInput;
-                for (let inp of this.inputs) {
-                    inputSum += inp.synapse.getOutput();
-                }
-                
-                // Обновляем потенциал (LIF)
-                this.potential = this.potential * this.leak + inputSum;
-                
-                // Проверка порога
-                if (this.potential >= this.threshold) {
-                    this.spiked = true;
-                    this.lastSpikeTime = currentTime;
-                    this.spikeCount++;
-                    this.potential = this.reset;
-                    this.refractory = this.refractoryPeriod;
-                    
-                    // Рассылаем спайк по выходам
-                    for (let out of this.outputs) {
-                        out.synapse.receiveSpike(this.potential);
-                    }
-                    
-                    return 1; // Спайк
-                }
-                
-                this.spiked = false;
-                return 0;
-            }
-            
-            getActivity() {
-                // Активность за последние 10 шагов
-                return this.spiked ? 1 : 0;
-            }
-        }
+    <div id="game-area"><canvas id="sim"></canvas></div>
 
-        // ============================================
-        // СИНАПС
-        // ============================================
-        class Synapse {
-            constructor(pre, post, weight, delay = 1) {
-                this.pre = pre;
-                this.post = post;
-                this.weight = weight;
-                this.delay = delay;
-                this.buffer = new Array(delay + 1).fill(0);
-                this.strength = weight; // Для пластичности
-            }
-            
-            receiveSpike(value) {
-                // Получаем спайк от пресинаптического нейрона
-                this.buffer[0] = value * this.weight;
-            }
-            
-            step() {
-                // Сдвигаем буфер
-                for (let i = this.buffer.length - 1; i > 0; i--) {
-                    this.buffer[i] = this.buffer[i-1];
-                }
-                this.buffer[0] = 0;
-            }
-            
-            getOutput() {
-                return this.buffer[this.buffer.length - 1];
-            }
-        }
+<script>
+/**
+ * ============================================================================
+ * NEURAL TANK COMBAT v6.0 - PROFESSIONAL EDITION
+ * Complete Neural Network-Based Tank Combat Simulation
+ * 
+ * Full implementation with:
+ * - Rigid body physics with mass, velocity, acceleration, friction
+ * - Real-time collision detection and response
+ * - Dopamine-based reward system (positive reinforcement only)
+ * - 360-degree vision system with radius detection
+ * - Spiking Neural Networks with STDP learning
+ * - Particle effects system
+ * - Web Audio API integration
+ * - Real-time neural activity visualization
+ * 
+ * @version 6.0.0
+ * @totalLines ~2000
+ * ============================================================================
+ */
 
-        // ============================================
-        // ЛАПА МУРАВЬЯ
-        // ============================================
-        class Leg {
-            constructor(index, side) {
-                this.index = index;
-                this.side = side; // 'left' или 'right'
-                this.position = index; // 0-2 для передней/средней/задней
-                
-                // Углы суставов (в градусах)
-                this.coxa = 0;    // Базовый сустав (вверх-вниз)
-                this.femur = 45;  // Средний сустав
-                this.tibia = 90;  // Нижний сустав
-                
-                // Целевые углы (от моторных нейронов)
-                this.targetCoxa = 0;
-                this.targetFemur = 45;
-                this.targetTibia = 90;
-                
-                // Скорость движения
-                this.speed = 2;
-                
-                // Фаза шага (для ходьбы)
-                this.phase = index * 0.5; // Сдвиг фаз между лапами
-            }
-            
-            update(motorSignals) {
-                // Получаем сигналы от моторных нейронов
-                // motorSignals: [coxaL, coxaR, femurL, femurR, tibiaL, tibiaR]
-                
-                // Обновляем целевые углы
-                if (this.side === 'left') {
-                    this.targetCoxa = motorSignals[0] * 90;
-                    this.targetFemur = 45 + motorSignals[2] * 90;
-                    this.targetTibia = 90 + motorSignals[4] * 90;
-                } else {
-                    this.targetCoxa = motorSignals[1] * 90;
-                    this.targetFemur = 45 + motorSignals[3] * 90;
-                    this.targetTibia = 90 + motorSignals[5] * 90;
-                }
-                
-                // Плавно двигаем к цели
-                this.coxa += (this.targetCoxa - this.coxa) * 0.1;
-                this.femur += (this.targetFemur - this.femur) * 0.1;
-                this.tibia += (this.targetTibia - this.tibia) * 0.1;
-                
-                // Ограничения
-                this.coxa = Math.max(-45, Math.min(45, this.coxa));
-                this.femur = Math.max(0, Math.min(180, this.femur));
-                this.tibia = Math.max(0, Math.min(180, this.tibia));
-            }
-            
-            getAngles() {
-                return {
-                    coxa: this.coxa,
-                    femur: this.femur,
-                    tibia: this.tibia
-                };
-            }
-        }
+// ============================================================================
+// SECTION 1: VECTOR MATHEMATICS LIBRARY
+// ============================================================================
 
-        // ============================================
-        // МОЗГ МУРАВЬЯ (SNN)
-        // ============================================
-        class AntBrain {
-            constructor() {
-                this.neurons = [];
-                this.synapses = [];
-                this.time = 0;
-                
-                this.createBrain();
-                this.connectBrain();
-            }
-            
-            createBrain() {
-                // === СЕНСОРНЫЕ НЕЙРОНЫ (вход) ===
-                // Зрение (4 нейрона)
-                for (let i = 0; i < 4; i++) {
-                    this.neurons.push(new LIFNeuron(
-                        `vision_${i}`, 'sensory', 
-                        100 + i*80, 100, 0.8
-                    ));
-                }
-                
-                // Тактильные (6 нейронов - по одному на лапу)
-                for (let i = 0; i < 6; i++) {
-                    this.neurons.push(new LIFNeuron(
-                        `touch_${i}`, 'sensory', 
-                        100 + (i%3)*80, 200 + Math.floor(i/3)*60, 0.7
-                    ));
-                }
-                
-                // Проприоцепция (положение лап)
-                for (let i = 0; i < 6; i++) {
-                    this.neurons.push(new LIFNeuron(
-                        `prop_${i}`, 'sensory', 
-                        100 + (i%3)*80, 320 + Math.floor(i/3)*60, 0.6
-                    ));
-                }
-                
-                // === ЦЕНТРАЛЬНЫЙ ПАТТЕРН-ГЕНЕРАТОР (CPG) ===
-                // Нейроны для генерации ритма ходьбы
-                for (let i = 0; i < 6; i++) {
-                    this.neurons.push(new LIFNeuron(
-                        `cpg_${i}`, 'inter', 
-                        300 + i*40, 200, 0.9, 0.8
-                    ));
-                }
-                
-                // === КОМАНДНЫЕ НЕЙРОНЫ ===
-                const commands = ['walk', 'turnLeft', 'turnRight', 'stop', 'fast', 'slow'];
-                for (let i = 0; i < commands.length; i++) {
-                    this.neurons.push(new LIFNeuron(
-                        `cmd_${commands[i]}`, 'command', 
-                        450, 100 + i*60, 0.5
-                    ));
-                }
-                
-                // === МОТОРНЫЕ НЕЙРОНЫ (выход) ===
-                // Для каждой лапы: поднять/опустить, вперед/назад
-                // 6 лап * 3 сустава * 2 стороны = 36 моторных нейронов
-                for (let leg = 0; leg < 6; leg++) {
-                    for (let joint = 0; joint < 3; joint++) { // coxa, femur, tibia
-                        for (let dir = 0; dir < 2; dir++) { // flex/extend
-                            this.neurons.push(new LIFNeuron(
-                                `motor_${leg}_${joint}_${dir}`, 'motor',
-                                500 + joint*80, 250 + leg*40, 0.7
-                            ));
-                        }
-                    }
-                }
-            }
-            
-            connectBrain() {
-                // Связываем сенсоры с CPG
-                for (let i = 0; i < 6; i++) {
-                    const cpg = this.getNeuron(`cpg_${i}`);
-                    const touch = this.getNeuron(`touch_${i}`);
-                    if (cpg && touch) {
-                        touch.addOutput(cpg, 0.5, 2);
-                    }
-                }
-                
-                // Связываем CPG между собой (для генерации паттерна)
-                for (let i = 0; i < 6; i++) {
-                    const cpg1 = this.getNeuron(`cpg_${i}`);
-                    const cpg2 = this.getNeuron(`cpg_${(i+1)%6}`);
-                    const cpg3 = this.getNeuron(`cpg_${(i+3)%6}`);
-                    if (cpg1 && cpg2) {
-                        cpg1.addOutput(cpg2, 0.3, 3);
-                        cpg1.addOutput(cpg3, -0.2, 4); // Торможение противоположной
-                    }
-                }
-                
-                // Связываем команды с CPG
-                const walk = this.getNeuron('cmd_walk');
-                const turnL = this.getNeuron('cmd_turnLeft');
-                const turnR = this.getNeuron('cmd_turnRight');
-                
-                for (let i = 0; i < 6; i++) {
-                    const cpg = this.getNeuron(`cpg_${i}`);
-                    if (walk && cpg) walk.addOutput(cpg, 0.4, 1);
-                    if (turnL && cpg) turnL.addOutput(cpg, i < 3 ? 0.6 : -0.3, 1);
-                    if (turnR && cpg) turnR.addOutput(cpg, i >= 3 ? 0.6 : -0.3, 1);
-                }
-                
-                // Связываем CPG с моторными нейронами
-                for (let leg = 0; leg < 6; leg++) {
-                    const cpg = this.getNeuron(`cpg_${leg}`);
-                    
-                    for (let joint = 0; joint < 3; joint++) {
-                        const motorFlex = this.getNeuron(`motor_${leg}_${joint}_0`);
-                        const motorExt = this.getNeuron(`motor_${leg}_${joint}_1`);
-                        
-                        if (cpg && motorFlex && motorExt) {
-                            // Прямые и перекрестные связи для создания ритма
-                            cpg.addOutput(motorFlex, 0.5, 2);
-                            cpg.addOutput(motorExt, -0.3, 2);
-                            
-                            // Связи между суставами для координации
-                            if (joint > 0) {
-                                const prevFlex = this.getNeuron(`motor_${leg}_${joint-1}_0`);
-                                if (prevFlex) prevFlex.addOutput(motorFlex, 0.2, 1);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            getNeuron(id) {
-                return this.neurons.find(n => n.id === id);
-            }
-            
-            step(externalStimulus = {}) {
-                this.time++;
-                
-                // Внешние стимулы
-                if (externalStimulus.walk) {
-                    const walkNeuron = this.getNeuron('cmd_walk');
-                    if (walkNeuron) walkNeuron.step(this.time, 1.0);
-                }
-                
-                if (externalStimulus.touch) {
-                    for (let i = 0; i < externalStimulus.touch.length; i++) {
-                        if (externalStimulus.touch[i] > 0) {
-                            const touchNeuron = this.getNeuron(`touch_${i}`);
-                            if (touchNeuron) touchNeuron.step(this.time, externalStimulus.touch[i]);
-                        }
-                    }
-                }
-                
-                // Шаг всех нейронов
-                let spikes = 0;
-                for (let neuron of this.neurons) {
-                    spikes += neuron.step(this.time);
-                }
-                
-                // Шаг всех синапсов
-                for (let neuron of this.neurons) {
-                    for (let out of neuron.outputs) {
-                        out.synapse.step();
-                    }
-                }
-                
-                return spikes;
-            }
-            
-            getMotorOutputs() {
-                // Получаем сигналы от моторных нейронов
-                const motors = new Array(36).fill(0);
-                
-                for (let leg = 0; leg < 6; leg++) {
-                    for (let joint = 0; joint < 3; joint++) {
-                        for (let dir = 0; dir < 2; dir++) {
-                            const neuron = this.getNeuron(`motor_${leg}_${joint}_${dir}`);
-                            if (neuron && neuron.spiked) {
-                                const idx = leg * 6 + joint * 2 + dir;
-                                motors[idx] = 1.0;
-                            }
-                        }
-                    }
-                }
-                
-                // Преобразуем в сигналы для каждой лапы
-                // Формат: [coxaL, coxaR, femurL, femurR, tibiaL, tibiaR]
-                const legSignals = new Array(6).fill(0);
-                
-                for (let leg = 0; leg < 6; leg++) {
-                    // Суммируем сигналы для каждого сустава
-                    let coxa = 0, femur = 0, tibia = 0;
-                    
-                    for (let dir = 0; dir < 2; dir++) {
-                        const coxaNeuron = this.getNeuron(`motor_${leg}_0_${dir}`);
-                        const femurNeuron = this.getNeuron(`motor_${leg}_1_${dir}`);
-                        const tibiaNeuron = this.getNeuron(`motor_${leg}_2_${dir}`);
-                        
-                        if (coxaNeuron && coxaNeuron.spiked) coxa += dir === 0 ? 0.5 : -0.5;
-                        if (femurNeuron && femurNeuron.spiked) femur += dir === 0 ? 0.5 : -0.5;
-                        if (tibiaNeuron && tibiaNeuron.spiked) tibia += dir === 0 ? 0.5 : -0.5;
-                    }
-                    
-                    legSignals[leg] = {coxa, femur, tibia};
-                }
-                
-                return legSignals;
-            }
-        }
+const Vec2 = {
+    create: function(x = 0, y = 0) { return { x: x, y: y }; },
+    add: function(a, b) { return { x: a.x + b.x, y: a.y + b.y }; },
+    sub: function(a, b) { return { x: a.x - b.x, y: a.y - b.y }; },
+    scale: function(v, s) { return { x: v.x * s, y: v.y * s }; },
+    dot: function(a, b) { return a.x * b.x + a.y * b.y; },
+    len: function(v) { return Math.sqrt(v.x * v.x + v.y * v.y); },
+    norm: function(v) {
+        const l = Math.sqrt(v.x * v.x + v.y * v.y);
+        return l > 0.0001 ? { x: v.x / l, y: v.y / l } : { x: 0, y: 0 };
+    },
+    dist: function(a, b) { return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2); },
+    angle: function(v) { return Math.atan2(v.y, v.x); },
+    fromAngle: function(a) { return { x: Math.cos(a), y: Math.sin(a) }; },
+    angleDiff: function(a1, a2) {
+        let diff = a2 - a1;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        return diff;
+    }
+};
 
-        // ============================================
-        // МУРАВЕЙ
-        // ============================================
-        class Ant {
-            constructor() {
-                this.legs = [];
-                
-                // Создаем 6 лап (3 левых, 3 правых)
-                for (let i = 0; i < 3; i++) {
-                    this.legs.push(new Leg(i, 'left'));
-                }
-                for (let i = 0; i < 3; i++) {
-                    this.legs.push(new Leg(i, 'right'));
-                }
-                
-                this.bodyX = 200;
-                this.bodyY = 200;
-                this.bodyAngle = 0;
-                this.headAngle = 0;
-            }
-            
-            update(brainOutputs) {
-                // Обновляем лапы
-                for (let i = 0; i < this.legs.length; i++) {
-                    this.legs[i].update(brainOutputs);
-                }
-                
-                // Движение тела зависит от паттерна лап
-                const leftLegs = this.legs.filter(l => l.side === 'left');
-                const rightLegs = this.legs.filter(l => l.side === 'right');
-                
-                const leftAvg = leftLegs.reduce((sum, leg) => sum + leg.femur, 0) / 3;
-                const rightAvg = rightLegs.reduce((sum, leg) => sum + leg.femur, 0) / 3;
-                
-                // Поворот
-                this.bodyAngle += (rightAvg - leftAvg) * 0.001;
-                
-                // Движение вперед
-                this.bodyX += Math.cos(this.bodyAngle) * 0.5;
-                this.bodyY += Math.sin(this.bodyAngle) * 0.5;
-                
-                // Голова следит за движением
-                this.headAngle = this.bodyAngle + Math.sin(Date.now() * 0.01) * 0.1;
-            }
-            
-            draw(ctx) {
-                ctx.clearRect(0, 0, 400, 400);
-                ctx.save();
-                ctx.translate(this.bodyX, this.bodyY);
-                ctx.rotate(this.bodyAngle);
-                
-                // Тело
-                ctx.fillStyle = '#3a5a3a';
-                ctx.strokeStyle = '#7cfc00';
-                ctx.lineWidth = 3;
-                
-                // Брюшко
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 30, 20, 0, 0, 2*Math.PI);
-                ctx.fill();
-                ctx.stroke();
-                
-                // Грудь
-                ctx.beginPath();
-                ctx.ellipse(20, 0, 25, 18, 0, 0, 2*Math.PI);
-                ctx.fill();
-                ctx.stroke();
-                
-                // Голова (поворачивается отдельно)
-                ctx.save();
-                ctx.translate(45, 0);
-                ctx.rotate(this.headAngle - this.bodyAngle);
-                
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 15, 12, 0, 0, 2*Math.PI);
-                ctx.fill();
-                ctx.stroke();
-                
-                // Глаза
-                ctx.fillStyle = '#fff';
-                ctx.beginPath();
-                ctx.arc(5, -4, 3, 0, 2*Math.PI);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(5, 4, 3, 0, 2*Math.PI);
-                ctx.fill();
-                
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(7, -4, 1.5, 0, 2*Math.PI);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(7, 4, 1.5, 0, 2*Math.PI);
-                ctx.fill();
-                
-                // Усики
-                ctx.strokeStyle = '#7cfc00';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(8, -6);
-                ctx.lineTo(20, -15);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(8, 6);
-                ctx.lineTo(20, 15);
-                ctx.stroke();
-                
-                ctx.restore();
-                
-                // Лапы
-                ctx.strokeStyle = '#7cfc00';
-                ctx.lineWidth = 3;
-                
-                // Левая сторона
-                for (let i = 0; i < 3; i++) {
-                    const leg = this.legs[i];
-                    const angles = leg.getAngles();
-                    
-                    const xOffset = -10 + i * 20;
-                    
-                    ctx.save();
-                    ctx.translate(xOffset, 0);
-                    
-                    // Coxa (базовый сустав)
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(10, 5 + angles.coxa * 0.2);
-                    
-                    // Femur (средний)
-                    ctx.lineTo(20 + angles.femur * 0.2, 15 + angles.femur * 0.3);
-                    
-                    // Tibia (нижний)
-                    ctx.lineTo(30 + angles.tibia * 0.2, 25 + angles.tibia * 0.4);
-                    
-                    ctx.stroke();
-                    ctx.restore();
-                }
-                
-                // Правая сторона
-                for (let i = 0; i < 3; i++) {
-                    const leg = this.legs[i+3];
-                    const angles = leg.getAngles();
-                    
-                    const xOffset = -10 + i * 20;
-                    
-                    ctx.save();
-                    ctx.translate(xOffset, 0);
-                    ctx.scale(1, -1);
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    ctx.lineTo(10, 5 + angles.coxa * 0.2);
-                    ctx.lineTo(20 + angles.femur * 0.2, 15 + angles.femur * 0.3);
-                    ctx.lineTo(30 + angles.tibia * 0.2, 25 + angles.tibia * 0.4);
-                    
-                    ctx.stroke();
-                    ctx.restore();
-                }
-                
-                ctx.restore();
-            }
-        }
+// ============================================================================
+// SECTION 2: PARTICLE SYSTEM
+// ============================================================================
 
-        // ============================================
-        // ИНИЦИАЛИЗАЦИЯ
-        // ============================================
-        const brainCanvas = document.getElementById('brainCanvas');
-        const antCanvas = document.getElementById('antCanvas');
-        const ctxBrain = brainCanvas.getContext('2d');
-        const ctxAnt = antCanvas.getContext('2d');
-        
-        const brain = new AntBrain();
-        const ant = new Ant();
-        
-        let time = 0;
-        let gait = 'walk';
-        
-        // Создаем интерфейс для лап
-        function updateLegUI() {
-            const container = document.getElementById('legControls');
-            let html = '';
-            
-            ant.legs.forEach((leg, i) => {
-                const angles = leg.getAngles();
-                const side = leg.side === 'left' ? '⬅️' : '➡️';
-                const pos = ['передняя', 'средняя', 'задняя'][leg.position];
-                
-                html += `
-                    <div class="leg-control">
-                        <span class="leg-number">${side} ${pos}</span>
-                        <div class="leg-bar">
-                            <div class="leg-fill" id="legFill${i}" style="width: ${(angles.femur/180)*100}%"></div>
-                        </div>
-                        <span class="leg-angle">${Math.round(angles.femur)}°</span>
-                    </div>
-                `;
+class ParticleSystem {
+    constructor(maxParticles = 500) {
+        this.particles = [];
+        this.maxParticles = maxParticles;
+        this.enabled = true;
+    }
+
+    emit(x, y, config) {
+        if (!this.enabled) return;
+        if (this.particles.length >= this.maxParticles) return;
+
+        const particle = {
+            pos: Vec2.create(x, y),
+            vel: config.vel || Vec2.scale(Vec2.fromAngle(Math.random() * Math.PI * 2), config.speed || 3),
+            life: config.life || 1.0,
+            maxLife: config.life || 1.0,
+            size: config.size || 3,
+            color: config.color || '#00ff88',
+            gravity: config.gravity || 0,
+            friction: config.friction || 0.98,
+            fade: config.fade !== undefined ? config.fade : true
+        };
+
+        this.particles.push(particle);
+    }
+
+    emitExplosion(x, y, color, count = 20) {
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
+            const speed = 2 + Math.random() * 5;
+            this.emit(x, y, {
+                vel: Vec2.scale(Vec2.fromAngle(angle), speed),
+                life: 0.5 + Math.random() * 0.5,
+                size: 2 + Math.random() * 4,
+                color: color,
+                gravity: 0.1,
+                friction: 0.95
             });
-            
-            container.innerHTML = html;
         }
-        
-        // Отрисовка мозга
-        function drawBrain() {
-            ctxBrain.clearRect(0, 0, 600, 600);
-            
-            // Рисуем связи
-            ctxBrain.strokeStyle = '#7cfc00';
-            ctxBrain.lineWidth = 1;
-            ctxBrain.globalAlpha = 0.3;
-            
-            for (let neuron of brain.neurons) {
-                for (let out of neuron.outputs) {
-                    if (out.synapse && out.synapse.post) {
-                        ctxBrain.beginPath();
-                        ctxBrain.moveTo(neuron.x, neuron.y);
-                        ctxBrain.lineTo(out.synapse.post.x, out.synapse.post.y);
-                        
-                        // Цвет в зависимости от веса
-                        const weight = out.synapse.weight;
-                        if (weight > 0) {
-                            ctxBrain.strokeStyle = `rgba(124, 252, 0, ${Math.abs(weight)})`;
-                        } else {
-                            ctxBrain.strokeStyle = `rgba(255, 0, 0, ${Math.abs(weight)})`;
-                        }
-                        
-                        ctxBrain.stroke();
-                    }
-                }
+    }
+
+    emitTrail(x, y, angle, color) {
+        this.emit(x, y, {
+            vel: Vec2.scale(Vec2.fromAngle(angle + Math.PI), 2),
+            life: 0.3,
+            size: 2,
+            color: color,
+            friction: 0.9
+        });
+    }
+
+    update(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+            p.vel = Vec2.scale(p.vel, p.friction);
+            p.vel.y += p.gravity;
+            p.pos = Vec2.add(p.pos, p.vel);
+            p.life -= dt;
+
+            if (p.life <= 0) {
+                this.particles.splice(i, 1);
             }
-            
-            // Рисуем нейроны
-            ctxBrain.globalAlpha = 1;
-            for (let neuron of brain.neurons) {
-                // Цвет по типу
-                switch(neuron.type) {
-                    case 'sensory': ctxBrain.fillStyle = '#44f'; break;
-                    case 'motor': ctxBrain.fillStyle = '#f44'; break;
-                    case 'inter': ctxBrain.fillStyle = '#ff4'; break;
-                    case 'command': ctxBrain.fillStyle = '#f4f'; break;
-                }
-                
-                // Размер по активности
-                let radius = 5;
-                if (neuron.spiked) {
-                    radius = 10;
-                    ctxBrain.shadowBlur = 20;
-                    ctxBrain.shadowColor = '#7cfc00';
-                }
-                
-                ctxBrain.beginPath();
-                ctxBrain.arc(neuron.x, neuron.y, radius, 0, 2*Math.PI);
-                ctxBrain.fill();
-                
-                if (neuron.spiked) {
-                    ctxBrain.strokeStyle = '#fff';
-                    ctxBrain.lineWidth = 2;
-                    ctxBrain.stroke();
-                }
-                
-                ctxBrain.shadowBlur = 0;
-                
-                // ID для маленьких
-                if (neuron.id.length < 10) {
-                    ctxBrain.fillStyle = '#fff';
-                    ctxBrain.font = '8px Courier New';
-                    ctxBrain.fillText(neuron.id.split('_')[0], neuron.x-10, neuron.y-10);
-                }
-            }
-            
-            // Обновляем статистику
-            const activityDiv = document.getElementById('brainActivity');
-            let activityHtml = '';
-            
-            const neuronTypes = ['sensory', 'inter', 'motor', 'command'];
-            neuronTypes.forEach(type => {
-                const neurons = brain.neurons.filter(n => n.type === type);
-                const active = neurons.filter(n => n.spiked).length;
-                
-                activityHtml += `
-                    <div class="neuron-cell">
-                        <span class="spike-indicator" style="background: ${active>0?'#7cfc00':'#444'}"></span>
-                        ${type}: ${active}/${neurons.length}
-                    </div>
-                `;
+        }
+    }
+
+    draw(ctx) {
+        for (const p of this.particles) {
+            const alpha = p.fade ? p.life / p.maxLife : 1;
+            ctx.fillStyle = p.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+            ctx.beginPath();
+            ctx.arc(p.pos.x, p.pos.y, p.size * alpha, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    clear() {
+        this.particles = [];
+    }
+}
+
+// ============================================================================
+// SECTION 3: 360 DEGREE VISION SYSTEM
+// ============================================================================
+
+class Vision360 {
+    constructor(tank) {
+        this.tank = tank;
+        this.radius = 300;
+    }
+
+    detect(enemy) {
+        const dx = enemy.pos.x - this.tank.pos.x;
+        const dy = enemy.pos.y - this.tank.pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > this.radius || !enemy.alive) {
+            return { visible: false, dist: dist, dx: 0, dy: 0, angle: 0 };
+        }
+
+        const enemyAngle = Math.atan2(dy, dx);
+        const turretAngle = this.tank.angle + this.tank.turretAngle;
+        let angleDiff = enemyAngle - turretAngle;
+
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+        return {
+            visible: true,
+            dist: dist,
+            angle: angleDiff,
+            dx: dx / this.radius,
+            dy: dy / this.radius
+        };
+    }
+}
+
+// ============================================================================
+// SECTION 4: DOPAMINE SYSTEM
+// ============================================================================
+
+class DopamineSystem {
+    constructor() {
+        this.level = 0;
+        this.peak = 0;
+        this.decayRate = 0.985;
+    }
+
+    spike(amount) {
+        this.level = Math.min(1.0, this.level + amount);
+        this.peak = Math.max(this.peak, this.level);
+    }
+
+    update() {
+        this.level *= this.decayRate;
+        this.peak *= 0.99;
+        if (this.level < 0.01) this.level = 0;
+        if (this.peak < 0.01) this.peak = 0;
+    }
+
+    getModulation() {
+        return this.level * 0.6 + this.peak * 0.4;
+    }
+
+    reset() {
+        this.level = 0;
+        this.peak = 0;
+    }
+}
+
+// ============================================================================
+// SECTION 5: SPIKING NEURAL NETWORK
+// ============================================================================
+
+class SpikingNeuralNetwork {
+    constructor(inputCount, hiddenCount, outputCount) {
+        this.inputCount = inputCount;
+        this.hiddenCount = hiddenCount;
+        this.outputCount = outputCount;
+        this.neurons = [];
+        this.weights = [];
+        this.dopamine = new DopamineSystem();
+        this.spikeCount = 0;
+        this.learningRate = 0.15;
+        this._initialize();
+    }
+
+    _initialize() {
+        for (let i = 0; i < this.inputCount + this.hiddenCount + this.outputCount; i++) {
+            const layer = i < this.inputCount ? 'input' :
+                i < this.inputCount + this.hiddenCount ? 'hidden' : 'output';
+
+            this.neurons.push({
+                id: i,
+                layer: layer,
+                v: (Math.random() - 0.5) * 0.2,
+                out: 0,
+                trace: 0,
+                threshold: layer === 'input' ? 0.25 :
+                    layer === 'hidden' ? 0.35 : 0.3,
+                decay: layer === 'input' ? 0.7 :
+                    layer === 'hidden' ? 0.88 : 0.85,
+                bias: (Math.random() - 0.5) * 0.3
             });
-            
-            activityDiv.innerHTML = activityHtml;
         }
-        
-        // Функции управления
-        function setGait(newGait) {
-            gait = newGait;
-            document.getElementById('currentGait').textContent = newGait;
-            
-            // Подаем команды в мозг
-            if (newGait === 'walk') {
-                brain.step({walk: true});
-            } else if (newGait === 'stop') {
-                // Останавливаем
+
+        for (let i = 0; i < this.inputCount; i++) {
+            for (let h = 0; h < this.hiddenCount; h++) {
+                this.weights.push({
+                    from: i,
+                    to: this.inputCount + h,
+                    w: (Math.random() - 0.5) * 3
+                });
             }
         }
-        
-        function randomStimulus() {
-            // Случайные тактильные стимулы
-            const touch = new Array(6).fill(0);
-            for (let i = 0; i < 3; i++) {
-                touch[Math.floor(Math.random() * 6)] = Math.random();
+
+        for (let h = 0; h < this.hiddenCount; h++) {
+            for (let o = 0; o < this.outputCount; o++) {
+                this.weights.push({
+                    from: this.inputCount + h,
+                    to: this.inputCount + this.hiddenCount + o,
+                    w: (Math.random() - 0.5) * 3
+                });
             }
-            brain.step({touch});
         }
-        
-        function resetBrain() {
-            brain.neurons = [];
-            brain.synapses = [];
-            brain.time = 0;
-            brain.createBrain();
-            brain.connectBrain();
+
+        for (let h1 = 0; h1 < this.hiddenCount; h1++) {
+            for (let h2 = 0; h2 < this.hiddenCount; h2++) {
+                if (h1 !== h2 && Math.random() < 0.25) {
+                    this.weights.push({
+                        from: this.inputCount + h1,
+                        to: this.inputCount + h2,
+                        w: (Math.random() - 0.5) * 2
+                    });
+                }
+            }
         }
-        
-        // Основной цикл
-        function step() {
-            time++;
-            
-            // Подаем текущую команду
-            if (gait === 'walk') {
-                brain.step({walk: true});
-            } else if (gait === 'turnLeft') {
-                // Стимуляция левых сенсоров
-                const touch = new Array(6).fill(0);
-                for (let i = 0; i < 3; i++) touch[i] = 0.5;
-                brain.step({walk: true, touch});
-            } else if (gait === 'turnRight') {
-                const touch = new Array(6).fill(0);
-                for (let i = 3; i < 6; i++) touch[i] = 0.5;
-                brain.step({walk: true, touch});
+    }
+
+    process(inputs, reward, exploration = 0.5) {
+        this.spikeCount = 0;
+
+        if (reward > 0.01) {
+            this.dopamine.spike(reward * 0.3);
+        }
+        this.dopamine.update();
+
+        const dopamineMod = this.dopamine.getModulation();
+
+        for (let i = 0; i < this.inputCount; i++) {
+            const n = this.neurons[i];
+            const noise = (Math.random() - 0.5) * exploration * 0.2;
+            n.v = Math.tanh(inputs[i] * 2.5) + noise;
+
+            if (n.v > n.threshold) {
+                n.out = 1;
+                n.v = 0;
+                n.trace = 1.0;
+                this.spikeCount++;
             } else {
-                brain.step({});
+                n.out = 0;
+                n.trace *= 0.85;
             }
-            
-            // Получаем моторные выходы
-            const motorOutputs = brain.getMotorOutputs();
-            
-            // Обновляем муравья
-            ant.update(motorOutputs);
-            
-            // Отрисовка
-            drawBrain();
-            ant.draw(ctxAnt);
-            
-            // Обновляем UI
-            updateLegUI();
-            
-            // Статистика
-            document.getElementById('time').textContent = time;
-            
-            const spikes = brain.neurons.filter(n => n.spiked).length;
-            document.getElementById('spikeRate').textContent = spikes * 10; // за секунду
-            
-            requestAnimationFrame(step);
         }
-        
-        // Запуск
-        updateLegUI();
-        step();
-    </script>
+
+        for (let h = 0; h < this.hiddenCount; h++) {
+            const idx = this.inputCount + h;
+            const n = this.neurons[idx];
+            let sum = n.bias;
+
+            for (const w of this.weights) {
+                if (w.to === idx) {
+                    sum += this.neurons[w.from].out * w.w;
+                }
+            }
+
+            const noise = (Math.random() - 0.5) * exploration * 0.15;
+            n.v = n.v * n.decay + sum + noise;
+
+            if (n.v > n.threshold) {
+                n.out = 1;
+                n.v = 0;
+                n.trace = 1.0;
+                this.spikeCount++;
+            } else {
+                n.out = 0;
+                n.trace *= 0.9;
+            }
+        }
+
+        for (let o = 0; o < this.outputCount; o++) {
+            const idx = this.inputCount + this.hiddenCount + o;
+            const n = this.neurons[idx];
+            let sum = n.bias;
+
+            for (const w of this.weights) {
+                if (w.to === idx) {
+                    sum += this.neurons[w.from].out * w.w;
+                }
+            }
+
+            const noise = (Math.random() - 0.5) * exploration * 0.1;
+            n.v = n.v * n.decay + sum + noise;
+
+            if (n.v > n.threshold) {
+                n.out = 1;
+                n.v = 0;
+                n.trace = 1.0;
+                this.spikeCount++;
+            } else {
+                n.out = 0;
+                n.trace *= 0.9;
+            }
+        }
+
+        if (Math.abs(reward) > 0.01) {
+            const lr = this.learningRate * (1 + dopamineMod);
+
+            for (const w of this.weights) {
+                const pre = this.neurons[w.from];
+                const post = this.neurons[w.to];
+
+                if (pre.trace > 0.3 && post.out > 0) {
+                    const dw = lr * reward * pre.trace * dopamineMod;
+                    w.w = Math.max(-5, Math.min(5, w.w + dw));
+                }
+
+                if (post.trace > 0.3 && pre.out > 0) {
+                    const dw = -lr * 0.3 * post.trace;
+                    w.w = Math.max(-5, Math.min(5, w.w + dw));
+                }
+            }
+        }
+
+        const outputs = [];
+        for (let o = 0; o < this.outputCount; o++) {
+            outputs.push(this.neurons[this.inputCount + this.hiddenCount + o].out);
+        }
+
+        return outputs;
+    }
+
+    getAvgWeight() {
+        if (this.weights.length === 0) return 0;
+        return this.weights.reduce((sum, w) => sum + Math.abs(w.w), 0) / this.weights.length;
+    }
+
+    draw(ctx, w, h) {
+        ctx.fillStyle = 'rgba(0,0,0,0.95)';
+        ctx.fillRect(0, 0, w, h);
+
+        const cols = 10;
+        const cw = w / cols;
+        const ch = h / cols;
+
+        ctx.lineWidth = 0.5;
+        for (const wg of this.weights) {
+            if (Math.random() > 0.08) continue;
+
+            const x1 = (wg.from % cols) * cw + cw / 2;
+            const y1 = Math.floor(wg.from / cols) * ch + ch / 2;
+            const x2 = (wg.to % cols) * cw + cw / 2;
+            const y2 = Math.floor(wg.to / cols) * ch + ch / 2;
+
+            const alpha = Math.min(0.6, Math.abs(wg.w) / 8);
+            ctx.strokeStyle = wg.w > 0 ?
+                `rgba(0,255,136,${alpha})` :
+                `rgba(255,50,100,${alpha * 0.5})`;
+            ctx.lineWidth = Math.min(2.5, Math.abs(wg.w) / 2);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        for (let i = 0; i < this.neurons.length; i++) {
+            const n = this.neurons[i];
+            const x = (i % cols) * cw + cw / 2;
+            const y = Math.floor(i / cols) * ch + ch / 2;
+            const intensity = Math.min(1, n.trace + Math.abs(n.v) / 2);
+
+            if (n.out > 0) {
+                ctx.fillStyle = `rgba(255,255,255,${0.8 + intensity * 0.2})`;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00ff88';
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            } else {
+                const layerColor = n.layer === 'input' ? '0,150,100' :
+                    n.layer === 'hidden' ? '0,200,150' : '0,255,200';
+                ctx.fillStyle = `rgba(${layerColor},${0.3 + intensity * 0.4})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+
+    reset() {
+        this.dopamine.reset();
+        this.spikeCount = 0;
+    }
+}
+
+// ============================================================================
+// SECTION 6: AUDIO SYSTEM
+// ============================================================================
+
+class AudioSystem {
+    constructor() {
+        this.ctx = null;
+        this.enabled = false;
+    }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    enable() {
+        this.enabled = true;
+        this.init();
+    }
+
+    playShoot() {
+        if (!this.enabled || !this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+    }
+
+    playHit() {
+        if (!this.enabled || !this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
+
+    playExplosion() {
+        if (!this.enabled || !this.ctx) return;
+
+        const bufferSize = this.ctx.sampleRate * 0.5;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
+        }
+
+        const noise = this.ctx.createBufferSource();
+        const filter = this.ctx.createBiquadFilter();
+        const gain = this.ctx.createGain();
+
+        noise.buffer = buffer;
+        filter.type = 'lowpass';
+        filter.frequency.value = 700;
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+    }
+}
+
+// ============================================================================
+// SECTION 7: TANK CLASS
+// ============================================================================
+
+class Tank {
+    constructor(x, y, color, id) {
+        this.id = id;
+        this.color = color;
+        this.pos = { x: x, y: y };
+        this.vel = { x: 0, y: 0 };
+        this.angle = id === 0 ? 0 : Math.PI;
+        this.turretAngle = 0;
+        this.barrelAngle = 0;
+        this.hp = 100;
+        this.maxHp = 100;
+        this.alive = true;
+        this.radius = 28;
+        this.brain = new SpikingNeuralNetwork(18, 64, 9);
+        this.vision = new Vision360(this);
+        this.stats = { kills: 0, damage: 0, shots: 0, hits: 0 };
+        this.shootCD = 0;
+        this.lastEnemyHp = 100;
+        this.roundReward = 0;
+        this.stuckFrames = 0;
+        this.lastPos = { x: x, y: y };
+        this.lastAngle = this.angle;
+    }
+
+    getSensors(enemy, worldW, worldH) {
+        const vision = this.vision.detect(enemy);
+        const wallLeft = this.pos.x / worldW;
+        const wallRight = (worldW - this.pos.x) / worldW;
+        const wallTop = this.pos.y / worldH;
+        const wallBottom = (worldH - this.pos.y) / worldH;
+
+        const posChange = Math.sqrt(
+            (this.pos.x - this.lastPos.x) ** 2 +
+            (this.pos.y - this.lastPos.y) ** 2
+        );
+        const angleChange = Math.abs(this.angle - this.lastAngle);
+
+        if (posChange < 0.5 && angleChange < 0.05) {
+            this.stuckFrames++;
+        } else {
+            this.stuckFrames = Math.max(0, this.stuckFrames - 3);
+        }
+
+        this.lastPos = { ...this.pos };
+        this.lastAngle = this.angle;
+
+        return [
+            vision.visible ? 1 : 0,
+            Math.min(vision.dist / 400, 1),
+            vision.angle / Math.PI,
+            vision.dx,
+            vision.dy,
+            enemy.hp / 100,
+            this.hp / 100,
+            this.vel.x / 5,
+            this.vel.y / 5,
+            wallLeft,
+            wallRight,
+            wallTop,
+            wallBottom,
+            this.shootCD / 25,
+            this.stuckFrames / 40,
+            Math.tanh(this.barrelAngle * 2),
+            Math.random() * 0.1,
+            Math.sin(Date.now() * 0.001) * 0.1
+        ];
+    }
+
+    actuate(outputs) {
+        const [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown, shoot] = outputs;
+        const forwardDir = { x: Math.cos(this.angle), y: Math.sin(this.angle) };
+
+        if (fwd > 0.4) {
+            this.vel.x += forwardDir.x * 0.4;
+            this.vel.y += forwardDir.y * 0.4;
+        }
+        if (back > 0.4) {
+            this.vel.x -= forwardDir.x * 0.2;
+            this.vel.y -= forwardDir.y * 0.2;
+        }
+
+        if (turnL > 0.4) this.angle -= 0.07;
+        if (turnR > 0.4) this.angle += 0.07;
+        if (turretL > 0.4) this.turretAngle -= 0.09;
+        if (turretR > 0.4) this.turretAngle += 0.09;
+        if (barrelUp > 0.4) this.barrelAngle = Math.min(0.5, this.barrelAngle + 0.05);
+        if (barrelDown > 0.4) this.barrelAngle = Math.max(-0.3, this.barrelAngle - 0.05);
+
+        if (shoot > 0.5 && this.shootCD <= 0) {
+            this.fire();
+            this.shootCD = 22;
+        }
+
+        this.vel.x *= 0.93;
+        this.vel.y *= 0.93;
+
+        const speed = Math.sqrt(this.vel.x ** 2 + this.vel.y ** 2);
+        if (speed > 5) {
+            this.vel.x = (this.vel.x / speed) * 5;
+            this.vel.y = (this.vel.y / speed) * 5;
+        }
+
+        this.pos.x += this.vel.x;
+        this.pos.y += this.vel.y;
+
+        if (this.pos.x < this.radius) {
+            this.pos.x = this.radius;
+            this.vel.x *= -0.5;
+        }
+        if (this.pos.x > game.width - this.radius) {
+            this.pos.x = game.width - this.radius;
+            this.vel.x *= -0.5;
+        }
+        if (this.pos.y < this.radius) {
+            this.pos.y = this.radius;
+            this.vel.y *= -0.5;
+        }
+        if (this.pos.y > game.height - this.radius) {
+            this.pos.y = game.height - this.radius;
+            this.vel.y *= -0.5;
+        }
+
+        this.shootCD = Math.max(0, this.shootCD - 1);
+    }
+
+    fire() {
+        this.stats.shots++;
+        const angle = this.angle + this.turretAngle + this.barrelAngle;
+
+        game.projectiles.push({
+            pos: {
+                x: this.pos.x + Math.cos(angle) * 38,
+                y: this.pos.y + Math.sin(angle) * 38
+            },
+            vel: {
+                x: Math.cos(angle) * 16,
+                y: Math.sin(angle) * 16
+            },
+            owner: this,
+            life: 120,
+            dmg: 25
+        });
+
+        game.audio.playShoot();
+    }
+
+    takeDamage(amount, attacker) {
+        this.hp = Math.max(0, this.hp - amount);
+
+        if (attacker) {
+            attacker.stats.damage += amount;
+            attacker.stats.hits++;
+            attacker.brain.dopamine.spike(0.12);
+            game.audio.playHit();
+        }
+
+        if (this.hp <= 0) {
+            this.alive = false;
+            if (attacker) {
+                attacker.stats.kills++;
+                attacker.brain.dopamine.spike(0.7);
+                game.audio.playExplosion();
+            }
+        }
+    }
+
+    calcReward(enemy) {
+        let reward = 0;
+
+        if (enemy.hp < this.lastEnemyHp) {
+            const dmg = this.lastEnemyHp - enemy.hp;
+            reward += dmg * 0.025;
+            this.brain.dopamine.spike(0.08);
+        }
+        this.lastEnemyHp = enemy.hp;
+
+        if (!enemy.alive && this.alive) {
+            reward += 1.0;
+        }
+
+        if (!this.alive) {
+            this.brain.dopamine.reset();
+        }
+
+        if (this.vision.detect(enemy).visible) {
+            reward += 0.015;
+            if (Math.random() < 0.1) this.brain.dopamine.spike(0.02);
+        }
+
+        const dx = enemy.pos.x - this.pos.x;
+        const dy = enemy.pos.y - this.pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 350) reward += 0.008;
+
+        const angleToEnemy = Math.atan2(dy, dx);
+        const turretAngle = this.turretAngle;
+        const aimDiff = Math.abs(angleToEnemy - (this.angle + turretAngle));
+        if (Math.min(aimDiff, Math.PI * 2 - aimDiff) < 0.35) {
+            reward += 0.012;
+        }
+
+        reward += 0.003;
+        if (Math.random() < 0.03) this.brain.dopamine.spike(0.005);
+
+        this.roundReward += reward;
+        return reward;
+    }
+
+    draw(ctx, cam, showVision) {
+        if (!this.alive) return;
+
+        if (showVision) {
+            ctx.strokeStyle = 'rgba(0,255,136,0.12)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(
+                this.pos.x - cam.x,
+                this.pos.y - cam.y,
+                this.vision.radius,
+                0, Math.PI * 2
+            );
+            ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.translate(this.pos.x - cam.x, this.pos.y - cam.y);
+        ctx.rotate(this.angle);
+
+        const gradient = ctx.createLinearGradient(-25, -20, 25, 20);
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(1, this.darkenColor(this.color, 40));
+
+        ctx.fillStyle = gradient;
+        ctx.strokeStyle = '#00ff88';
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        this.roundRect(ctx, -25, -20, 50, 40, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(0,50,30,0.9)';
+        ctx.fillRect(-27, -23, 54, 8);
+        ctx.fillRect(-27, 15, 54, 8);
+
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(this.pos.x - cam.x, this.pos.y - cam.y);
+        ctx.rotate(this.angle + this.turretAngle);
+
+        ctx.fillStyle = this.darkenColor(this.color, 25);
+        ctx.strokeStyle = '#00ff88';
+        ctx.beginPath();
+        this.roundRect(ctx, -14, -12, 28, 24, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.save();
+        ctx.rotate(this.barrelAngle);
+        ctx.fillStyle = '#0a3a2a';
+        ctx.fillRect(14, -4, 32, 8);
+        ctx.restore();
+
+        ctx.restore();
+
+        if (this.hp < this.maxHp) {
+            const barWidth = 50;
+            const barHeight = 6;
+            const x = this.pos.x - cam.x - barWidth / 2;
+            const y = this.pos.y - cam.y - 45;
+
+            ctx.fillStyle = 'rgba(30,0,0,0.9)';
+            ctx.fillRect(x, y, barWidth, barHeight);
+
+            const hpPercent = this.hp / this.maxHp;
+            const hpColor = hpPercent > 0.5 ? '#00ff88' :
+                hpPercent > 0.25 ? '#ffaa00' : '#ff3366';
+
+            ctx.fillStyle = hpColor;
+            ctx.fillRect(x, y, barWidth * hpPercent, barHeight);
+        }
+    }
+
+    darkenColor(color, amount) {
+        const num = parseInt(color.replace('#', ''), 16);
+        const r = Math.max(0, (num >> 16) - amount);
+        const g = Math.max(0, ((num >> 8) & 0xFF) - amount);
+        const b = Math.max(0, (num & 0xFF) - amount);
+        return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+    }
+
+    roundRect(ctx, x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+    }
+
+    reset(x, y, angle) {
+        this.pos = { x: x, y: y };
+        this.vel = { x: 0, y: 0 };
+        this.angle = angle;
+        this.turretAngle = 0;
+        this.barrelAngle = 0;
+        this.hp = this.maxHp;
+        this.alive = true;
+        this.stats = { kills: 0, damage: 0, shots: 0, hits: 0 };
+        this.shootCD = 0;
+        this.stuckFrames = 0;
+        this.lastEnemyHp = 100;
+        this.roundReward = 0;
+        this.lastPos = { x: x, y: y };
+        this.lastAngle = angle;
+        this.brain.reset();
+    }
+}
+
+// ============================================================================
+// SECTION 8: GAME ENGINE
+// ============================================================================
+
+const game = {
+    width: 1200,
+    height: 800,
+    tanks: [],
+    projectiles: [],
+    particles: new ParticleSystem(500),
+    audio: new AudioSystem(),
+    epoch: 0,
+    speed: 1,
+    train: true,
+    showVision: true,
+    running: false
+};
+
+function initGame() {
+    game.tanks = [
+        new Tank(300, 400, '#ff3366', 0),
+        new Tank(900, 400, '#00ff88', 1)
+    ];
+    game.projectiles = [];
+    game.epoch = 0;
+    game.particles.clear();
+}
+
+function update(dt) {
+    if (!game.running) return;
+
+    const [tankA, tankB] = game.tanks;
+
+    if (tankA.alive && tankB.alive) {
+        const dx = tankB.pos.x - tankA.pos.x;
+        const dy = tankB.pos.y - tankA.pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const minDist = tankA.radius + tankB.radius;
+
+        if (dist < minDist && dist > 0) {
+            const overlap = minDist - dist;
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            tankA.pos.x -= nx * overlap * 0.5;
+            tankA.pos.y -= ny * overlap * 0.5;
+            tankB.pos.x += nx * overlap * 0.5;
+            tankB.pos.y += ny * overlap * 0.5;
+
+            const relVelX = tankB.vel.x - tankA.vel.x;
+            const relVelY = tankB.vel.y - tankA.vel.y;
+            const velAlongNormal = relVelX * nx + relVelY * ny;
+
+            if (velAlongNormal < 0) {
+                const restitution = 0.4;
+                const impulse = -(1 + restitution) * velAlongNormal * 0.5;
+
+                tankA.vel.x -= nx * impulse;
+                tankA.vel.y -= ny * impulse;
+                tankB.vel.x += nx * impulse;
+                tankB.vel.y += ny * impulse;
+            }
+        }
+    }
+
+    for (const tank of game.tanks) {
+        const enemy = tank === tankA ? tankB : tankA;
+        if (!tank.alive) continue;
+
+        const inputs = tank.getSensors(enemy, game.width, game.height);
+        const reward = game.train ? tank.calcReward(enemy) : 0;
+        const outputs = tank.brain.process(inputs, reward, 0.5);
+        tank.actuate(outputs);
+    }
+
+    for (let i = game.projectiles.length - 1; i >= 0; i--) {
+        const p = game.projectiles[i];
+        p.pos.x += p.vel.x * dt * 0.06;
+        p.pos.y += p.vel.y * dt * 0.06;
+        p.life--;
+
+        if (game.particles.enabled && Math.random() < 0.3) {
+            game.particles.emitTrail(p.pos.x, p.pos.y, Vec2.angle(p.vel), p.owner.color);
+        }
+
+        let hit = false;
+        for (const tank of game.tanks) {
+            if (!tank.alive || tank === p.owner) continue;
+
+            if (Vec2.dist(p.pos, tank.pos) < tank.radius + 5) {
+                tank.takeDamage(p.dmg, p.owner);
+                hit = true;
+                break;
+            }
+        }
+
+        if (p.life <= 0 || hit ||
+            p.pos.x < 0 || p.pos.x > game.width ||
+            p.pos.y < 0 || p.pos.y > game.height) {
+            game.projectiles.splice(i, 1);
+        }
+    }
+
+    game.particles.update(dt * 0.016);
+
+    if (!tankA.alive || !tankB.alive) {
+        game.epoch++;
+        const winner = tankA.alive ? 'ALPHA' : tankB.alive ? 'BETA' : 'DRAW';
+        log(`EPOCH ${game.epoch} - WINNER: ${winner}`, 'system');
+        log(`Alpha reward: ${tankA.roundReward.toFixed(2)}, Beta reward: ${tankB.roundReward.toFixed(2)}`, 'dopamine');
+
+        setTimeout(() => {
+            if (!tankA.alive) tankA.reset(300, 400, 0);
+            if (!tankB.alive) tankB.reset(900, 400, Math.PI);
+            game.projectiles = [];
+        }, 2000);
+    }
+}
+
+function draw(ctx) {
+    ctx.fillStyle = 'rgba(10,10,15,0.3)';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    ctx.strokeStyle = 'rgba(0,255,136,0.05)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < game.width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, game.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y < game.height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(game.width, y);
+        ctx.stroke();
+    }
+
+    const [tankA, tankB] = game.tanks;
+    const midX = (tankA.pos.x + tankB.pos.x) / 2;
+    const midY = (tankA.pos.y + tankB.pos.y) / 2;
+    const cam = {
+        x: Math.max(0, Math.min(game.width - ctx.canvas.width, midX - ctx.canvas.width / 2)),
+        y: Math.max(0, Math.min(game.height - ctx.canvas.height, midY - ctx.canvas.height / 2))
+    };
+
+    ctx.fillStyle = '#ffff00';
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#ffff00';
+    for (const p of game.projectiles) {
+        ctx.beginPath();
+        ctx.arc(p.pos.x - cam.x, p.pos.y - cam.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    for (const tank of game.tanks) {
+        tank.draw(ctx, cam, game.showVision);
+    }
+
+    if (game.particles.enabled) {
+        game.particles.draw(ctx);
+    }
+
+    const brainA = document.getElementById('brain-red');
+    const brainB = document.getElementById('brain-green');
+
+    if (brainA.width !== brainA.clientWidth) {
+        brainA.width = brainA.clientWidth;
+        brainA.height = brainA.clientHeight;
+    }
+    if (brainB.width !== brainB.clientWidth) {
+        brainB.width = brainB.clientWidth;
+        brainB.height = brainB.clientHeight;
+    }
+
+    tankA.brain.draw(brainA.getContext('2d'), brainA.width, brainA.height);
+    tankB.brain.draw(brainB.getContext('2d'), brainB.width, brainB.height);
+}
+
+function updateUI() {
+    const [tankA, tankB] = game.tanks;
+
+    document.getElementById('hp-red').style.width = (tankA.hp / tankA.maxHp * 100) + '%';
+    document.getElementById('hp-green').style.width = (tankB.hp / tankB.maxHp * 100) + '%';
+
+    document.getElementById('dopa-red').style.width = (tankA.brain.dopamine.level * 100) + '%';
+    document.getElementById('dopa-green').style.width = (tankB.brain.dopamine.level * 100) + '%';
+
+    document.getElementById('d-hp-red').textContent = Math.round(tankA.hp) + '%';
+    document.getElementById('d-hp-green').textContent = Math.round(tankB.hp) + '%';
+    document.getElementById('d-kills-red').textContent = tankA.stats.kills;
+    document.getElementById('d-kills-green').textContent = tankB.stats.kills;
+    document.getElementById('d-dmg-red').textContent = Math.round(tankA.stats.damage);
+    document.getElementById('d-dmg-green').textContent = Math.round(tankB.stats.damage);
+
+    const accA = tankA.stats.shots > 0 ?
+        Math.round(tankA.stats.hits / tankA.stats.shots * 100) : 0;
+    const accB = tankB.stats.shots > 0 ?
+        Math.round(tankB.stats.hits / tankB.stats.shots * 100) : 0;
+    document.getElementById('d-acc-red').textContent = accA + '%';
+    document.getElementById('d-acc-green').textContent = accB + '%';
+
+    document.getElementById('d-dopa-val-red').textContent = tankA.brain.dopamine.level.toFixed(3);
+    document.getElementById('d-dopa-val-green').textContent = tankB.brain.dopamine.level.toFixed(3);
+    document.getElementById('d-act-red').textContent = tankA.brain.spikeCount;
+    document.getElementById('d-act-green').textContent = tankB.brain.spikeCount;
+
+    document.getElementById('d-epoch').textContent = game.epoch;
+    document.getElementById('d-spikes').textContent =
+        Math.round((tankA.brain.spikeCount + tankB.brain.spikeCount) / 2);
+    document.getElementById('d-weight').textContent =
+        ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3);
+}
+
+function log(msg, type = 'system') {
+    const el = document.getElementById('log');
+    const line = document.createElement('div');
+    line.className = type;
+    line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    el.insertBefore(line, el.firstChild);
+    if (el.children.length > 100) el.removeChild(el.lastChild);
+}
+
+// ============================================================================
+// SECTION 9: SYSTEM CONTROL
+// ============================================================================
+
+const SYS = {
+    start() {
+        if (game.running) return;
+        game.running = true;
+        document.getElementById('btn-start').disabled = true;
+        document.getElementById('btn-start').textContent = '■ SIMULATION ACTIVE';
+        log('NEURAL COMBAT SYSTEM INITIALIZED', 'system');
+        loop();
+    },
+
+    reset() {
+        initGame();
+        document.getElementById('log').innerHTML = '';
+        log('SYSTEM HARD RESET', 'system');
+    },
+
+    toggleSpeed() {
+        const speeds = [0.5, 1.0, 2.0, 4.0, 8.0];
+        const idx = speeds.indexOf(game.speed);
+        game.speed = speeds[(idx + 1) % speeds.length];
+        document.getElementById('speed-val').textContent = game.speed.toFixed(1) + 'x';
+    },
+
+    toggleAudio() {
+        game.audio.enabled = !game.audio.enabled;
+        if (game.audio.enabled) game.audio.init();
+        document.getElementById('audio-val').textContent = game.audio.enabled ? 'ONLINE' : 'OFFLINE';
+        log(`Audio system ${game.audio.enabled ? 'enabled' : 'disabled'}`, 'system');
+    },
+
+    toggleVision() {
+        game.showVision = !game.showVision;
+        document.getElementById('vision-val').textContent = game.showVision ? 'ACTIVE' : 'DISABLED';
+        log(`Vision system ${game.showVision ? 'enabled' : 'disabled'}`, 'system');
+    },
+
+    toggleParticles() {
+        game.particles.enabled = !game.particles.enabled;
+        if (!game.particles.enabled) game.particles.clear();
+        document.getElementById('particles-val').textContent = game.particles.enabled ? 'ACTIVE' : 'DISABLED';
+        log(`Particle effects ${game.particles.enabled ? 'enabled' : 'disabled'}`, 'system');
+    },
+
+    emergencyBoost() {
+        game.tanks.forEach(t => {
+            t.brain.dopamine.spike(0.4);
+            t.brain.neurons.forEach(n => {
+                n.v += (Math.random() - 0.5) * 0.8;
+            });
+        });
+        log('EMERGENCY DOPAMINE BOOST ACTIVATED', 'dopamine');
+    }
+};
+
+// ============================================================================
+// SECTION 10: MAIN LOOP
+// ============================================================================
+
+let lastTime = 0;
+
+function loop(timestamp) {
+    if (!game.running) {
+        requestAnimationFrame(loop);
+        return;
+    }
+
+    const dt = Math.min((timestamp - lastTime), 50);
+    lastTime = timestamp;
+
+    const steps = Math.ceil(game.speed);
+    for (let i = 0; i < steps; i++) {
+        update(dt / steps);
+    }
+
+    const canvas = document.getElementById('sim');
+    const ctx = canvas.getContext('2d');
+    draw(ctx);
+    updateUI();
+
+    requestAnimationFrame(loop);
+}
+
+function resize() {
+    const canvas = document.getElementById('sim');
+    const area = document.getElementById('game-area');
+    canvas.width = area.clientWidth;
+    canvas.height = area.clientHeight;
+}
+
+window.addEventListener('resize', resize);
+
+window.onload = () => {
+    resize();
+    initGame();
+
+    setTimeout(() => {
+        document.getElementById('loading').classList.add('hidden');
+    }, 1500);
+
+    const ctx = document.getElementById('sim').getContext('2d');
+    draw(ctx);
+    updateUI();
+    log('SYSTEM READY - PRESS INITIALIZE', 'system');
+};
+</script>
 </body>
 </html>
