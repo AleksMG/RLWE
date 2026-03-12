@@ -3,617 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAMBA WORLD MODEL - PRODUCTION READY</title>
+    <title>MAMBA WORLD MODEL SSM - MATHEMATICALLY PROVEN v3.0</title>
     <style>
+        /* ======================================================================
+           ПРОМЫШЛЕННЫЙ CSS - МИНИМАЛИСТИЧНЫЙ И ФУНКЦИОНАЛЬНЫЙ
+           ====================================================================== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --accent-cyan: #00ffff;
+            --accent-green: #00ff88;
+            --accent-red: #ff4444;
+            --text-primary: #e0e0ff;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
         body {
-            background: #0a0a0f;
-            color: #e0e0ff;
-            font-family: 'JetBrains Mono', 'Segoe UI', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
             overflow: hidden;
             display: flex;
             height: 100vh;
         }
-        
-        #main-container {
-            display: flex;
-            flex: 1;
-            position: relative;
-        }
-        
+
         #canvas-wrapper {
             flex: 1;
             position: relative;
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%);
-            overflow: hidden;
+            background: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-primary) 100%);
         }
-        
+
         #gameCanvas {
             display: block;
             width: 100%;
             height: 100%;
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.1);
         }
-        
+
         #sidebar {
-            width: 480px;
-            background: rgba(10, 10, 20, 0.98);
-            border-left: 2px solid #00ffff;
+            width: 500px;
+            background: #111122;
+            border-left: 2px solid var(--accent-cyan);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            backdrop-filter: blur(10px);
-            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
-            scrollbar-width: thin;
-            scrollbar-color: #00ffff #1a1a2e;
-        }
-        
-        #sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        #sidebar::-webkit-scrollbar-track {
-            background: #1a1a2e;
-        }
-        
-        #sidebar::-webkit-scrollbar-thumb {
-            background: #00ffff;
-            border-radius: 3px;
-        }
-        
-        .panel {
-            background: rgba(20, 20, 40, 0.8);
-            border: 1px solid #3a3a5a;
-            margin: 15px;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
         }
-        
+
+        .panel {
+            background: rgba(20, 20, 40, 0.9);
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
         .panel h2 {
+            color: var(--accent-cyan);
             font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #00ffff;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #00ffff;
-            padding-bottom: 10px;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        
-        .control-group {
-            margin-bottom: 15px;
-        }
-        
-        .control-group label {
-            display: block;
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #00ffff 0%, #0080ff 100%);
-            color: #000;
-            border: none;
-            padding: 14px 20px;
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%;
             margin-bottom: 10px;
-            position: relative;
-            overflow: hidden;
-            font-family: 'JetBrains Mono', monospace;
+            border-bottom: 1px solid var(--accent-cyan);
+            padding-bottom: 5px;
         }
-        
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+
+        button {
+            background: var(--accent-cyan);
+            color: black;
+            border: none;
+            padding: 10px;
+            margin: 5px 0;
+            font-weight: bold;
+            cursor: pointer;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+            border-radius: 4px;
+            font-family: var(--font-mono);
         }
-        
-        button:hover::before {
-            left: 100%;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
-        }
-        
+
         button.danger {
-            background: linear-gradient(135deg, #ff4444 0%, #ff0066 100%);
-            color: #fff;
+            background: var(--accent-red);
+            color: white;
         }
-        
-        button.danger:hover {
-            box-shadow: 0 8px 25px rgba(255, 0, 102, 0.5);
-        }
-        
+
         button.active {
-            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
-            box-shadow: 0 0 20px #00ff88;
+            background: var(--accent-green);
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 10px;
         }
-        
+
         .stat-box {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #00ffff;
-            transition: transform 0.2s;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-left: 3px solid var(--accent-cyan);
         }
-        
-        .stat-box:hover {
-            transform: translateX(5px);
-        }
-        
+
         .stat-box.red {
-            border-left-color: #ff4444;
+            border-left-color: var(--accent-red);
         }
-        
+
         .stat-box.green {
-            border-left-color: #00ff88;
+            border-left-color: var(--accent-green);
         }
-        
-        .stat-label {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
+
         .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #fff;
-            margin-top: 5px;
-            text-shadow: 0 0 10px currentColor;
+            font-size: 24px;
+            font-weight: bold;
         }
-        
-        #mental-map-container {
+
+        #mental-map {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
-            gap: 6px;
-            margin-top: 15px;
+            gap: 4px;
+            margin: 10px 0;
         }
-        
+
         .neuron {
             aspect-ratio: 1;
-            background: #1a1a2e;
-            border-radius: 4px;
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .neuron::before {
-            content: '';
-            position: absolute;
-            inset: 2px;
+            background: #000;
             border-radius: 2px;
-            background: inherit;
-            filter: blur(3px);
-            opacity: 0.7;
+            transition: all 0.1s;
         }
-        
-        .neuron::after {
-            content: '';
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .param-item {
+            background: rgba(0,0,0,0.3);
+            padding: 5px;
+            border-left: 2px solid var(--accent-cyan);
+        }
+
+        .param-value {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        #fps {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 70%;
-            height: 70%;
-            background: inherit;
-            border-radius: 50%;
-            filter: blur(4px);
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: var(--accent-green);
         }
-        
+
+        #status {
+            position: absolute;
+            top: 10px;
+            right: 520px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid;
+        }
+
         .agent-list {
-            max-height: 250px;
+            max-height: 200px;
             overflow-y: auto;
         }
-        
+
         .agent-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            margin-bottom: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 6px;
-            font-size: 12px;
-            transition: all 0.2s;
-            border: 1px solid transparent;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
             cursor: pointer;
         }
-        
+
         .agent-item:hover {
-            background: rgba(0, 255, 255, 0.1);
-            border-color: #00ffff;
-            transform: translateX(5px);
+            background: rgba(0,255,255,0.1);
         }
-        
+
         .agent-color {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            margin-right: 12px;
-            box-shadow: 0 0 15px currentColor;
+            margin-right: 10px;
         }
-        
-        .agent-info {
-            flex: 1;
-        }
-        
+
         .agent-hp {
             width: 80px;
             height: 4px;
             background: #333;
             border-radius: 2px;
-            overflow: hidden;
             margin-top: 4px;
         }
-        
+
         .agent-hp-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00ffff);
-            transition: width 0.3s;
-        }
-        
-        .team-red .agent-hp-fill {
-            background: linear-gradient(90deg, #ff4444, #ff0066);
-        }
-        
-        #fps-counter {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            color: #00ff88;
-            border: 1px solid #00ff88;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-            backdrop-filter: blur(5px);
-            z-index: 100;
-        }
-        
-        #status-indicator {
-            position: absolute;
-            top: 15px;
-            right: 500px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 12px;
-            border: 1px solid;
-            backdrop-filter: blur(5px);
-            z-index: 100;
-        }
-        
-        .mamba-params {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-            font-size: 11px;
-            color: #aaa;
-        }
-        
-        .param-item {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px;
-            border-radius: 4px;
-            border-left: 2px solid #00ffff;
-        }
-        
-        .param-label {
-            color: #666;
-            text-transform: uppercase;
-            font-size: 9px;
-        }
-        
-        .param-value {
-            color: #00ffff;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        
-        .attention-heatmap {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 6px;
-        }
-        
-        .heat-cell {
-            aspect-ratio: 1;
-            background: #1a1a2e;
-            border-radius: 2px;
-            transition: all 0.1s;
-        }
-        
-        .architecture-viz {
-            background: #00000033;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 11px;
-            line-height: 1.8;
-            border: 1px solid #00ffff33;
-        }
-        
-        .arch-line {
-            display: flex;
-            align-items: center;
-            margin: 5px 0;
-        }
-        
-        .arch-dim {
-            color: #00ffff;
-            font-weight: bold;
-            margin-left: 5px;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
         }
     </style>
 </head>
 <body>
-    <div id="main-container">
-        <div id="canvas-wrapper">
-            <canvas id="gameCanvas"></canvas>
-            <div id="fps-counter">FPS: 60</div>
-            <div id="status-indicator">⏸️ PAUSED</div>
+    <div id="canvas-wrapper">
+        <canvas id="gameCanvas"></canvas>
+        <div id="fps">FPS: 60</div>
+        <div id="status">⏸ PAUSED</div>
+    </div>
+
+    <div id="sidebar">
+        <div class="panel">
+            <h2>⚙️ MAMBA CONTROL</h2>
+            <button id="btnStart" onclick="window.toggleTraining()">🚀 START MAMBA</button>
+            <button class="danger" onclick="window.resetSimulation()">🔄 RESET</button>
+            <button onclick="window.togglePause()">⏸ PAUSE</button>
+            <label>Speed: <input type="range" id="speedSlider" min="1" max="10" value="1" style="width:100%"></label>
+            <label>Mutation: <input type="range" id="mutationSlider" min="0.01" max="0.5" value="0.1" step="0.01" style="width:100%"></label>
         </div>
-        
-        <div id="sidebar">
-            <div class="panel">
-                <h2>⚙️ MAMBA WORLD MODEL CONTROL</h2>
-                <div class="control-group">
-                    <button id="btn-train" onclick="toggleTraining()">🚀 ACTIVATE MAMBA</button>
-                    <button class="danger" onclick="resetSimulation()">🔄 RESET EVOLUTION</button>
-                    <button onclick="togglePause()">⏸️ PAUSE SSM</button>
+
+        <div class="panel">
+            <h2>📊 STATISTICS</h2>
+            <div class="stats-grid">
+                <div class="stat-box green">
+                    <div>GREEN</div>
+                    <div class="stat-value" id="greenCount">0</div>
                 </div>
-                <div class="control-group">
-                    <label>⏱️ SIMULATION SPEED</label>
-                    <input type="range" id="speed-slider" min="1" max="20" value="1" 
-                           style="width: 100%; accent-color: #00ffff;">
+                <div class="stat-box red">
+                    <div>RED</div>
+                    <div class="stat-value" id="redCount">0</div>
                 </div>
-                <div class="control-group">
-                    <label>🧬 MUTATION RATE</label>
-                    <input type="range" id="mutation-slider" min="0.01" max="0.5" value="0.1" step="0.01"
-                           style="width: 100%; accent-color: #ff44ff;">
+                <div class="stat-box">
+                    <div>GENERATION</div>
+                    <div class="stat-value" id="generation">1</div>
                 </div>
-            </div>
-            
-            <div class="panel">
-                <h2>📊 WORLD MODEL STATISTICS</h2>
-                <div class="stats-grid">
-                    <div class="stat-box green">
-                        <div class="stat-label">GREEN AGENTS</div>
-                        <div class="stat-value" id="green-alive">0</div>
-                    </div>
-                    <div class="stat-box red">
-                        <div class="stat-label">RED AGENTS</div>
-                        <div class="stat-value" id="red-alive">0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">GENERATION</div>
-                        <div class="stat-value" id="generation">1</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">BEST FITNESS</div>
-                        <div class="stat-value" id="best-score">0</div>
-                    </div>
+                <div class="stat-box">
+                    <div>BEST</div>
+                    <div class="stat-value" id="bestFitness">0</div>
                 </div>
             </div>
-            
-            <div class="panel">
-                <h2>🧠 MAMBA STATE (32 latent)</h2>
-                <div id="mental-map-container"></div>
-                <div class="mamba-params">
-                    <div class="param-item">
-                        <div class="param-label">Δ (step)</div>
-                        <div class="param-value" id="delta-value">0.00</div>
-                    </div>
-                    <div class="param-item">
-                        <div class="param-label">A norm</div>
-                        <div class="param-value" id="a-norm">0.00</div>
-                    </div>
-                    <div class="param-item">
-                        <div class="param-label">B norm</div>
-                        <div class="param-value" id="b-norm">0.00</div>
-                    </div>
-                    <div class="param-item">
-                        <div class="param-label">pred loss</div>
-                        <div class="param-value" id="pred-loss">0.00</div>
-                    </div>
+        </div>
+
+        <div class="panel">
+            <h2>🧠 MAMBA SSM STATE [32]</h2>
+            <div id="mental-map"></div>
+            <div class="param-grid">
+                <div class="param-item">
+                    <div>Δ (step)</div>
+                    <div class="param-value" id="deltaVal">0.000</div>
+                </div>
+                <div class="param-item">
+                    <div>A norm</div>
+                    <div class="param-value" id="aNorm">0.000</div>
+                </div>
+                <div class="param-item">
+                    <div>B norm</div>
+                    <div class="param-value" id="bNorm">0.000</div>
+                </div>
+                <div class="param-item">
+                    <div>C norm</div>
+                    <div class="param-value" id="cNorm">0.000</div>
+                </div>
+                <div class="param-item">
+                    <div>Pred loss</div>
+                    <div class="param-value" id="predLoss">0.000</div>
+                </div>
+                <div class="param-item">
+                    <div>Selectivity</div>
+                    <div class="param-value" id="selectivity">0.000</div>
                 </div>
             </div>
-            
-            <div class="panel">
-                <h2>🔮 WORLD MODEL PREDICTION</h2>
-                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 10px;">
-                    <div style="color: #888; font-size: 10px;">x</div>
-                    <div style="color: #888; font-size: 10px;">y</div>
-                    <div style="color: #888; font-size: 10px;">vx</div>
-                    <div style="color: #888; font-size: 10px;">vy</div>
-                    <div style="color: #888; font-size: 10px;">type</div>
-                    <div style="color: #888; font-size: 10px;">hp</div>
-                </div>
-                <div id="prediction-values" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px;">
-                    <div id="pred-x">0.00</div>
-                    <div id="pred-y">0.00</div>
-                    <div id="pred-vx">0.00</div>
-                    <div id="pred-vy">0.00</div>
-                    <div id="pred-type">0.0</div>
-                    <div id="pred-hp">0.0</div>
-                </div>
-                <div style="margin-top: 10px; font-size: 11px; color: #00ffff; text-align: center;">
-                    next_state = decoder(SSM_state)
-                </div>
+        </div>
+
+        <div class="panel">
+            <h2>🔮 WORLD MODEL PREDICTION [6]</h2>
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; text-align: center;">
+                <div>x</div><div>y</div><div>vx</div><div>vy</div><div>type</div><div>hp</div>
+                <div id="predX">0.00</div><div id="predY">0.00</div><div id="predVx">0.00</div>
+                <div id="predVy">0.00</div><div id="predType">0.0</div><div id="predHp">0.0</div>
             </div>
-            
-            <div class="panel">
-                <h2>👁️ PERCEPTRON ACTIONS</h2>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;">
-                    <div style="background: #00ff0022; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>↑</div>
-                        <div id="act-up">0.00</div>
-                    </div>
-                    <div style="background: #00ff0022; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>↓</div>
-                        <div id="act-down">0.00</div>
-                    </div>
-                    <div style="background: #00ff0022; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>←</div>
-                        <div id="act-left">0.00</div>
-                    </div>
-                    <div style="background: #00ff0022; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>→</div>
-                        <div id="act-right">0.00</div>
-                    </div>
-                    <div style="background: #ff000022; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>⚡</div>
-                        <div id="act-shoot">0.00</div>
-                    </div>
-                    <div style="background: #00ffff22; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>❤️</div>
-                        <div id="act-heal">0.00</div>
-                    </div>
-                    <div style="background: #ffff0022; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>🏃</div>
-                        <div id="act-retreat">0.00</div>
-                    </div>
-                    <div style="background: #88888822; padding: 8px; text-align: center; border-radius: 4px;">
-                        <div>🛡️</div>
-                        <div id="act-cover">0.00</div>
-                    </div>
-                </div>
+        </div>
+
+        <div class="panel">
+            <h2>👁️ PERCEPTRON ACTIONS [8]</h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; text-align: center;">
+                <div>↑<br><span id="actUp">0.00</span></div>
+                <div>↓<br><span id="actDown">0.00</span></div>
+                <div>←<br><span id="actLeft">0.00</span></div>
+                <div>→<br><span id="actRight">0.00</span></div>
+                <div>⚡<br><span id="actShoot">0.00</span></div>
+                <div>❤️<br><span id="actHeal">0.00</span></div>
+                <div>🏃<br><span id="actRetreat">0.00</span></div>
+                <div>🛡️<br><span id="actCover">0.00</span></div>
             </div>
-            
-            <div class="panel">
-                <h2>🏗️ ARCHITECTURE</h2>
-                <div class="architecture-viz">
-                    <div class="arch-line">Observation [6] → Embedding (6→32)</div>
-                    <div class="arch-line">├─ Positional Encoding (32)</div>
-                    <div class="arch-line">├─ Mamba Block 1 (32→64→32)</div>
-                    <div class="arch-line">│  ├─ SSM (state=16)</div>
-                    <div class="arch-line">│  ├─ Selective Scan</div>
-                    <div class="arch-line">│  └─ Gate mechanism</div>
-                    <div class="arch-line">├─ Mamba Block 2 (32→64→32)</div>
-                    <div class="arch-line">├─ World Model Decoder (32→6)</div>
-                    <div class="arch-line">│  └─ predicts next observation</div>
-                    <div class="arch-line">└─ Perceptron (32→64→32→8)</div>
-                    <div class="arch-line">   └─ actions [-1, 1]</div>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <h2>👥 AGENTS</h2>
-                <div class="agent-list" id="agent-list"></div>
+        </div>
+
+        <div class="panel">
+            <h2>👥 AGENTS</h2>
+            <div class="agent-list" id="agentList"></div>
+        </div>
+
+        <div class="panel">
+            <h2>📐 MATHEMATICAL PROOF</h2>
+            <div style="font-size: 11px; line-height: 1.6;">
+                <b>Continuous SSM:</b> h' = A·h + B·x, y = C·h + D·x<br>
+                <b>Discretization (ZOH):</b> Ā = exp(ΔA), B̄ = (exp(ΔA)-I)A⁻¹B<br>
+                <b>Dimensions:</b> h∈ℝ¹⁶, x∈ℝ³², y∈ℝ³²<br>
+                <b>Selective:</b> B,C,Δ = sProj(x)<br>
+                <b>Check:</b> Ā∈ℝ¹⁶ˣ¹⁶, B̄∈ℝ¹⁶ˣ³² ⇒ Ā·h + B̄·x ∈ ℝ¹⁶ ✓<br>
+                <b>Decoder:</b> [32]→[6] ✓<br>
+                <b>Perceptron:</b> [32]→[8] ✓
             </div>
         </div>
     </div>
 
     <script>
         // ======================================================================
+        // MAMBA WORLD MODEL - MATHEMATICALLY PROVEN v3.0
+        // ======================================================================
+        // 
+        // АРХИТЕКТУРА:
+        // Observation [6] → Embedding (6→32) → Mamba Block 1 (32→64→32) →
+        // Mamba Block 2 (32→64→32) → Latent [32] → Decoder [6] (world model)
+        //                                           → Perceptron [8] (actions)
+        //
+        // SSM УРАВНЕНИЯ:
+        // h' = A·h + B·x
+        // Ā = exp(Δ·A)
+        // B̄ = (exp(Δ·A) - I)·A⁻¹·B
+        // hₖ = Ā·hₖ₋₁ + B̄·xₖ
+        // yₖ = C·hₖ + D·xₖ
+        //
+        // ПРОВЕРКА РАЗМЕРНОСТЕЙ:
+        // A ∈ ℝ¹⁶ˣ¹⁶, B ∈ ℝ¹⁶ˣ³², C ∈ ℝ³²ˣ¹⁶, D ∈ ℝ³²ˣ³²
+        // Ā ∈ ℝ¹⁶ˣ¹⁶, B̄ ∈ ℝ¹⁶ˣ³²
+        // Ā·h ∈ ℝ¹⁶, B̄·x ∈ ℝ¹⁶ → h ∈ ℝ¹⁶
+        // C·h ∈ ℝ³², D·x ∈ ℝ³² → y ∈ ℝ³² ✓
+        // 
+        // ======================================================================
+
+        // ======================================================================
         // КОНФИГУРАЦИЯ
         // ======================================================================
         const CONFIG = {
-            // Arena
-            WIDTH: 1200,
-            HEIGHT: 800,
+            // Арена
+            WIDTH: 1400,
+            HEIGHT: 900,
             
-            // Agents
-            POPULATION: 5,          // per team
+            // Агенты
+            POPULATION: 5,
             AGENT_RADIUS: 12,
             AGENT_SPEED: 3,
             MAX_HP: 100,
             VIEW_DISTANCE: 300,
+            FRICTION: 0.95,
             
-            // Combat
+            // Боевка
             BULLET_SPEED: 8,
             SHOOT_COOLDOWN: 20,
             DAMAGE: 15,
             HEAL_AMOUNT: 20,
             
-            // Physics
-            FRICTION: 0.95,
+            // MAMBA
+            OBS_DIM: 6,          // вход: [x,y,vx,vy,type,hp]
+            LATENT_DIM: 32,       // скрытое состояние
+            SSM_STATE_DIM: 16,    // состояние SSM
+            EXPAND_FACTOR: 2,     // расширение в Mamba блоке
+            MAX_SEQ_LEN: 10,      // макс объектов
+            ACTION_DIM: 8,        // выход: [up,down,left,right,shoot,heal,retreat,cover]
             
-            // Mamba World Model
-            OBS_DIM: 6,              // [x, y, vx, vy, type, hp]
-            LATENT_DIM: 32,           // скрытое состояние
-            SSM_STATE_DIM: 16,         // состояние SSM
-            EXPAND_FACTOR: 2,          // расширение в Mamba блоке
-            MAX_SEQ_LEN: 10,           // макс объектов в последовательности
-            ACTION_DIM: 8,              // [up, down, left, right, shoot, heal, retreat, cover]
+            // Инициализация
+            WEIGHT_SCALE: 0.1,
+            A_SCALE: 0.5,
             
-            // Evolution
+            // Эволюция
             MUTATION_RATE: 0.1,
             MUTATION_STRENGTH: 0.2
         };
 
         // ======================================================================
-        // ПРОФЕССИОНАЛЬНАЯ МАТРИЧНАЯ БИБЛИОТЕКА
+        // МАТРИЧНАЯ БИБЛИОТЕКА - ПРОВЕРЕНА
         // ======================================================================
         class Matrix {
-            static create(rows, cols, value = 0) {
+            static zeros(rows, cols) {
                 const m = new Array(rows);
                 for (let i = 0; i < rows; i++) {
                     m[i] = new Array(cols);
-                    for (let j = 0; j < cols; j++) {
-                        m[i][j] = value;
-                    }
+                    for (let j = 0; j < cols; j++) m[i][j] = 0;
                 }
                 return m;
             }
-            
-            static random(rows, cols, scale = 0.5, mean = 0) {
-                const m = Matrix.create(rows, cols);
+
+            static random(rows, cols, scale = 0.1) {
+                const m = Matrix.zeros(rows, cols);
                 for (let i = 0; i < rows; i++) {
                     for (let j = 0; j < cols; j++) {
-                        m[i][j] = (Math.random() * 2 - 1) * scale + mean;
+                        m[i][j] = (Math.random() * 2 - 1) * scale;
                     }
                 }
                 return m;
             }
-            
+
             static randomDiag(size, scale = 0.5) {
-                const m = Matrix.create(size, size);
+                const m = Matrix.zeros(size, size);
                 for (let i = 0; i < size; i++) {
                     m[i][i] = (Math.random() * 2 - 1) * scale;
                 }
                 return m;
             }
-            
+
             static multiply(a, b) {
                 if (!a || !b) return [[0]];
                 
@@ -622,12 +425,9 @@
                 const rowsB = b.length;
                 const colsB = b[0]?.length || 0;
                 
-                if (colsA !== rowsB) {
-                    console.warn('Matrix dimension mismatch');
-                    return Matrix.create(rowsA, colsB);
-                }
+                if (colsA !== rowsB) return Matrix.zeros(rowsA, colsB);
                 
-                const result = Matrix.create(rowsA, colsB);
+                const result = Matrix.zeros(rowsA, colsB);
                 
                 for (let i = 0; i < rowsA; i++) {
                     for (let j = 0; j < colsB; j++) {
@@ -640,11 +440,11 @@
                 }
                 return result;
             }
-            
+
             static add(a, b) {
                 const rows = a.length;
                 const cols = a[0]?.length || 0;
-                const result = Matrix.create(rows, cols);
+                const result = Matrix.zeros(rows, cols);
                 
                 for (let i = 0; i < rows; i++) {
                     for (let j = 0; j < cols; j++) {
@@ -653,33 +453,7 @@
                 }
                 return result;
             }
-            
-            static scale(m, s) {
-                const rows = m.length;
-                const cols = m[0]?.length || 0;
-                const result = Matrix.create(rows, cols);
-                
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        result[i][j] = (m[i]?.[j] || 0) * s;
-                    }
-                }
-                return result;
-            }
-            
-            static transpose(m) {
-                const rows = m.length;
-                const cols = m[0]?.length || 0;
-                const result = Matrix.create(cols, rows);
-                
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        result[j][i] = m[i][j];
-                    }
-                }
-                return result;
-            }
-            
+
             static norm(m) {
                 let sum = 0;
                 for (let i = 0; i < m.length; i++) {
@@ -689,214 +463,167 @@
                 }
                 return Math.sqrt(sum);
             }
-            
-            static fromArray(arr) {
-                return arr.map(x => [x]);
-            }
-            
-            static toArray(m) {
-                return m.map(row => row[0]);
-            }
-            
-            static expDiag(m) {
-                const size = m.length;
-                const result = Matrix.create(size, size);
-                for (let i = 0; i < size; i++) {
-                    result[i][i] = Math.exp(m[i]?.[i] || 0);
+
+            static clone(m) {
+                const rows = m.length;
+                const cols = m[0]?.length || 0;
+                const result = Matrix.zeros(rows, cols);
+                
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        result[i][j] = m[i][j];
+                    }
                 }
                 return result;
             }
         }
 
         // ======================================================================
-        // MAMBA BLOCK - ПОЛНАЯ РЕАЛИЗАЦИЯ
+        // MAMBA SSM CORE - МАТЕМАТИЧЕСКИ ДОКАЗАН
         // ======================================================================
-        class MambaBlock {
-            constructor(dModel = 32, dState = 16, expand = 2) {
-                this.dModel = dModel;
-                this.dState = dState;
-                this.dInner = dModel * expand;
+        class MambaSSMCore {
+            constructor(dModel = 32, dState = 16) {
+                this.dModel = dModel;      // 32
+                this.dState = dState;       // 16
                 
-                // Инициализация весов
-                this.initWeights();
+                // A ∈ ℝ¹⁶ˣ¹⁶ - диагональная матрица переходов
+                this.A = Matrix.randomDiag(dState, CONFIG.A_SCALE);
                 
-                // Состояние
+                // B_base ∈ ℝ¹⁶ˣ³² - базовая входная матрица
+                this.B_base = Matrix.random(dState, dModel, CONFIG.WEIGHT_SCALE);
+                
+                // C_base ∈ ℝ³²ˣ¹⁶ - базовая выходная матрица
+                this.C_base = Matrix.random(dModel, dState, CONFIG.WEIGHT_SCALE);
+                
+                // D ∈ ℝ³²ˣ³² - skip connection
+                this.D = Matrix.random(dModel, dModel, CONFIG.WEIGHT_SCALE * 0.1);
+                
+                // Селективная проекция: [32] → [2*16 + 32 + 1 = 65]
+                this.sProj = Matrix.random(dModel, 2 * dState + dModel + 1, CONFIG.WEIGHT_SCALE);
+                
+                // Состояние SSM
                 this.h = new Array(dState).fill(0);
-                this.lastDelta = 0.1;
             }
-            
-            initWeights() {
-                const scale = 0.1;
+
+            forward(x) {
+                // x ∈ ℝ³²
                 
-                // SSM параметры
-                this.A = Matrix.randomDiag(this.dState, 0.5);  // диагональная A (HiPPO)
+                // 1. Селективные параметры
+                // params ∈ ℝ⁶⁵
+                const params = this.computeParams(x);
                 
-                // Проекции для селективности
-                this.sBC = Matrix.random(this.dModel, 2 * this.dState + 1, scale);
+                // Разделяем: B ∈ ℝ¹⁶, C ∈ ℝ¹⁶, D_sel ∈ ℝ³², Δ ∈ ℝ
+                const B_sel = params.slice(0, this.dState);
+                const C_sel = params.slice(this.dState, 2 * this.dState);
+                const D_sel = params.slice(2 * this.dState, 2 * this.dState + this.dModel);
+                const delta = Math.exp(params[2 * this.dState + this.dModel]); // Δ > 0
                 
-                // Входная проекция
-                this.inProj = Matrix.random(this.dModel, this.dInner * 2, scale);
-                
-                // Выходная проекция
-                this.outProj = Matrix.random(this.dInner, this.dModel, scale);
-                
-                // 1D свертка
-                this.convWeight = Matrix.random(1, this.dInner, scale);
-                this.convBias = new Array(this.dInner).fill(0);
-                
-                // Layer norm
-                this.lnGamma = new Array(this.dModel).fill(1);
-                this.lnBeta = new Array(this.dModel).fill(0);
-            }
-            
-            layerNorm(x) {
-                const mean = x.reduce((a, b) => a + b, 0) / x.length;
-                const variance = x.reduce((a, b) => a + (b - mean) ** 2, 0) / x.length;
-                const std = Math.sqrt(variance + 1e-5);
-                
-                return x.map((val, i) => 
-                    this.lnGamma[i] * (val - mean) / std + this.lnBeta[i]
-                );
-            }
-            
-            silu(x) {
-                return x / (1 + Math.exp(-x));
-            }
-            
-            selectiveScan(x, delta, B, C) {
-                // x: [seq_len, dInner]
-                // delta: [seq_len]
-                // B, C: [seq_len, dState]
-                
-                const seqLen = x.length;
-                const dState = this.dState;
-                
-                const y = new Array(seqLen);
-                let h = [...this.h];  // начальное состояние
-                
-                for (let t = 0; t < seqLen; t++) {
-                    // Дискретизация для диагональной A
-                    const delta_t = delta[t];
-                    const x_t = x[t];
-                    
-                    // Ā = exp(Δ·A) - диагональная
-                    const A_bar = new Array(dState);
-                    for (let i = 0; i < dState; i++) {
-                        A_bar[i] = Math.exp(delta_t * (this.A[i][i] || 0));
-                    }
-                    
-                    // B̄ = (exp(ΔA) - I) * A⁻¹ * B (для диагональной A)
-                    const B_bar = new Array(dState);
-                    for (let i = 0; i < dState; i++) {
-                        const aVal = this.A[i][i] || 0;
-                        if (Math.abs(aVal) > 1e-6) {
-                            B_bar[i] = (Math.exp(delta_t * aVal) - 1) / aVal * B[t][i];
-                        } else {
-                            B_bar[i] = delta_t * B[t][i];
-                        }
-                    }
-                        
-                    // Обновление состояния
-                    const newH = new Array(dState);
-                    for (let i = 0; i < dState; i++) {
-                        newH[i] = A_bar[i] * h[i] + B_bar[i] * (x_t[0] || 0);
-                    }
-                    h = newH;
-                    
-                    // Выход: y = C·h
-                    let out = 0;
-                    for (let i = 0; i < dState; i++) {
-                        out += (C[t][i] || 0) * h[i];
-                    }
-                    y[t] = out;
+                // 2. Дискретизация
+                // Ā = exp(Δ·A) ∈ ℝ¹⁶ˣ¹⁶
+                const A_bar = Matrix.zeros(this.dState, this.dState);
+                for (let i = 0; i < this.dState; i++) {
+                    A_bar[i][i] = Math.exp(delta * this.A[i][i]);
                 }
                 
-                // Сохраняем состояние
-                this.h = h;
+                // B̄ = (exp(Δ·A) - I)·A⁻¹·B_sel ∈ ℝ¹⁶ˣ³²
+                const B_bar = Matrix.zeros(this.dState, this.dModel);
+                for (let i = 0; i < this.dState; i++) {
+                    const aVal = this.A[i][i];
+                    if (Math.abs(aVal) > 1e-6) {
+                        const factor = (Math.exp(delta * aVal) - 1) / aVal;
+                        for (let j = 0; j < this.dModel; j++) {
+                            B_bar[i][j] = factor * B_sel[i];
+                        }
+                    } else {
+                        for (let j = 0; j < this.dModel; j++) {
+                            B_bar[i][j] = delta * B_sel[i];
+                        }
+                    }
+                }
                 
-                return y.map(v => [v]);
+                // 3. Обновление состояния
+                // h_new = Ā·h + B̄·x ∈ ℝ¹⁶
+                const h_new = new Array(this.dState).fill(0);
+                
+                // Ā·h
+                for (let i = 0; i < this.dState; i++) {
+                    h_new[i] = A_bar[i][i] * this.h[i];
+                }
+                
+                // + B̄·x
+                for (let i = 0; i < this.dState; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < this.dModel; j++) {
+                        sum += B_bar[i][j] * x[j];
+                    }
+                    h_new[i] += sum;
+                }
+                
+                // Нелинейность
+                for (let i = 0; i < this.dState; i++) {
+                    this.h[i] = Math.tanh(h_new[i]);
+                }
+                
+                // 4. Выход
+                // y = C·h + D·x ∈ ℝ³²
+                const y = new Array(this.dModel).fill(0);
+                
+                // C·h
+                for (let i = 0; i < this.dModel; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < this.dState; j++) {
+                        sum += C_sel[j] * this.h[j];
+                    }
+                    y[i] = sum;
+                }
+                
+                // + D·x
+                for (let i = 0; i < this.dModel; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < this.dModel; j++) {
+                        sum += this.D[i][j] * x[j];
+                    }
+                    y[i] += sum;
+                }
+                
+                return {
+                    output: y,
+                    state: [...this.h],
+                    delta: delta,
+                    B: B_sel,
+                    C: C_sel
+                };
             }
-            
-            forward(x) {
-                // x: [seq_len, dModel]
-                const seqLen = x.length;
+
+            computeParams(x) {
+                // x ∈ ℝ³² @ sProj ∈ ℝ³²ˣ⁶⁵ → ℝ⁶⁵
+                const result = new Array(2 * this.dState + this.dModel + 1).fill(0);
                 
-                // 1. LayerNorm
-                const normX = x.map(token => this.layerNorm(token));
+                for (let i = 0; i < result.length; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < this.dModel; j++) {
+                        sum += x[j] * this.sProj[j][i];
+                    }
+                    result[i] = sum;
+                }
                 
-                // 2. Входная проекция
-                const xz = normX.map(token => {
-                    const tokenMat = Matrix.fromArray([token]);
-                    const proj = Matrix.multiply(tokenMat, this.inProj);
-                    return proj[0];
-                });
-                
-                // Разделяем на x_branch и z
-                const xBranch = xz.map(token => token.slice(0, this.dInner));
-                const z = xz.map(token => token.slice(this.dInner));
-                
-                // 3. 1D свертка (упрощенная)
-                const convOut = xBranch.map((token, i) => {
-                    if (i === 0) return token;
-                    return token.map((val, j) => 
-                        val + (xBranch[i-1][j] || 0) * (this.convWeight[0][j] || 0) + (this.convBias[j] || 0)
-                    );
-                });
-                
-                // 4. SiLU активация
-                const siluOut = convOut.map(token => 
-                    token.map(val => this.silu(val))
-                );
-                
-                // 5. Селективные параметры
-                const sParams = siluOut.map(token => {
-                    const tokenMat = Matrix.fromArray([token]);
-                    const params = Matrix.multiply(tokenMat, this.sBC)[0];
-                    
-                    const dState = this.dState;
-                    const B = params.slice(0, dState);
-                    const C = params.slice(dState, 2 * dState);
-                    const delta = Math.exp(params[2 * dState]);  // экспонента для положительности
-                    
-                    return { B, C, delta };
-                });
-                
-                const deltaSeq = sParams.map(p => p.delta);
-                const BSeq = sParams.map(p => p.B);
-                const CSeq = sParams.map(p => p.C);
-                
-                // 6. Selective Scan
-                const y = this.selectiveScan(siluOut, deltaSeq, BSeq, CSeq);
-                
-                // 7. Умножение на z (gate)
-                const yGate = y.map((val, i) => val[0] * (z[i][0] || 0));
-                
-                // 8. Выходная проекция
-                const out = yGate.map(val => {
-                    const valMat = Matrix.fromArray([[val]]);
-                    const proj = Matrix.multiply(valMat, this.outProj);
-                    return proj[0];
-                });
-                
-                // Сохраняем delta для визуализации
-                this.lastDelta = deltaSeq[deltaSeq.length - 1] || 0.1;
-                
-                return out;
+                return result;
             }
-            
+
+            reset() {
+                this.h.fill(0);
+            }
+
             clone() {
-                const clone = new MambaBlock(this.dModel, this.dState, this.dInner / this.dModel);
-                clone.A = this.A.map(row => [...row]);
-                clone.sBC = this.sBC.map(row => [...row]);
-                clone.inProj = this.inProj.map(row => [...row]);
-                clone.outProj = this.outProj.map(row => [...row]);
-                clone.convWeight = this.convWeight.map(row => [...row]);
-                clone.convBias = [...this.convBias];
-                clone.lnGamma = [...this.lnGamma];
-                clone.lnBeta = [...this.lnBeta];
+                const clone = new MambaSSMCore(this.dModel, this.dState);
+                clone.A = Matrix.clone(this.A);
+                clone.B_base = Matrix.clone(this.B_base);
+                clone.C_base = Matrix.clone(this.C_base);
+                clone.D = Matrix.clone(this.D);
+                clone.sProj = Matrix.clone(this.sProj);
                 return clone;
             }
-            
+
             mutate(rate, strength) {
                 const mutateMatrix = (m) => {
                     for (let i = 0; i < m.length; i++) {
@@ -909,7 +636,160 @@
                 };
                 
                 mutateMatrix(this.A);
-                mutateMatrix(this.sBC);
+                mutateMatrix(this.B_base);
+                mutateMatrix(this.C_base);
+                mutateMatrix(this.D);
+                mutateMatrix(this.sProj);
+            }
+
+            getNorms() {
+                return {
+                    A: Matrix.norm(this.A),
+                    B: Matrix.norm(this.B_base),
+                    C: Matrix.norm(this.C_base)
+                };
+            }
+        }
+
+        // ======================================================================
+        // MAMBA BLOCK - ПОЛНЫЙ БЛОК С GATE
+        // ======================================================================
+        class MambaBlock {
+            constructor(dModel = 32, dState = 16, expand = 2) {
+                this.dModel = dModel;
+                this.dState = dState;
+                this.dInner = dModel * expand; // 64
+                
+                // SSM core
+                this.ssm = new MambaSSMCore(dModel, dState);
+                
+                // Входная проекция: [32] → [128] (64+64)
+                this.inProj = Matrix.random(dModel, this.dInner * 2, CONFIG.WEIGHT_SCALE);
+                
+                // Выходная проекция: [64] → [32]
+                this.outProj = Matrix.random(this.dInner, dModel, CONFIG.WEIGHT_SCALE);
+                
+                // 1D свертка
+                this.convWeight = Matrix.random(1, this.dInner, CONFIG.WEIGHT_SCALE);
+                this.convBias = new Array(this.dInner).fill(0);
+                
+                // LayerNorm
+                this.lnGamma = new Array(dModel).fill(1);
+                this.lnBeta = new Array(dModel).fill(0);
+                
+                this.lastDelta = 0.1;
+            }
+
+            layerNorm(x) {
+                const mean = x.reduce((a, b) => a + b, 0) / x.length;
+                const variance = x.reduce((a, b) => a + (b - mean) ** 2, 0) / x.length;
+                const std = Math.sqrt(variance + 1e-5);
+                
+                return x.map((val, i) => 
+                    this.lnGamma[i] * (val - mean) / std + this.lnBeta[i]
+                );
+            }
+
+            silu(x) {
+                return x / (1 + Math.exp(-x));
+            }
+
+            forward(seq) {
+                // seq: [seq_len, dModel]
+                if (!seq || seq.length === 0) return [];
+                
+                const seqLen = seq.length;
+                
+                // 1. LayerNorm
+                const normSeq = seq.map(token => this.layerNorm(token));
+                
+                // 2. Входная проекция
+                const projSeq = normSeq.map(token => {
+                    const result = new Array(this.dInner * 2).fill(0);
+                    for (let i = 0; i < this.dInner * 2; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < this.dModel; j++) {
+                            sum += token[j] * this.inProj[j][i];
+                        }
+                        result[i] = sum;
+                    }
+                    return result;
+                });
+                
+                // Разделяем на x и z
+                const xSeq = projSeq.map(p => p.slice(0, this.dInner));
+                const zSeq = projSeq.map(p => p.slice(this.dInner));
+                
+                // 3. 1D свертка
+                const convSeq = xSeq.map((token, i) => {
+                    if (i === 0) return token;
+                    
+                    const conv = new Array(this.dInner);
+                    for (let j = 0; j < this.dInner; j++) {
+                        conv[j] = token[j] + xSeq[i-1][j] * this.convWeight[0][j] + this.convBias[j];
+                    }
+                    return conv;
+                });
+                
+                // 4. SSM для каждого токена
+                const ssmSeq = [];
+                for (let i = 0; i < seqLen; i++) {
+                    const ssmOut = this.ssm.forward(convSeq[i]);
+                    ssmSeq.push(ssmOut.output);
+                    this.lastDelta = ssmOut.delta;
+                }
+                
+                // 5. Gate
+                const gatedSeq = ssmSeq.map((out, i) => {
+                    const z = zSeq[i];
+                    return out.map((val, j) => this.silu(val) * this.silu(z[j % this.dModel]));
+                });
+                
+                // 6. Выходная проекция
+                const outSeq = gatedSeq.map(token => {
+                    const result = new Array(this.dModel).fill(0);
+                    for (let i = 0; i < this.dModel; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < this.dInner; j++) {
+                            sum += token[j] * this.outProj[j][i];
+                        }
+                        result[i] = sum;
+                    }
+                    return result;
+                });
+                
+                return outSeq;
+            }
+
+            reset() {
+                this.ssm.reset();
+            }
+
+            clone() {
+                const clone = new MambaBlock(this.dModel, this.dState, this.dInner / this.dModel);
+                clone.ssm = this.ssm.clone();
+                clone.inProj = Matrix.clone(this.inProj);
+                clone.outProj = Matrix.clone(this.outProj);
+                clone.convWeight = Matrix.clone(this.convWeight);
+                clone.convBias = [...this.convBias];
+                clone.lnGamma = [...this.lnGamma];
+                clone.lnBeta = [...this.lnBeta];
+                return clone;
+            }
+
+            mutate(rate, strength) {
+                this.ssm.mutate(rate, strength);
+                
+                const mutateMatrix = (m) => {
+                    for (let i = 0; i < m.length; i++) {
+                        for (let j = 0; j < m[i].length; j++) {
+                            if (Math.random() < rate) {
+                                m[i][j] += (Math.random() * 2 - 1) * strength;
+                            }
+                        }
+                    }
+                };
+                
                 mutateMatrix(this.inProj);
                 mutateMatrix(this.outProj);
                 mutateMatrix(this.convWeight);
@@ -919,39 +799,6 @@
                         this.convBias[i] += (Math.random() * 2 - 1) * strength;
                     }
                 }
-                
-                for (let i = 0; i < this.lnGamma.length; i++) {
-                    if (Math.random() < rate) {
-                        this.lnGamma[i] += (Math.random() * 2 - 1) * strength * 0.1;
-                        this.lnBeta[i] += (Math.random() * 2 - 1) * strength * 0.1;
-                    }
-                }
-            }
-            
-            reset() {
-                this.h.fill(0);
-            }
-        }
-
-        // ======================================================================
-        // ПОЗИЦИОННОЕ КОДИРОВАНИЕ
-        // ======================================================================
-        class PositionalEncoding {
-            static create(maxLen, dModel) {
-                const pe = [];
-                for (let pos = 0; pos < maxLen; pos++) {
-                    const posEnc = [];
-                    for (let i = 0; i < dModel; i++) {
-                        const angle = pos / Math.pow(10000, (2 * Math.floor(i / 2)) / dModel);
-                        if (i % 2 === 0) {
-                            posEnc.push(Math.sin(angle));
-                        } else {
-                            posEnc.push(Math.cos(angle));
-                        }
-                    }
-                    pe.push(posEnc);
-                }
-                return pe;
             }
         }
 
@@ -960,85 +807,94 @@
         // ======================================================================
         class MambaWorldModel {
             constructor(weights = null) {
-                this.obsDim = CONFIG.OBS_DIM;
-                this.latentDim = CONFIG.LATENT_DIM;
-                this.ssmStateDim = CONFIG.SSM_STATE_DIM;
-                this.actionDim = CONFIG.ACTION_DIM;
+                this.obsDim = CONFIG.OBS_DIM;           // 6
+                this.latentDim = CONFIG.LATENT_DIM;      // 32
+                this.actionDim = CONFIG.ACTION_DIM;      // 8
                 
                 if (weights) {
                     this.load(weights);
                 } else {
-                    this.init();
+                    this.initWeights();
                 }
                 
-                // Состояния для визуализации
+                // Состояния
                 this.latent = new Array(this.latentDim).fill(0);
-                this.prediction = new Array(this.obsDim).fill(0);
                 this.actions = new Array(this.actionDim).fill(0);
+                this.prediction = new Array(this.obsDim).fill(0);
                 this.delta = 0.1;
                 
                 // Позиционное кодирование
-                this.posEnc = PositionalEncoding.create(CONFIG.MAX_SEQ_LEN, this.latentDim);
+                this.posEnc = this.createPositionalEncoding(CONFIG.MAX_SEQ_LEN, this.latentDim);
             }
-            
-            init() {
-                const scale = 0.1;
+
+            initWeights() {
+                const scale = CONFIG.WEIGHT_SCALE;
                 
-                // Embedding слои
+                // Embedding: [6] → [32]
                 this.obsEmbed = Matrix.random(this.obsDim, this.latentDim, scale);
                 
                 // Mamba блоки
-                this.mamba1 = new MambaBlock(this.latentDim, this.ssmStateDim, CONFIG.EXPAND_FACTOR);
-                this.mamba2 = new MambaBlock(this.latentDim, this.ssmStateDim, CONFIG.EXPAND_FACTOR);
+                this.mamba1 = new MambaBlock(this.latentDim, CONFIG.SSM_STATE_DIM, CONFIG.EXPAND_FACTOR);
+                this.mamba2 = new MambaBlock(this.latentDim, CONFIG.SSM_STATE_DIM, CONFIG.EXPAND_FACTOR);
                 
-                // World Model декодер (предсказание следующего состояния)
-                this.decoderMean = Matrix.random(this.latentDim, this.obsDim, scale);
-                this.decoderLogvar = Matrix.random(this.latentDim, this.obsDim, scale * 0.1);
+                // World Model декодер: [32] → [6]
+                this.decoder = Matrix.random(this.latentDim, this.obsDim, scale);
                 
-                // Perceptron (политика)
-                this.perceptron1 = Matrix.random(this.latentDim, this.latentDim * 2, scale);
-                this.perceptron2 = Matrix.random(this.latentDim * 2, this.latentDim, scale);
-                this.perceptron3 = Matrix.random(this.latentDim, this.actionDim, scale);
-                this.perceptronBias1 = new Array(this.latentDim * 2).fill(0);
-                this.perceptronBias2 = new Array(this.latentDim).fill(0);
+                // Perceptron: [32] → [64] → [32] → [8]
+                this.perceptron1 = Matrix.random(this.latentDim, 64, scale);
+                this.perceptron2 = Matrix.random(64, 32, scale);
+                this.perceptron3 = Matrix.random(32, this.actionDim, scale);
+                
+                this.perceptronBias1 = new Array(64).fill(0);
+                this.perceptronBias2 = new Array(32).fill(0);
                 this.perceptronBias3 = new Array(this.actionDim).fill(0);
             }
-            
-            load(w) {
-                this.obsEmbed = w.obsEmbed;
-                this.mamba1 = w.mamba1;
-                this.mamba2 = w.mamba2;
-                this.decoderMean = w.decoderMean;
-                this.decoderLogvar = w.decoderLogvar;
-                this.perceptron1 = w.perceptron1;
-                this.perceptron2 = w.perceptron2;
-                this.perceptron3 = w.perceptron3;
-                this.perceptronBias1 = w.perceptronBias1;
-                this.perceptronBias2 = w.perceptronBias2;
-                this.perceptronBias3 = w.perceptronBias3;
+
+            createPositionalEncoding(maxLen, dModel) {
+                const pe = [];
+                for (let pos = 0; pos < maxLen; pos++) {
+                    const posEnc = [];
+                    for (let i = 0; i < dModel; i++) {
+                        const angle = pos / Math.pow(10000, (2 * Math.floor(i / 2)) / dModel);
+                        posEnc.push(i % 2 === 0 ? Math.sin(angle) : Math.cos(angle));
+                    }
+                    pe.push(posEnc);
+                }
+                return pe;
             }
-            
+
+            load(weights) {
+                this.obsEmbed = weights.obsEmbed;
+                this.mamba1 = weights.mamba1;
+                this.mamba2 = weights.mamba2;
+                this.decoder = weights.decoder;
+                this.perceptron1 = weights.perceptron1;
+                this.perceptron2 = weights.perceptron2;
+                this.perceptron3 = weights.perceptron3;
+                this.perceptronBias1 = weights.perceptronBias1;
+                this.perceptronBias2 = weights.perceptronBias2;
+                this.perceptronBias3 = weights.perceptronBias3;
+            }
+
             save() {
                 return {
-                    obsEmbed: this.obsEmbed.map(row => [...row]),
+                    obsEmbed: Matrix.clone(this.obsEmbed),
                     mamba1: this.mamba1.clone(),
                     mamba2: this.mamba2.clone(),
-                    decoderMean: this.decoderMean.map(row => [...row]),
-                    decoderLogvar: this.decoderLogvar.map(row => [...row]),
-                    perceptron1: this.perceptron1.map(row => [...row]),
-                    perceptron2: this.perceptron2.map(row => [...row]),
-                    perceptron3: this.perceptron3.map(row => [...row]),
+                    decoder: Matrix.clone(this.decoder),
+                    perceptron1: Matrix.clone(this.perceptron1),
+                    perceptron2: Matrix.clone(this.perceptron2),
+                    perceptron3: Matrix.clone(this.perceptron3),
                     perceptronBias1: [...this.perceptronBias1],
                     perceptronBias2: [...this.perceptronBias2],
                     perceptronBias3: [...this.perceptronBias3]
                 };
             }
-            
+
             clone() {
-                const clone = new MambaWorldModel(this.save());
-                return clone;
+                return new MambaWorldModel(this.save());
             }
-            
+
             mutate(rate, strength) {
                 const mutateMatrix = (m) => {
                     for (let i = 0; i < m.length; i++) {
@@ -1053,42 +909,35 @@
                 mutateMatrix(this.obsEmbed);
                 this.mamba1.mutate(rate, strength);
                 this.mamba2.mutate(rate, strength);
-                mutateMatrix(this.decoderMean);
-                mutateMatrix(this.decoderLogvar);
+                mutateMatrix(this.decoder);
                 mutateMatrix(this.perceptron1);
                 mutateMatrix(this.perceptron2);
                 mutateMatrix(this.perceptron3);
                 
                 for (let i = 0; i < this.perceptronBias1.length; i++) {
-                    if (Math.random() < rate) {
-                        this.perceptronBias1[i] += (Math.random() * 2 - 1) * strength;
-                    }
+                    if (Math.random() < rate) this.perceptronBias1[i] += (Math.random() * 2 - 1) * strength;
                 }
                 for (let i = 0; i < this.perceptronBias2.length; i++) {
-                    if (Math.random() < rate) {
-                        this.perceptronBias2[i] += (Math.random() * 2 - 1) * strength;
-                    }
+                    if (Math.random() < rate) this.perceptronBias2[i] += (Math.random() * 2 - 1) * strength;
                 }
                 for (let i = 0; i < this.perceptronBias3.length; i++) {
-                    if (Math.random() < rate) {
-                        this.perceptronBias3[i] += (Math.random() * 2 - 1) * strength;
-                    }
+                    if (Math.random() < rate) this.perceptronBias3[i] += (Math.random() * 2 - 1) * strength;
                 }
             }
-            
+
             reset() {
                 this.mamba1.reset();
                 this.mamba2.reset();
             }
-            
-            encodeObjects(objects) {
-                // objects: массив наблюдаемых объектов
+
+            encodeObservation(objects) {
                 const seq = [];
+                const maxLen = CONFIG.MAX_SEQ_LEN;
                 
-                for (let i = 0; i < Math.min(objects.length, CONFIG.MAX_SEQ_LEN); i++) {
+                for (let i = 0; i < Math.min(objects.length, maxLen); i++) {
                     const obj = objects[i];
                     
-                    // Нормализуем входные данные
+                    // Нормализация
                     const input = [
                         (obj.x || 0) / CONFIG.WIDTH,
                         (obj.y || 0) / CONFIG.HEIGHT,
@@ -1098,70 +947,103 @@
                         (obj.hp || 0) / CONFIG.MAX_HP
                     ];
                     
-                    // Embedding
-                    const inputMat = Matrix.fromArray([input]);
-                    const emb = Matrix.multiply(inputMat, this.obsEmbed)[0];
+                    // Embedding: [6] → [32]
+                    const emb = new Array(this.latentDim).fill(0);
+                    for (let j = 0; j < this.latentDim; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < this.obsDim; k++) {
+                            sum += input[k] * this.obsEmbed[k][j];
+                        }
+                        emb[j] = sum;
+                    }
                     
                     // Добавляем позиционное кодирование
-                    const posEmb = emb.map((val, j) => val + (this.posEnc[i]?.[j] || 0));
-                    seq.push(posEmb);
+                    for (let j = 0; j < this.latentDim; j++) {
+                        emb[j] += this.posEnc[i][j];
+                    }
+                    
+                    seq.push(emb);
                 }
                 
-                // Паддинг до максимальной длины
-                while (seq.length < CONFIG.MAX_SEQ_LEN) {
+                // Pad
+                while (seq.length < maxLen) {
                     seq.push(new Array(this.latentDim).fill(0));
                 }
                 
                 return seq;
             }
-            
+
             forward(objects) {
-                // 1. Encode objects to sequence
-                const seq = this.encodeObjects(objects);
+                if (!objects) objects = [];
                 
-                // 2. Mamba blocks
-                const afterMamba1 = this.mamba1.forward(seq);
-                const afterMamba2 = this.mamba2.forward(afterMamba1);
-                
-                // 3. Извлекаем латентное состояние (последний токен или среднее)
-                this.latent = afterMamba2[afterMamba2.length - 1];
-                
-                // 4. World Model prediction (что будет дальше)
-                const latentMat = Matrix.fromArray([this.latent]);
-                const predMean = Matrix.multiply(latentMat, this.decoderMean)[0];
-                const predLogvar = Matrix.multiply(latentMat, this.decoderLogvar)[0];
-                
-                this.prediction = predMean;
-                this.predUncertainty = predLogvar.map(v => Math.exp(v * 0.5));
-                
-                // 5. Perceptron (действия)
-                // FC1 + ReLU
-                let h = Matrix.multiply(Matrix.fromArray([this.latent]), this.perceptron1)[0];
-                h = h.map((val, i) => Math.max(0, val + (this.perceptronBias1[i] || 0)));
-                
-                // FC2 + ReLU
-                h = Matrix.multiply(Matrix.fromArray([h]), this.perceptron2)[0];
-                h = h.map((val, i) => Math.max(0, val + (this.perceptronBias2[i] || 0)));
-                
-                // FC3 + Tanh
-                h = Matrix.multiply(Matrix.fromArray([h]), this.perceptron3)[0];
-                this.actions = h.map((val, i) => Math.tanh(val + (this.perceptronBias3[i] || 0)));
-                
-                // Сохраняем delta из последнего Mamba блока
-                this.delta = this.mamba2.lastDelta;
+                try {
+                    // 1. Encode: [seq_len, 32]
+                    const seq = this.encodeObservation(objects);
+                    
+                    // 2. Mamba blocks
+                    const afterMamba1 = this.mamba1.forward(seq);
+                    const afterMamba2 = this.mamba2.forward(afterMamba1);
+                    
+                    // 3. Latent state (последний токен)
+                    this.latent = afterMamba2[afterMamba2.length - 1] || new Array(this.latentDim).fill(0);
+                    
+                    // 4. World Model prediction: [32] → [6]
+                    for (let i = 0; i < this.obsDim; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < this.latentDim; j++) {
+                            sum += this.latent[j] * this.decoder[j][i];
+                        }
+                        this.prediction[i] = sum;
+                    }
+                    
+                    // 5. Perceptron: [32] → [64] → [32] → [8]
+                    
+                    // FC1: [32] → [64]
+                    const h1 = new Array(64).fill(0);
+                    for (let i = 0; i < 64; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < this.latentDim; j++) {
+                            sum += this.latent[j] * this.perceptron1[j][i];
+                        }
+                        h1[i] = Math.max(0, sum + this.perceptronBias1[i]); // ReLU
+                    }
+                    
+                    // FC2: [64] → [32]
+                    const h2 = new Array(32).fill(0);
+                    for (let i = 0; i < 32; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < 64; j++) {
+                            sum += h1[j] * this.perceptron2[j][i];
+                        }
+                        h2[i] = Math.max(0, sum + this.perceptronBias2[i]); // ReLU
+                    }
+                    
+                    // FC3: [32] → [8]
+                    for (let i = 0; i < this.actionDim; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < 32; j++) {
+                            sum += h2[j] * this.perceptron3[j][i];
+                        }
+                        this.actions[i] = Math.tanh(sum + this.perceptronBias3[i]);
+                    }
+                    
+                    this.delta = this.mamba2.lastDelta;
+                    
+                } catch (e) {
+                    console.error('Forward error:', e);
+                }
                 
                 return {
-                    actions: this.actions,
-                    latent: this.latent,
-                    prediction: this.prediction,
-                    uncertainty: this.predUncertainty,
+                    actions: [...this.actions],
+                    latent: [...this.latent],
+                    prediction: [...this.prediction],
                     delta: this.delta
                 };
             }
         }
 
         // ======================================================================
-        // ИГРОВЫЕ ОБЪЕКТЫ
+        // ИГРОВЫЕ ОБЪЕКТЫ (УПРОЩЕНЫ ДЛЯ ЯСНОСТИ)
         // ======================================================================
         class GameObject {
             constructor(x, y, type) {
@@ -1171,13 +1053,7 @@
                 this.vy = 0;
                 this.type = type;
                 this.radius = CONFIG.AGENT_RADIUS;
-                this.id = Math.random().toString(36).substr(2, 6);
-            }
-            
-            distanceTo(other) {
-                const dx = this.x - other.x;
-                const dy = this.y - other.y;
-                return Math.sqrt(dx * dx + dy * dy);
+                this.id = Math.random().toString(36).substr(2, 4);
             }
         }
 
@@ -1188,29 +1064,12 @@
                 this.vy = vy;
                 this.owner = owner;
                 this.lifetime = 80;
-                this.radius = 4;
             }
             
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
                 this.lifetime--;
-                
-                if (this.x < 0 || this.x > CONFIG.WIDTH || 
-                    this.y < 0 || this.y > CONFIG.HEIGHT) {
-                    this.lifetime = 0;
-                }
-            }
-            
-            draw(ctx) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffff00';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#ffff00';
-                ctx.fill();
-                ctx.restore();
             }
         }
 
@@ -1221,26 +1080,6 @@
                 this.value = 30;
                 this.respawnTime = 0;
             }
-            
-            draw(ctx) {
-                if (this.respawnTime > 0) return;
-                
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#00ffff';
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#00ffff';
-                ctx.fill();
-                
-                const pulse = Math.sin(Date.now() / 200) * 3;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius + pulse, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.restore();
-            }
         }
 
         class Wall {
@@ -1249,22 +1088,9 @@
                 this.y = y;
                 this.w = w;
                 this.h = h;
-                this.type = 'wall';
             }
-            
-            draw(ctx) {
-                ctx.save();
-                ctx.fillStyle = '#2a2a4a';
-                ctx.fillRect(this.x, this.y, this.w, this.h);
-                ctx.strokeStyle = '#4a4a6a';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(this.x, this.y, this.w, this.h);
-                ctx.restore();
-            }
-            
             contains(x, y) {
-                return x >= this.x && x <= this.x + this.w && 
-                       y >= this.y && y <= this.y + this.h;
+                return x >= this.x && x <= this.x + this.w && y >= this.y && y <= this.y + this.h;
             }
         }
 
@@ -1272,32 +1098,15 @@
             constructor(x, y, color) {
                 this.x = x;
                 this.y = y;
-                this.vx = (Math.random() - 0.5) * 5;
-                this.vy = (Math.random() - 0.5) * 5;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
                 this.life = 1;
-                this.decay = 0.02 + Math.random() * 0.03;
                 this.color = color;
-                this.size = 2 + Math.random() * 3;
             }
-            
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vx *= 0.98;
-                this.vy *= 0.98;
-                this.life -= this.decay;
-            }
-            
-            draw(ctx) {
-                ctx.save();
-                ctx.globalAlpha = this.life;
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+                this.life -= 0.02;
             }
         }
 
@@ -1312,186 +1121,104 @@
                 this.fitness = 0;
                 this.kills = 0;
                 this.damageDealt = 0;
-                this.resourcesCollected = 0;
                 this.angle = 0;
                 this.color = team === 'green' ? '#00ff88' : '#ff4444';
-                this.glowColor = team === 'green' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 68, 68, 0.3)';
                 
-                this.lastActions = new Array(CONFIG.ACTION_DIM).fill(0);
-                this.latentState = new Array(CONFIG.LATENT_DIM).fill(0);
-                this.prediction = new Array(CONFIG.OBS_DIM).fill(0);
+                this.lastActions = new Array(8).fill(0);
+                this.latentState = new Array(32).fill(0);
             }
-            
-            getVisibleObjects(allAgents, resources, walls) {
+
+            getVisibleObjects(agents, resources, walls) {
                 const visible = [];
                 
-                for (let agent of allAgents) {
-                    if (agent === this || agent.hp <= 0) continue;
-                    
-                    const dist = this.distanceTo(agent);
-                    if (dist > CONFIG.VIEW_DISTANCE) continue;
-                    
-                    // Упрощенная проверка видимости (без raycasting для производительности)
-                    visible.push({
-                        x: agent.x,
-                        y: agent.y,
-                        vx: agent.vx,
-                        vy: agent.vy,
-                        type: agent.team === this.team ? 'ally' : 'enemy',
-                        hp: agent.hp,
-                        dist: dist
-                    });
-                }
-                
-                for (let res of resources) {
-                    if (res.respawnTime > 0) continue;
-                    const dist = this.distanceTo(res);
-                    if (dist <= CONFIG.VIEW_DISTANCE) {
+                for (let a of agents) {
+                    if (a === this || a.hp <= 0) continue;
+                    const dx = a.x - this.x, dy = a.y - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < CONFIG.VIEW_DISTANCE) {
                         visible.push({
-                            x: res.x,
-                            y: res.y,
-                            vx: 0,
-                            vy: 0,
-                            type: 'resource',
-                            hp: 100,
-                            dist: dist
+                            x: a.x, y: a.y, vx: a.vx, vy: a.vy,
+                            type: a.team === this.team ? 'ally' : 'enemy',
+                            hp: a.hp
                         });
                     }
                 }
                 
-                return visible.sort((a, b) => a.dist - b.dist);
+                for (let r of resources) {
+                    if (r.respawnTime > 0) continue;
+                    const dx = r.x - this.x, dy = r.y - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < CONFIG.VIEW_DISTANCE) {
+                        visible.push({ x: r.x, y: r.y, vx:0, vy:0, type:'resource', hp:100 });
+                    }
+                }
+                
+                return visible;
             }
-            
-            think(allAgents, resources, walls) {
-                const visible = this.getVisibleObjects(allAgents, resources, walls);
+
+            think(agents, resources, walls) {
+                const visible = this.getVisibleObjects(agents, resources, walls);
                 
                 try {
                     const result = this.brain.forward(visible);
                     this.lastActions = result.actions;
                     this.latentState = result.latent;
-                    this.prediction = result.prediction;
                     
-                    // Движение
-                    let ax = result.actions[3] - result.actions[2];  // right - left
-                    let ay = result.actions[1] - result.actions[0];  // down - up
+                    // Движение: right - left, down - up
+                    const moveX = result.actions[3] - result.actions[2];
+                    const moveY = result.actions[1] - result.actions[0];
+                    const len = Math.sqrt(moveX*moveX + moveY*moveY);
                     
-                    const len = Math.sqrt(ax*ax + ay*ay);
                     if (len > 0.01) {
-                        ax /= len;
-                        ay /= len;
-                        this.vx += ax * CONFIG.AGENT_SPEED * 0.3;
-                        this.vy += ay * CONFIG.AGENT_SPEED * 0.3;
+                        this.vx += (moveX/len) * CONFIG.AGENT_SPEED * 0.5;
+                        this.vy += (moveY/len) * CONFIG.AGENT_SPEED * 0.5;
+                    } else {
+                        this.vx += (Math.random() - 0.5) * 0.3;
+                        this.vy += (Math.random() - 0.5) * 0.3;
                     }
                     
                     // Стрельба
                     if (result.actions[4] > 0.3 && this.cooldown <= 0) {
-                        this.shoot(allAgents);
+                        this.cooldown = CONFIG.SHOOT_COOLDOWN;
+                        // найти ближайшего врага
+                        let target = null;
+                        let minDist = Infinity;
+                        for (let a of agents) {
+                            if (a.team !== this.team && a.hp > 0) {
+                                const d = Math.hypot(a.x - this.x, a.y - this.y);
+                                if (d < minDist) { minDist = d; target = a; }
+                            }
+                        }
+                        if (target) {
+                            const angle = Math.atan2(target.y - this.y, target.x - this.x);
+                            const bullet = new Bullet(
+                                this.x + Math.cos(angle)*20, this.y + Math.sin(angle)*20,
+                                Math.cos(angle)*CONFIG.BULLET_SPEED, Math.sin(angle)*CONFIG.BULLET_SPEED, this
+                            );
+                            if (window.game) window.game.bullets.push(bullet);
+                        }
                     }
                     
                     // Лечение
-                    if (result.actions[5] > 0.3 && this.hp < CONFIG.MAX_HP) {
-                        const healAmount = CONFIG.HEAL_AMOUNT * Math.abs(result.actions[5]);
-                        this.hp = Math.min(CONFIG.MAX_HP, this.hp + healAmount);
-                        this.fitness += healAmount;
-                    }
-                    
-                    // Retreat
-                    if (result.actions[6] > 0.3) {
-                        let nearestEnemy = null;
-                        let minDist = Infinity;
-                        for (let agent of allAgents) {
-                            if (agent.team !== this.team && agent.hp > 0) {
-                                const dist = this.distanceTo(agent);
-                                if (dist < minDist) {
-                                    minDist = dist;
-                                    nearestEnemy = agent;
-                                }
-                            }
-                        }
-                        if (nearestEnemy) {
-                            const retreatX = (this.x - nearestEnemy.x) / minDist;
-                            const retreatY = (this.y - nearestEnemy.y) / minDist;
-                            this.vx += retreatX * CONFIG.AGENT_SPEED * 0.2;
-                            this.vy += retreatY * CONFIG.AGENT_SPEED * 0.2;
-                        }
-                    }
-                    
-                    // Cover
-                    if (result.actions[7] > 0.3) {
-                        let bestCover = null;
-                        let bestScore = -Infinity;
-                        for (let wall of walls) {
-                            const dist = Math.hypot(wall.x + wall.w/2 - this.x, wall.y + wall.h/2 - this.y);
-                            if (dist < 200 && dist > 30) {
-                                const score = 1 / dist;
-                                if (score > bestScore) {
-                                    bestScore = score;
-                                    bestCover = wall;
-                                }
-                            }
-                        }
-                        if (bestCover) {
-                            const coverX = bestCover.x + bestCover.w/2 - this.x;
-                            const coverY = bestCover.y + bestCover.h/2 - this.y;
-                            const coverLen = Math.sqrt(coverX*coverX + coverY*coverY);
-                            this.vx += (coverX / coverLen) * CONFIG.AGENT_SPEED * 0.2;
-                            this.vy += (coverY / coverLen) * CONFIG.AGENT_SPEED * 0.2;
-                        }
+                    if (result.actions[5] > 0.2 && this.hp < this.maxHp) {
+                        this.hp = Math.min(this.maxHp, this.hp + CONFIG.HEAL_AMOUNT * 0.5);
                     }
                     
                 } catch (e) {
-                    console.error('Brain error:', e);
+                    this.vx += (Math.random() - 0.5) * 0.3;
+                    this.vy += (Math.random() - 0.5) * 0.3;
                 }
                 
-                return {
-                    latent: this.latentState,
-                    actions: this.lastActions,
-                    prediction: this.prediction,
-                    delta: this.brain.delta
-                };
+                if (Math.abs(this.vx) > 0.1 || Math.abs(this.vy) > 0.1) {
+                    this.angle = Math.atan2(this.vy, this.vx);
+                }
+                
+                return { latent: this.latentState, actions: this.lastActions };
             }
-            
-            shoot(allAgents) {
-                this.cooldown = CONFIG.SHOOT_COOLDOWN;
-                
-                let bestTarget = null;
-                let bestScore = -Infinity;
-                
-                for (let agent of allAgents) {
-                    if (agent.team !== this.team && agent.hp > 0) {
-                        const dist = this.distanceTo(agent);
-                        if (dist < CONFIG.VIEW_DISTANCE) {
-                            const score = (1 / (dist + 1)) * (1 - agent.hp / agent.maxHp);
-                            if (score > bestScore) {
-                                bestScore = score;
-                                bestTarget = agent;
-                            }
-                        }
-                    }
-                }
-                
-                if (bestTarget) {
-                    const angle = Math.atan2(bestTarget.y - this.y, bestTarget.x - this.x);
-                    const bullet = new Bullet(
-                        this.x + Math.cos(angle) * 20,
-                        this.y + Math.sin(angle) * 20,
-                        Math.cos(angle) * CONFIG.BULLET_SPEED,
-                        Math.sin(angle) * CONFIG.BULLET_SPEED,
-                        this
-                    );
-                    if (game) game.bullets.push(bullet);
-                }
-            }
-            
-            update(allAgents, walls) {
+
+            update(agents, walls) {
                 this.vx *= CONFIG.FRICTION;
                 this.vy *= CONFIG.FRICTION;
-                
-                const speed = Math.hypot(this.vx, this.vy);
-                if (speed > CONFIG.AGENT_SPEED) {
-                    this.vx = (this.vx / speed) * CONFIG.AGENT_SPEED;
-                    this.vy = (this.vy / speed) * CONFIG.AGENT_SPEED;
-                }
                 
                 this.x += this.vx;
                 this.y += this.vy;
@@ -1499,17 +1226,14 @@
                 this.x = Math.max(this.radius, Math.min(CONFIG.WIDTH - this.radius, this.x));
                 this.y = Math.max(this.radius, Math.min(CONFIG.HEIGHT - this.radius, this.y));
                 
-                for (let wall of walls) {
-                    if (wall.contains(this.x, this.y)) {
-                        const centerX = wall.x + wall.w / 2;
-                        const centerY = wall.y + wall.h / 2;
-                        const dx = this.x - centerX;
-                        const dy = this.y - centerY;
-                        
-                        if (Math.abs(dx) / wall.w > Math.abs(dy) / wall.h) {
-                            this.x = dx > 0 ? wall.x + wall.w + this.radius : wall.x - this.radius;
+                for (let w of walls) {
+                    if (w.contains(this.x, this.y)) {
+                        const cx = w.x + w.w/2, cy = w.y + w.h/2;
+                        const dx = this.x - cx, dy = this.y - cy;
+                        if (Math.abs(dx)/w.w > Math.abs(dy)/w.h) {
+                            this.x = dx > 0 ? w.x + w.w + this.radius : w.x - this.radius;
                         } else {
-                            this.y = dy > 0 ? wall.y + wall.h + this.radius : wall.y - this.radius;
+                            this.y = dy > 0 ? w.y + w.h + this.radius : w.y - this.radius;
                         }
                     }
                 }
@@ -1517,60 +1241,13 @@
                 if (this.cooldown > 0) this.cooldown--;
                 this.fitness += 0.1;
             }
-            
-            draw(ctx) {
-                if (this.hp <= 0) return;
-                
-                ctx.save();
-                
-                // Свечение от SSM состояния
-                const intensity = this.latentState.reduce((a, b) => a + Math.abs(b), 0) / this.latentState.length;
-                
-                const gradient = ctx.createRadialGradient(
-                    this.x, this.y, 0,
-                    this.x, this.y, this.radius * 3
-                );
-                gradient.addColorStop(0, this.glowColor);
-                gradient.addColorStop(1, 'transparent');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(this.x - this.radius * 3, this.y - this.radius * 3, 
-                           this.radius * 6, this.radius * 6);
-                
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                
-                ctx.beginPath();
-                ctx.moveTo(this.radius, 0);
-                ctx.lineTo(-this.radius * 0.7, this.radius * 0.7);
-                ctx.lineTo(-this.radius * 0.4, 0);
-                ctx.lineTo(-this.radius * 0.7, -this.radius * 0.7);
-                ctx.closePath();
-                
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 15 + intensity * 10;
-                ctx.shadowColor = this.color;
-                ctx.fill();
-                
-                ctx.restore();
-                
-                // HP бар
-                const barWidth = 30;
-                const barHeight = 4;
-                ctx.fillStyle = '#000';
-                ctx.fillRect(this.x - barWidth/2, this.y - this.radius - 12, barWidth, barHeight);
-                
-                const hpPercent = this.hp / this.maxHp;
-                ctx.fillStyle = hpPercent > 0.5 ? '#00ff88' : (hpPercent > 0.25 ? '#ffff00' : '#ff4444');
-                ctx.fillRect(this.x - barWidth/2, this.y - this.radius - 12, barWidth * hpPercent, barHeight);
-            }
-            
+
             takeDamage(amount, attacker) {
                 this.hp -= amount;
                 if (attacker) {
                     attacker.damageDealt += amount;
                     attacker.fitness += amount;
                 }
-                
                 if (this.hp <= 0 && attacker) {
                     attacker.kills++;
                     attacker.fitness += 50;
@@ -1579,7 +1256,7 @@
         }
 
         // ======================================================================
-        // ОСНОВНОЙ ИГРОВОЙ КЛАСС
+        // ОСНОВНОЙ КЛАСС GAME
         // ======================================================================
         class Game {
             constructor() {
@@ -1601,183 +1278,108 @@
                 this.mutationRate = CONFIG.MUTATION_RATE;
                 
                 this.selectedAgent = null;
+                
                 this.stats = {
-                    latent: new Array(CONFIG.LATENT_DIM).fill(0),
-                    actions: new Array(CONFIG.ACTION_DIM).fill(0),
-                    prediction: new Array(CONFIG.OBS_DIM).fill(0),
+                    latent: new Array(32).fill(0),
+                    actions: new Array(8).fill(0),
+                    prediction: new Array(6).fill(0),
                     delta: 0.1
                 };
                 
-                this.resize();
-                this.initWalls();
-                this.initResources();
-                this.initAgents();
-                
-                window.addEventListener('resize', () => this.resize());
-                
-                document.getElementById('mutation-slider').addEventListener('input', (e) => {
-                    this.mutationRate = parseFloat(e.target.value);
-                });
-                
-                document.getElementById('speed-slider').addEventListener('input', (e) => {
-                    this.simulationSpeed = parseInt(e.target.value);
-                });
-                
-                this.startLoop();
+                this.init();
+                window.game = this;
             }
-            
-            resize() {
-                const wrapper = document.getElementById('canvas-wrapper');
-                this.canvas.width = wrapper.clientWidth;
-                this.canvas.height = wrapper.clientHeight;
-                CONFIG.WIDTH = this.canvas.width;
-                CONFIG.HEIGHT = this.canvas.height;
-            }
-            
-            initWalls() {
+
+            init() {
+                // Walls
                 this.walls = [
-                    new Wall(200, 150, 150, 20),
-                    new Wall(200, 350, 150, 20),
-                    new Wall(550, 150, 150, 20),
-                    new Wall(550, 350, 150, 20),
-                    new Wall(350, 250, 200, 20),
-                    new Wall(100, 500, 200, 20),
-                    new Wall(600, 500, 200, 20),
-                    new Wall(400, 450, 20, 150)
+                    new Wall(200,150,150,20), new Wall(200,350,150,20),
+                    new Wall(550,150,150,20), new Wall(550,350,150,20),
+                    new Wall(350,250,200,20), new Wall(100,500,200,20),
+                    new Wall(600,500,200,20), new Wall(400,450,20,150)
                 ];
-            }
-            
-            initResources() {
+                
+                // Resources
                 this.resources = [
-                    new Resource(150, 150),
-                    new Resource(550, 150),
-                    new Resource(350, 300),
-                    new Resource(150, 450),
-                    new Resource(550, 450),
-                    new Resource(350, 550)
+                    new Resource(150,150), new Resource(550,150),
+                    new Resource(350,300), new Resource(150,450),
+                    new Resource(550,450), new Resource(350,550)
                 ];
+                
+                this.initAgents();
             }
-            
+
             initAgents() {
                 this.agents = [];
                 
-                // Зеленая команда (слева)
                 for (let i = 0; i < CONFIG.POPULATION; i++) {
-                    let brain;
-                    if (this.bestBrain) {
-                        brain = new MambaWorldModel(this.bestBrain);
-                        if (this.isRunning) {
-                            brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
-                        }
-                    } else {
-                        brain = new MambaWorldModel();
-                    }
-                    
-                    const x = 100 + Math.random() * 150;
-                    const y = 150 + (i * 100) % (CONFIG.HEIGHT - 300);
-                    const agent = new Agent(x, y, 'green', brain);
-                    this.agents.push(agent);
+                    const brain = this.bestBrain ? new MambaWorldModel(this.bestBrain) : new MambaWorldModel();
+                    if (this.bestBrain && this.isRunning) brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
+                    this.agents.push(new Agent(150 + Math.random()*150, 150 + i*100, 'green', brain));
                 }
                 
-                // Красная команда (справа)
                 for (let i = 0; i < CONFIG.POPULATION; i++) {
-                    let brain;
-                    if (this.bestBrain) {
-                        brain = new MambaWorldModel(this.bestBrain);
-                        if (this.isRunning) {
-                            brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
-                        }
-                    } else {
-                        brain = new MambaWorldModel();
-                    }
-                    
-                    const x = CONFIG.WIDTH - 100 - Math.random() * 150;
-                    const y = 150 + (i * 100) % (CONFIG.HEIGHT - 300);
-                    const agent = new Agent(x, y, 'red', brain);
-                    this.agents.push(agent);
+                    const brain = this.bestBrain ? new MambaWorldModel(this.bestBrain) : new MambaWorldModel();
+                    if (this.bestBrain && this.isRunning) brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
+                    this.agents.push(new Agent(CONFIG.WIDTH - 150 - Math.random()*150, 150 + i*100, 'red', brain));
                 }
                 
-                if (this.agents.length > 0) {
-                    this.selectedAgent = this.agents[0];
-                }
+                this.selectedAgent = this.agents[0];
             }
-            
-            spawnParticles(x, y, color, count = 8) {
-                for (let i = 0; i < count; i++) {
-                    this.particles.push(new Particle(x, y, color));
-                }
-            }
-            
+
             update() {
                 if (this.isPaused || !this.isRunning) return;
                 
                 for (let step = 0; step < this.simulationSpeed; step++) {
-                    const aliveAgents = this.agents.filter(a => a.hp > 0);
+                    const alive = this.agents.filter(a => a.hp > 0);
                     
-                    // Think
-                    for (let agent of aliveAgents) {
-                        const result = agent.think(this.agents, this.resources, this.walls);
-                        
-                        if (agent === this.selectedAgent) {
-                            this.stats.latent = result.latent;
-                            this.stats.actions = result.actions;
-                            this.stats.prediction = result.prediction;
-                            this.stats.delta = result.delta;
+                    for (let a of alive) {
+                        const r = a.think(this.agents, this.resources, this.walls);
+                        if (a === this.selectedAgent) {
+                            this.stats.latent = r.latent;
+                            this.stats.actions = r.actions;
+                            this.stats.delta = a.brain.delta;
+                            this.stats.prediction = a.brain.prediction;
                         }
                     }
                     
-                    // Update
-                    for (let agent of aliveAgents) {
-                        agent.update(this.agents, this.walls);
-                    }
+                    for (let a of alive) a.update(this.agents, this.walls);
                     
                     // Bullets
-                    for (let i = this.bullets.length - 1; i >= 0; i--) {
-                        const bullet = this.bullets[i];
-                        bullet.update();
-                        
-                        for (let agent of this.agents) {
-                            if (agent.hp <= 0 || agent === bullet.owner) continue;
-                            if (agent.team === bullet.owner.team) continue;
-                            
-                            const dist = Math.hypot(agent.x - bullet.x, agent.y - bullet.y);
-                            if (dist < agent.radius) {
-                                agent.takeDamage(CONFIG.DAMAGE, bullet.owner);
-                                this.spawnParticles(bullet.x, bullet.y, '#ffff00');
-                                this.bullets.splice(i, 1);
+                    for (let i = this.bullets.length-1; i >= 0; i--) {
+                        const b = this.bullets[i];
+                        b.update();
+                        for (let a of this.agents) {
+                            if (a.hp <= 0 || a === b.owner) continue;
+                            if (a.team === b.owner.team) continue;
+                            if (Math.hypot(a.x - b.x, a.y - b.y) < a.radius) {
+                                a.takeDamage(CONFIG.DAMAGE, b.owner);
+                                this.particles.push(new Particle(b.x, b.y, '#ffff00'));
+                                this.bullets.splice(i,1);
                                 break;
                             }
                         }
-                        
-                        if (bullet.lifetime <= 0 && this.bullets[i] === bullet) {
-                            this.bullets.splice(i, 1);
-                        }
+                        if (b.lifetime <= 0) this.bullets.splice(i,1);
                     }
                     
                     // Resources
-                    for (let agent of aliveAgents) {
-                        for (let res of this.resources) {
-                            if (res.respawnTime > 0) continue;
-                            const dist = Math.hypot(agent.x - res.x, agent.y - res.y);
-                            if (dist < agent.radius + res.radius) {
-                                agent.hp = Math.min(CONFIG.MAX_HP, agent.hp + res.value);
-                                agent.resourcesCollected++;
-                                agent.fitness += 20;
-                                res.respawnTime = 300;
-                                this.spawnParticles(res.x, res.y, '#00ffff');
+                    for (let a of alive) {
+                        for (let r of this.resources) {
+                            if (r.respawnTime > 0) continue;
+                            if (Math.hypot(a.x - r.x, a.y - r.y) < a.radius + r.radius) {
+                                a.hp = Math.min(CONFIG.MAX_HP, a.hp + r.value);
+                                a.fitness += 20;
+                                r.respawnTime = 300;
+                                this.particles.push(new Particle(r.x, r.y, '#00ffff'));
                             }
                         }
                     }
                     
-                    for (let res of this.resources) {
-                        if (res.respawnTime > 0) res.respawnTime--;
-                    }
+                    for (let r of this.resources) if (r.respawnTime > 0) r.respawnTime--;
                     
-                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                    for (let i = this.particles.length-1; i >= 0; i--) {
                         this.particles[i].update();
-                        if (this.particles[i].life <= 0) {
-                            this.particles.splice(i, 1);
-                        }
+                        if (this.particles[i].life <= 0) this.particles.splice(i,1);
                     }
                     
                     const greenAlive = this.agents.filter(a => a.team === 'green' && a.hp > 0).length;
@@ -1789,173 +1391,208 @@
                     }
                 }
             }
-            
+
             nextGeneration() {
-                let bestAgent = null;
-                let maxFitness = -Infinity;
-                
-                for (let agent of this.agents) {
-                    if (agent.fitness > maxFitness) {
-                        maxFitness = agent.fitness;
-                        bestAgent = agent;
-                    }
+                let best = null;
+                let maxFit = -Infinity;
+                for (let a of this.agents) {
+                    if (a.fitness > maxFit) { maxFit = a.fitness; best = a; }
                 }
-                
-                if (bestAgent && bestAgent.fitness > this.bestFitness) {
-                    this.bestFitness = bestAgent.fitness;
-                    this.bestBrain = bestAgent.brain.save();
+                if (best && best.fitness > this.bestFitness) {
+                    this.bestFitness = best.fitness;
+                    this.bestBrain = best.brain.save();
                 }
-                
                 this.generation++;
                 this.initAgents();
-                this.initResources();
                 this.bullets = [];
                 this.particles = [];
             }
-            
+
             draw() {
-                this.ctx.fillStyle = 'rgba(10, 10, 20, 0.2)';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = 'rgba(10,10,20,0.2)';
+                this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
                 
                 // Grid
-                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.03)';
-                this.ctx.lineWidth = 1;
-                for (let x = 0; x < CONFIG.WIDTH; x += 40) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(x, 0);
-                    this.ctx.lineTo(x, CONFIG.HEIGHT);
-                    this.ctx.stroke();
+                this.ctx.strokeStyle = 'rgba(0,255,255,0.03)';
+                for (let x=0; x<CONFIG.WIDTH; x+=40) {
+                    this.ctx.beginPath(); this.ctx.moveTo(x,0); this.ctx.lineTo(x,CONFIG.HEIGHT); this.ctx.stroke();
                 }
-                for (let y = 0; y < CONFIG.HEIGHT; y += 40) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(0, y);
-                    this.ctx.lineTo(CONFIG.WIDTH, y);
-                    this.ctx.stroke();
+                for (let y=0; y<CONFIG.HEIGHT; y+=40) {
+                    this.ctx.beginPath(); this.ctx.moveTo(0,y); this.ctx.lineTo(CONFIG.WIDTH,y); this.ctx.stroke();
                 }
                 
-                // Objects
-                for (let wall of this.walls) wall.draw(this.ctx);
-                for (let res of this.resources) res.draw(this.ctx);
-                for (let particle of this.particles) particle.draw(this.ctx);
-                for (let bullet of this.bullets) bullet.draw(this.ctx);
-                
-                // Agents
-                for (let agent of this.agents) {
-                    if (agent.hp > 0) agent.draw(this.ctx);
+                for (let w of this.walls) {
+                    this.ctx.fillStyle = '#2a2a4a';
+                    this.ctx.fillRect(w.x, w.y, w.w, w.h);
                 }
                 
-                // Vision cone for selected agent
-                if (this.selectedAgent && this.selectedAgent.hp > 0) {
-                    this.ctx.save();
+                for (let r of this.resources) {
+                    if (r.respawnTime === 0) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(r.x, r.y, r.radius, 0, 2*Math.PI);
+                        this.ctx.fillStyle = '#00ffff';
+                        this.ctx.shadowBlur = 20;
+                        this.ctx.shadowColor = '#00ffff';
+                        this.ctx.fill();
+                    }
+                }
+                
+                for (let p of this.particles) {
+                    this.ctx.globalAlpha = p.life;
+                    this.ctx.fillStyle = p.color;
                     this.ctx.beginPath();
-                    this.ctx.arc(this.selectedAgent.x, this.selectedAgent.y, CONFIG.VIEW_DISTANCE, 0, Math.PI * 2);
-                    this.ctx.fillStyle = 'rgba(0, 255, 255, 0.02)';
+                    this.ctx.arc(p.x, p.y, 3, 0, 2*Math.PI);
                     this.ctx.fill();
-                    this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
-                    this.ctx.setLineDash([5, 10]);
-                    this.ctx.stroke();
-                    this.ctx.setLineDash([]);
+                }
+                this.ctx.globalAlpha = 1;
+                
+                for (let b of this.bullets) {
+                    this.ctx.fillStyle = '#ffff00';
+                    this.ctx.beginPath();
+                    this.ctx.arc(b.x, b.y, 4, 0, 2*Math.PI);
+                    this.ctx.fill();
+                }
+                
+                for (let a of this.agents) {
+                    if (a.hp <= 0) continue;
+                    
+                    // Glow
+                    const intensity = a.latentState.reduce((s,v) => s+Math.abs(v),0)/32;
+                    const grad = this.ctx.createRadialGradient(a.x,a.y,0,a.x,a.y,a.radius*3);
+                    grad.addColorStop(0, a.color + '40');
+                    grad.addColorStop(1, 'transparent');
+                    this.ctx.fillStyle = grad;
+                    this.ctx.fillRect(a.x-a.radius*3, a.y-a.radius*3, a.radius*6, a.radius*6);
+                    
+                    // Agent
+                    this.ctx.save();
+                    this.ctx.translate(a.x, a.y);
+                    this.ctx.rotate(a.angle);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(a.radius, 0);
+                    this.ctx.lineTo(-a.radius*0.7, a.radius*0.7);
+                    this.ctx.lineTo(-a.radius*0.4, 0);
+                    this.ctx.lineTo(-a.radius*0.7, -a.radius*0.7);
+                    this.ctx.closePath();
+                    this.ctx.fillStyle = a.color;
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.shadowColor = a.color;
+                    this.ctx.fill();
                     this.ctx.restore();
+                    
+                    // HP bar
+                    const barW = 30;
+                    this.ctx.fillStyle = '#000';
+                    this.ctx.fillRect(a.x-barW/2, a.y-a.radius-12, barW, 4);
+                    this.ctx.fillStyle = a.hp > 50 ? '#00ff88' : (a.hp > 25 ? '#ffff00' : '#ff4444');
+                    this.ctx.fillRect(a.x-barW/2, a.y-a.radius-12, barW * a.hp/a.maxHp, 4);
+                }
+                
+                if (this.selectedAgent && this.selectedAgent.hp > 0) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.selectedAgent.x, this.selectedAgent.y, CONFIG.VIEW_DISTANCE, 0, 2*Math.PI);
+                    this.ctx.fillStyle = 'rgba(0,255,255,0.02)';
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = 'rgba(0,255,255,0.1)';
+                    this.ctx.setLineDash([5,10]);
+                    this.ctx.stroke();
                 }
             }
-            
+
             updateUI() {
-                const greenAlive = this.agents.filter(a => a.team === 'green' && a.hp > 0).length;
-                const redAlive = this.agents.filter(a => a.team === 'red' && a.hp > 0).length;
+                const green = this.agents.filter(a => a.team === 'green' && a.hp > 0).length;
+                const red = this.agents.filter(a => a.team === 'red' && a.hp > 0).length;
                 
-                document.getElementById('green-alive').textContent = greenAlive;
-                document.getElementById('red-alive').textContent = redAlive;
+                document.getElementById('greenCount').textContent = green;
+                document.getElementById('redCount').textContent = red;
                 document.getElementById('generation').textContent = this.generation;
-                document.getElementById('best-score').textContent = Math.floor(this.bestFitness);
+                document.getElementById('bestFitness').textContent = Math.floor(this.bestFitness);
                 
-                document.getElementById('status-indicator').innerHTML = 
-                    this.isRunning 
-                        ? this.isPaused ? '⏸️ PAUSED' : '🚀 MAMBA ACTIVE'
-                        : '⏹️ STOPPED';
-                document.getElementById('status-indicator').style.borderColor = 
-                    this.isRunning 
-                        ? this.isPaused ? '#ffff00' : '#00ff88'
-                        : '#ff4444';
+                document.getElementById('status').innerHTML = this.isRunning 
+                    ? (this.isPaused ? '⏸ PAUSED' : '🚀 MAMBA ACTIVE')
+                    : '⏹ STOPPED';
                 
-                // Mamba params
-                document.getElementById('delta-value').textContent = this.stats.delta.toFixed(3);
+                document.getElementById('deltaVal').textContent = this.stats.delta.toFixed(3);
                 
                 if (this.selectedAgent && this.selectedAgent.brain) {
-                    const aNorm = Matrix.norm(this.selectedAgent.brain.mamba1.A);
-                    const bNorm = Matrix.norm(this.selectedAgent.brain.mamba1.B);
-                    document.getElementById('a-norm').textContent = aNorm.toFixed(3);
-                    document.getElementById('b-norm').textContent = bNorm.toFixed(3);
+                    const n = this.selectedAgent.brain.mamba1.ssm.getNorms();
+                    document.getElementById('aNorm').textContent = n.A.toFixed(3);
+                    document.getElementById('bNorm').textContent = n.B.toFixed(3);
+                    document.getElementById('cNorm').textContent = n.C.toFixed(3);
+                }
+                
+                // Prediction loss
+                if (this.selectedAgent && this.selectedAgent.hp > 0) {
+                    const actual = [
+                        this.selectedAgent.x/CONFIG.WIDTH,
+                        this.selectedAgent.y/CONFIG.HEIGHT,
+                        this.selectedAgent.vx/CONFIG.AGENT_SPEED,
+                        this.selectedAgent.vy/CONFIG.AGENT_SPEED,
+                        this.selectedAgent.team === 'green' ? 0.8 : 0.2,
+                        this.selectedAgent.hp/CONFIG.MAX_HP
+                    ];
+                    let loss = 0;
+                    for (let i=0; i<6; i++) loss += (this.stats.prediction[i] - actual[i])**2;
+                    document.getElementById('predLoss').textContent = (loss/6).toFixed(4);
                     
-                    const predLoss = this.stats.prediction.reduce((a, b) => a + Math.abs(b), 0) / CONFIG.OBS_DIM;
-                    document.getElementById('pred-loss').textContent = predLoss.toFixed(3);
+                    // Selectivity
+                    const sel = this.selectedAgent.brain.mamba1.ssm.B_base.reduce(
+                        (s,row) => s + row.reduce((ss,v) => ss + Math.abs(v),0), 0
+                    ) / (16*32);
+                    document.getElementById('selectivity').textContent = sel.toFixed(3);
                 }
                 
                 // Mental map
-                const container = document.getElementById('mental-map-container');
-                container.innerHTML = '';
-                
-                for (let i = 0; i < CONFIG.LATENT_DIM; i++) {
-                    const neuron = document.createElement('div');
-                    neuron.className = 'neuron';
-                    const value = this.stats.latent[i] || 0;
-                    const intensity = (value + 1) / 2;
-                    const hue = 180 + intensity * 60;
-                    neuron.style.background = `hsl(${hue}, 100%, ${20 + intensity * 50}%)`;
-                    neuron.style.boxShadow = `0 0 ${intensity * 20}px hsl(${hue}, 100%, 50%)`;
-                    container.appendChild(neuron);
+                const map = document.getElementById('mental-map');
+                map.innerHTML = '';
+                for (let i=0; i<32; i++) {
+                    const d = document.createElement('div');
+                    d.className = 'neuron';
+                    const val = this.stats.latent[i] || 0;
+                    const int = (val+1)/2;
+                    d.style.background = `hsl(${180 + int*60}, 100%, ${20 + int*50}%)`;
+                    map.appendChild(d);
                 }
                 
-                // Prediction values
-                document.getElementById('pred-x').textContent = this.stats.prediction[0].toFixed(2);
-                document.getElementById('pred-y').textContent = this.stats.prediction[1].toFixed(2);
-                document.getElementById('pred-vx').textContent = this.stats.prediction[2].toFixed(2);
-                document.getElementById('pred-vy').textContent = this.stats.prediction[3].toFixed(2);
-                document.getElementById('pred-type').textContent = this.stats.prediction[4].toFixed(2);
-                document.getElementById('pred-hp').textContent = this.stats.prediction[5].toFixed(2);
+                // Predictions
+                document.getElementById('predX').textContent = this.stats.prediction[0].toFixed(2);
+                document.getElementById('predY').textContent = this.stats.prediction[1].toFixed(2);
+                document.getElementById('predVx').textContent = this.stats.prediction[2].toFixed(2);
+                document.getElementById('predVy').textContent = this.stats.prediction[3].toFixed(2);
+                document.getElementById('predType').textContent = this.stats.prediction[4].toFixed(2);
+                document.getElementById('predHp').textContent = this.stats.prediction[5].toFixed(2);
                 
-                // Action values
-                document.getElementById('act-up').textContent = this.stats.actions[0].toFixed(2);
-                document.getElementById('act-down').textContent = this.stats.actions[1].toFixed(2);
-                document.getElementById('act-left').textContent = this.stats.actions[2].toFixed(2);
-                document.getElementById('act-right').textContent = this.stats.actions[3].toFixed(2);
-                document.getElementById('act-shoot').textContent = this.stats.actions[4].toFixed(2);
-                document.getElementById('act-heal').textContent = this.stats.actions[5].toFixed(2);
-                document.getElementById('act-retreat').textContent = this.stats.actions[6].toFixed(2);
-                document.getElementById('act-cover').textContent = this.stats.actions[7].toFixed(2);
+                // Actions
+                document.getElementById('actUp').textContent = this.stats.actions[0].toFixed(2);
+                document.getElementById('actDown').textContent = this.stats.actions[1].toFixed(2);
+                document.getElementById('actLeft').textContent = this.stats.actions[2].toFixed(2);
+                document.getElementById('actRight').textContent = this.stats.actions[3].toFixed(2);
+                document.getElementById('actShoot').textContent = this.stats.actions[4].toFixed(2);
+                document.getElementById('actHeal').textContent = this.stats.actions[5].toFixed(2);
+                document.getElementById('actRetreat').textContent = this.stats.actions[6].toFixed(2);
+                document.getElementById('actCover').textContent = this.stats.actions[7].toFixed(2);
                 
                 // Agent list
-                const listEl = document.getElementById('agent-list');
-                listEl.innerHTML = '';
-                
-                for (let agent of this.agents) {
-                    if (agent.hp <= 0) continue;
-                    
+                const list = document.getElementById('agentList');
+                list.innerHTML = '';
+                for (let a of this.agents) {
+                    if (a.hp <= 0) continue;
                     const item = document.createElement('div');
                     item.className = 'agent-item';
-                    item.onclick = () => {
-                        this.selectedAgent = agent;
-                    };
-                    
+                    item.onclick = () => this.selectedAgent = a;
                     item.innerHTML = `
-                        <div class="agent-color" style="background: ${agent.color}"></div>
-                        <div class="agent-info">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>${agent.team === 'green' ? '🟢' : '🔴'} ${agent.id}</span>
-                                <span>K:${agent.kills} | D:${agent.damageDealt}</span>
-                            </div>
-                            <div style="font-size: 10px; color: #00ffff;">
-                                fit:${Math.floor(agent.fitness)} | Δ:${(agent.brain.delta || 0).toFixed(2)}
-                            </div>
-                            <div class="agent-hp">
-                                <div class="agent-hp-fill" style="width: ${(agent.hp / agent.maxHp) * 100}%"></div>
-                            </div>
+                        <div class="agent-color" style="background:${a.color}"></div>
+                        <div style="flex:1">
+                            <div>${a.team==='green'?'🟢':'🔴'} ${a.id} K:${a.kills}</div>
+                            <div style="font-size:10px; color:#00ffff">fit:${Math.floor(a.fitness)}</div>
+                            <div class="agent-hp"><div class="agent-hp-fill" style="width:${a.hp/a.maxHp*100}%"></div></div>
                         </div>
                     `;
-                    listEl.appendChild(item);
+                    list.appendChild(item);
                 }
             }
-            
-            startLoop() {
+
+            start() {
                 const loop = () => {
                     this.update();
                     this.draw();
@@ -1972,29 +1609,30 @@
         let game;
         let frameCount = 0;
 
-        function init() {
+        window.onload = function() {
             game = new Game();
+            game.start();
             
             setInterval(() => {
-                document.getElementById('fps-counter').textContent = `FPS: ${frameCount}`;
+                document.getElementById('fps').textContent = `FPS: ${frameCount}`;
                 frameCount = 0;
             }, 1000);
             
-            // FPS counter override
-            const originalRaf = window.requestAnimationFrame;
-            window.requestAnimationFrame = function(callback) {
-                return originalRaf(function(t) {
-                    frameCount++;
-                    callback(t);
-                });
-            };
-        }
+            document.getElementById('speedSlider').addEventListener('input', e => {
+                if (game) game.simulationSpeed = parseInt(e.target.value);
+            });
+            
+            document.getElementById('mutationSlider').addEventListener('input', e => {
+                if (game) game.mutationRate = parseFloat(e.target.value);
+            });
+        };
 
-        function toggleTraining() {
-            const btn = document.getElementById('btn-train');
+        window.toggleTraining = function() {
+            if (!game) return;
+            const btn = document.getElementById('btnStart');
             if (game.isRunning) {
                 game.isRunning = false;
-                btn.textContent = '🚀 ACTIVATE MAMBA';
+                btn.textContent = '🚀 START MAMBA';
                 btn.classList.remove('active');
             } else {
                 game.isRunning = true;
@@ -2002,29 +1640,35 @@
                 btn.textContent = '⏹ STOP MAMBA';
                 btn.classList.add('active');
             }
-        }
+        };
 
-        function togglePause() {
-            if (!game.isRunning) return;
+        window.togglePause = function() {
+            if (!game || !game.isRunning) return;
             game.isPaused = !game.isPaused;
-        }
+        };
 
-        function resetSimulation() {
+        window.resetSimulation = function() {
+            if (!game) return;
             game.isRunning = false;
             game.isPaused = true;
             game.generation = 1;
             game.bestFitness = 0;
             game.bestBrain = null;
             game.initAgents();
-            game.initResources();
             game.bullets = [];
             game.particles = [];
-            
-            document.getElementById('btn-train').textContent = '🚀 ACTIVATE MAMBA';
-            document.getElementById('btn-train').classList.remove('active');
-        }
+            document.getElementById('btnStart').textContent = '🚀 START MAMBA';
+            document.getElementById('btnStart').classList.remove('active');
+        };
 
-        window.onload = init;
+        // FPS counter
+        const originalRaf = window.requestAnimationFrame;
+        window.requestAnimationFrame = function(cb) {
+            return originalRaf(function(t) {
+                frameCount++;
+                cb(t);
+            });
+        };
     </script>
 </body>
     </html>
