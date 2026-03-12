@@ -3,1778 +3,1054 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAMBA WORLD MODEL - BATTLE ARENA v4.0</title>
+    <title>REAL MAMBA TANKS - ONLINE LEARNING</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        canvas { display: block; background: #0a0a0a; }
+        
+        #ui {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 1000;
         }
-
-        body {
-            background: #0a0a0f;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            display: flex;
-            height: 100vh;
+        
+        #settings {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(0,20,0,0.95);
+            border: 2px solid #0f0; padding: 15px;
+            color: #0f0; pointer-events: auto;
+            min-width: 280px;
         }
-
-        #arena {
-            flex: 1;
-            position: relative;
-            background: #0a0a0f;
+        #settings h2 {
+            font-size: 16px; margin-bottom: 10px;
+            border-bottom: 2px solid #0f0; padding-bottom: 5px;
         }
-
-        #canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
+        .row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 13px; }
+        select, input { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; font-family: inherit; width: 100px; }
+        .checkbox { width: auto; margin-right: 5px; }
+        
+        #stats {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,20,0,0.95);
+            border: 2px solid #0f0; padding: 15px;
+            color: #0f0; pointer-events: auto;
+            min-width: 280px; max-height: 400px; overflow-y: auto;
         }
-
-        #sidebar {
-            width: 420px;
-            background: #111122;
-            border-left: 2px solid #00ffff;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            padding: 15px;
-            box-shadow: -5px 0 20px rgba(0,255,255,0.2);
+        #stats h2 {
+            font-size: 16px; margin-bottom: 10px;
+            border-bottom: 2px solid #0f0; padding-bottom: 5px;
         }
-
-        .panel {
-            background: #1a1a2e;
-            border: 1px solid #2a2a4a;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .panel h3 {
-            color: #00ffff;
-            font-size: 14px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #00ffff;
-            padding-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        button {
-            background: #00ffff;
-            color: #000;
-            border: none;
-            padding: 10px 15px;
-            margin: 5px 0;
-            font-weight: bold;
+        .tank-info {
+            margin: 6px 0; padding: 5px;
+            background: rgba(0,50,0,0.3);
+            border-left: 3px solid;
             cursor: pointer;
-            width: 100%;
-            border-radius: 4px;
-            font-family: monospace;
-            transition: all 0.2s;
         }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px #00ffff66;
+        .tank-info:hover { background: rgba(0,100,0,0.5); }
+        .hp-bar { width: 100%; height: 6px; background: #111; margin: 3px 0; }
+        .hp-fill { height: 100%; transition: width 0.2s; }
+        
+        #controls {
+            position: absolute; bottom: 20px; right: 20px;
+            pointer-events: auto; display: flex; gap: 10px;
         }
-
-        button.danger {
-            background: #ff4444;
-            color: white;
+        .btn {
+            background: #0f0; color: #000;
+            border: 2px solid #0f0; padding: 12px 25px;
+            font-weight: bold; cursor: pointer;
+            font-family: inherit; transition: 0.2s;
         }
-
-        button.active {
-            background: #00ff88;
-            box-shadow: 0 0 20px #00ff88;
+        .btn:hover { background: #0a0; box-shadow: 0 0 20px #0f0; }
+        .btn.danger { background: #f00; border-color: #f00; }
+        .btn.danger:hover { background: #a00; }
+        
+        #info {
+            position: absolute; bottom: 20px; left: 15px;
+            background: rgba(0,20,0,0.9);
+            border: 1px solid #0f0; padding: 10px;
+            color: #0a0; font-size: 10px; line-height: 1.6;
+            pointer-events: auto;
         }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        
+        #learningPanel {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,20,0,0.98);
+            border: 3px solid #0f0; padding: 20px;
+            color: #0f0; pointer-events: auto;
+            min-width: 400px;
+            display: none;
+            z-index: 2000;
         }
-
-        .stat {
-            background: #00000033;
-            padding: 10px;
-            border-left: 3px solid #00ffff;
-        }
-
-        .stat.red {
-            border-left-color: #ff4444;
-        }
-
-        .stat.green {
-            border-left-color: #00ff88;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            font-family: monospace;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-        }
-
-        #neuron-map {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
-            margin: 10px 0;
-        }
-
-        .neuron {
-            aspect-ratio: 1;
-            background: #000;
-            border-radius: 2px;
-            transition: all 0.1s;
-        }
-
-        .params {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
-            font-size: 11px;
-        }
-
-        .param {
-            background: #00000033;
-            padding: 5px;
-            border-left: 2px solid #00ffff;
-        }
-
-        .param-value {
-            color: #00ffff;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        #fps {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #000000aa;
-            padding: 5px 10px;
-            border-radius: 4px;
-            color: #00ff00;
-            font-family: monospace;
-            z-index: 100;
-        }
-
-        #status {
-            position: absolute;
-            top: 10px;
-            right: 440px;
-            background: #000000aa;
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px solid;
-            font-family: monospace;
-            z-index: 100;
-        }
-
-        .agent-list {
-            max-height: 200px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #00ffff #1a1a2e;
-        }
-
-        .agent-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            margin: 5px 0;
-            background: #00000033;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .agent-item:hover {
-            background: #00ffff22;
-            transform: translateX(5px);
-        }
-
-        .agent-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-
-        .agent-hp {
-            width: 80px;
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            margin-top: 4px;
-        }
-
-        .agent-hp-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff88, #00ffff);
-        }
-
-        .team-red .agent-hp-fill {
-            background: linear-gradient(90deg, #ff4444, #ff0066);
-        }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        .action-cell {
-            background: #00000033;
-            padding: 8px;
-            text-align: center;
-            border-radius: 4px;
-            border-left: 2px solid #00ffff;
-        }
-
-        .action-icon {
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .action-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #00ffff;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            margin: 10px 0;
-            accent-color: #00ffff;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            color: #888;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
+        #learningPanel.show { display: block; }
+        .close { float: right; cursor: pointer; font-size: 20px; }
+        .progress-bar { width: 100%; height: 20px; background: #111; margin: 10px 0; }
+        .progress-fill { height: 100%; background: #0f0; width: 0%; }
     </style>
 </head>
 <body>
-    <div id="arena">
-        <canvas id="canvas"></canvas>
-        <div id="fps">FPS: 60</div>
-        <div id="status">⏸ PAUSED</div>
-    </div>
-
-    <div id="sidebar">
-        <div class="panel">
-            <h3>⚔️ MAMBA CONTROL</h3>
-            <button id="startBtn" onclick="toggleRun()">🚀 START MAMBA</button>
-            <button class="danger" onclick="reset()">🔄 RESET</button>
-            <button onclick="togglePause()">⏸ PAUSE</button>
-            <label>Speed: <input type="range" id="speed" min="1" max="20" value="1"></label>
-            <label>Mutation: <input type="range" id="mutation" min="0.01" max="0.5" value="0.1" step="0.01"></label>
-        </div>
-
-        <div class="panel">
-            <h3>📊 STATISTICS</h3>
-            <div class="stats-grid">
-                <div class="stat green">
-                    <div class="stat-label">GREEN</div>
-                    <div class="stat-value" id="greenCount">0</div>
-                </div>
-                <div class="stat red">
-                    <div class="stat-label">RED</div>
-                    <div class="stat-value" id="redCount">0</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">GENERATION</div>
-                    <div class="stat-value" id="gen">1</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-label">BEST</div>
-                    <div class="stat-value" id="best">0</div>
-                </div>
+    <canvas id="canvas"></canvas>
+    
+    <div id="ui">
+        <div id="settings">
+            <h2>⚙️ MAMBA CONFIG</h2>
+            <div class="row"><span>TANKS:</span>
+                <select id="tankCount">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6" selected>6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            <div class="row"><span>MODEL SIZE:</span>
+                <select id="modelSize">
+                    <option value="8">8 (fast)</option>
+                    <option value="16" selected>16 (medium)</option>
+                    <option value="32">32 (slow)</option>
+                </select>
+            </div>
+            <div class="row"><span>LEARN RATE:</span>
+                <input type="number" id="learnRate" min="0.0001" max="0.1" step="0.0001" value="0.005">
+            </div>
+            <div class="row"><span>EXPLORE RATE:</span>
+                <input type="number" id="exploreRate" min="0" max="1" step="0.05" value="0.2">
+            </div>
+            <div class="row"><span>REWARD HIT:</span>
+                <input type="number" id="rewardHit" min="0" max="10" step="0.5" value="2.0">
+            </div>
+            <div class="row"><span>REWARD KILL:</span>
+                <input type="number" id="rewardKill" min="0" max="20" step="1" value="5.0">
             </div>
         </div>
-
-        <div class="panel">
-            <h3>🧠 MAMBA SSM STATE [32]</h3>
-            <div id="neuron-map"></div>
-            <div class="params">
-                <div class="param">
-                    <div>Δ</div>
-                    <div class="param-value" id="delta">0.00</div>
-                </div>
-                <div class="param">
-                    <div>A norm</div>
-                    <div class="param-value" id="aNorm">0.00</div>
-                </div>
-                <div class="param">
-                    <div>B norm</div>
-                    <div class="param-value" id="bNorm">0.00</div>
-                </div>
-                <div class="param">
-                    <div>Loss</div>
-                    <div class="param-value" id="loss">0.00</div>
-                </div>
-                <div class="param">
-                    <div>Enemies</div>
-                    <div class="param-value" id="enemyCount">0</div>
-                </div>
-                <div class="param">
-                    <div>Reward</div>
-                    <div class="param-value" id="reward">0.00</div>
-                </div>
+        
+        <div id="stats">
+            <h2>📊 LEARNING STATS</h2>
+            <div id="tankStats"></div>
+            <div style="margin-top:10px; padding-top:5px; border-top:1px solid #0f0">
+                <div class="row"><span>TOTAL SHOTS:</span><span id="totalShots">0</span></div>
+                <div class="row"><span>HIT RATIO:</span><span id="hitRatio">0%</span></div>
+                <div class="row"><span>LEARN STEPS:</span><span id="learnSteps">0</span></div>
             </div>
         </div>
-
-        <div class="panel">
-            <h3>👁️ PERCEPTRON ACTIONS [8]</h3>
-            <div class="action-grid">
-                <div class="action-cell">
-                    <div class="action-icon">↑</div>
-                    <div class="action-value" id="act0">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">↓</div>
-                    <div class="action-value" id="act1">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">←</div>
-                    <div class="action-value" id="act2">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">→</div>
-                    <div class="action-value" id="act3">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">⚡</div>
-                    <div class="action-value" id="act4">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">❤️</div>
-                    <div class="action-value" id="act5">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">🏃</div>
-                    <div class="action-value" id="act6">0.00</div>
-                </div>
-                <div class="action-cell">
-                    <div class="action-icon">🛡️</div>
-                    <div class="action-value" id="act7">0.00</div>
-                </div>
-            </div>
+        
+        <div id="controls">
+            <button class="btn" id="startBtn">▶ START</button>
+            <button class="btn" id="resetBtn">↻ RESET</button>
+            <button class="btn" id="debugBtn">👁 DEBUG</button>
+            <button class="btn" id="learnBtn">📚 LEARN</button>
         </div>
-
-        <div class="panel">
-            <h3>👥 ACTIVE AGENTS</h3>
-            <div class="agent-list" id="agentList"></div>
-        </div>
-
-        <div class="panel">
-            <h3>📐 SYSTEM INFO</h3>
-            <div style="font-size: 11px; line-height: 1.6; color: #888;">
-                <div>• Vision: Raycasting + Walls</div>
-                <div>• Reward: Damage, Kills, Resources</div>
-                <div>• Learning: REINFORCE + Evolution</div>
-                <div>• Mamba: SSM State=16, Latent=32</div>
-                <div>• Actions: Move, Shoot, Heal, Retreat, Cover</div>
-                <div>• Population: 4 per team + Elitism</div>
-            </div>
+        
+        <div id="info">
+            > STATE: <span id="state">READY</span><br>
+            > TANKS: <span id="tanks">0</span><br>
+            > FPS: <span id="fps">0</span><br>
+            > BRAIN: <span id="brainInfo">MAMBA 16x8</span>
         </div>
     </div>
+    
+    <div id="learningPanel">
+        <span class="close" onclick="document.getElementById('learningPanel').classList.remove('show')">✖</span>
+        <h3>📚 TRAINING PROGRESS</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="trainProgress" style="width:0%"></div>
+        </div>
+        <div id="trainStats"></div>
+        <button class="btn" style="width:100%; margin-top:10px;" onclick="game.startTraining()">START TRAINING</button>
+    </div>
 
-    <script>
-        // ======================================================================
-        // КОНФИГУРАЦИЯ
-        // ======================================================================
-        const CONFIG = {
-            // Арена
-            WIDTH: 1300,
-            HEIGHT: 900,
-            
-            // Агенты
-            POPULATION: 4,
-            AGENT_RADIUS: 12,
-            AGENT_SPEED: 3.5,
-            MAX_HP: 100,
-            VIEW_DIST: 300,
-            FRICTION: 0.94,
-            
-            // Боевка
-            BULLET_SPEED: 8,
-            SHOOT_COOLDOWN: 25,
-            DAMAGE: 18,
-            HEAL: 15,
-            
-            // MAMBA
-            OBS_DIM: 6,
-            LATENT_DIM: 32,
-            SSM_DIM: 16,
-            ACTION_DIM: 8,
-            
-            // Эволюция
-            MUTATION_RATE: 0.12,
-            MUTATION_STRENGTH: 0.25,
-            LEARNING_RATE: 0.001
-        };
-
-        // ======================================================================
-        // СИСТЕМА ЗРЕНИЯ - RAYCASTING
-        // ======================================================================
-        class VisionSystem {
-            static raycast(fromX, fromY, toX, toY, walls) {
-                const steps = 25;
-                const dx = (toX - fromX) / steps;
-                const dy = (toY - fromY) / steps;
-                
-                for (let i = 1; i < steps; i++) {
-                    const x = fromX + dx * i;
-                    const y = fromY + dy * i;
-                    
-                    for (let wall of walls) {
-                        if (x >= wall.x && x <= wall.x + wall.w && 
-                            y >= wall.y && y <= wall.y + wall.h) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-            
-            static getVisibleEnemies(agent, allAgents, walls) {
-                const enemies = [];
-                for (let other of allAgents) {
-                    if (other === agent || other.team === agent.team || other.hp <= 0) continue;
-                    
-                    const dist = Math.hypot(other.x - agent.x, other.y - agent.y);
-                    if (dist > CONFIG.VIEW_DIST) continue;
-                    
-                    if (this.raycast(agent.x, agent.y, other.x, other.y, walls)) {
-                        enemies.push({
-                            agent: other,
-                            distance: dist,
-                            angle: Math.atan2(other.y - agent.y, other.x - agent.x),
-                            health: other.hp / other.maxHp
-                        });
-                    }
-                }
-                return enemies.sort((a, b) => a.distance - b.distance);
-            }
-            
-            static getVisibleAllies(agent, allAgents, walls) {
-                const allies = [];
-                for (let other of allAgents) {
-                    if (other === agent || other.team !== agent.team || other.hp <= 0) continue;
-                    
-                    const dist = Math.hypot(other.x - agent.x, other.y - agent.y);
-                    if (dist > CONFIG.VIEW_DIST * 1.2) continue;
-                    
-                    if (this.raycast(agent.x, agent.y, other.x, other.y, walls)) {
-                        allies.push({
-                            agent: other,
-                            distance: dist,
-                            health: other.hp / other.maxHp
-                        });
-                    }
-                }
-                return allies;
-            }
-            
-            static getVisibleResources(agent, resources, walls) {
-                const visible = [];
-                for (let res of resources) {
-                    if (res.respawn > 0) continue;
-                    
-                    const dist = Math.hypot(res.x - agent.x, res.y - agent.y);
-                    if (dist > CONFIG.VIEW_DIST) continue;
-                    
-                    if (this.raycast(agent.x, agent.y, res.x, res.y, walls)) {
-                        visible.push({
-                            resource: res,
-                            distance: dist
-                        });
-                    }
-                }
-                return visible.sort((a, b) => a.distance - b.distance);
+<script>
+// ==================== НАСТОЯЩАЯ MAMBA (SSM) ====================
+class MambaBlock {
+    constructor(dModel = 16, dState = 8, dConv = 3, learnRate = 0.005) {
+        this.dModel = dModel;      // размерность модели
+        this.dState = dState;       // размер SSM состояния
+        this.dConv = dConv;         // локальная свертка
+        this.learningRate = learnRate;
+        
+        // SSM параметры (обучаемые!)
+        this.A = this.randomMatrix(dState, dModel, 0.1);     // состояние->состояние
+        this.B = this.randomMatrix(dModel, dState, 0.1);     // вход->состояние
+        this.C = this.randomMatrix(dState, dModel, 0.1);     // состояние->выход
+        this.D = this.randomMatrix(dModel, 1, 0.1);          // пропуск connection
+        
+        // Проекции
+        this.W_in = this.randomMatrix(12, dModel, 0.1);      // сенсоры -> модель
+        this.W_out = this.randomMatrix(dModel, 5, 0.1);      // модель -> действия
+        
+        // Convolution (для локальной обработки)
+        this.conv1d = new Array(dConv).fill().map(() => 
+            this.randomMatrix(dModel, dModel, 0.1)
+        );
+        
+        // Состояния
+        this.h = new Array(dState).fill(0);           // SSM состояние
+        this.convBuffer = new Array(dConv).fill().map( // буфер для свертки
+            () => new Array(dModel).fill(0)
+        );
+        this.convIdx = 0;
+        
+        // Для обучения
+        this.step = 0;
+        this.loss = 0;
+    }
+    
+    randomMatrix(rows, cols, scale) {
+        return Array(rows).fill().map(() => 
+            Array(cols).fill().map(() => (Math.random() * 2 - 1) * scale)
+        );
+    }
+    
+    // Сигмоида с защитой от переполнения
+    sigmoid(x) { 
+        if (x > 20) return 1;
+        if (x < -20) return 0;
+        return 1 / (1 + Math.exp(-x)); 
+    }
+    
+    // Дискретизация SSM (ZOH method)
+    discretize(A, B, dt) {
+        const Ad = Array(this.dState).fill().map(() => Array(this.dModel).fill(0));
+        const Bd = Array(this.dModel).fill().map(() => Array(this.dState).fill(0));
+        
+        for (let i = 0; i < this.dState; i++) {
+            for (let j = 0; j < this.dModel; j++) {
+                Ad[i][j] = Math.exp(A[i][j] * dt);
             }
         }
-
-        // ======================================================================
-        // СИСТЕМА НАГРАД
-        // ======================================================================
-        class RewardSystem {
-            static calculate(agent) {
-                let reward = 0;
-                
-                // Базовое выживание
-                reward += 0.02;
-                
-                // Урон врагам
-                reward += agent.stats.damageDealt * 0.3;
-                
-                // Убийства
-                if (agent.stats.kill) {
-                    reward += 15.0;
-                }
-                
-                // Сбор ресурсов
-                reward += agent.stats.resourcesCollected * 3.0;
-                
-                // Лечение союзников
-                reward += agent.stats.healingDone * 0.2;
-                
-                // Получение урона (штраф)
-                reward -= agent.stats.damageTaken * 0.15;
-                
-                // Смерть (большой штраф)
-                if (agent.stats.died) {
-                    reward -= 10.0;
-                }
-                
-                // Близость к врагам (опасно)
-                if (agent.stats.nearestEnemy < 60) {
-                    reward -= 0.1;
-                }
-                
-                // Близость к ресурсам (хорошо)
-                if (agent.stats.nearestResource < 150) {
-                    reward += 0.05;
-                }
-                
-                // Командная работа
-                if (agent.stats.alliesNearby > 0) {
-                    reward += 0.03 * agent.stats.alliesNearby;
-                }
-                
-                return Math.max(-5, Math.min(15, reward));
+        
+        for (let i = 0; i < this.dModel; i++) {
+            for (let j = 0; j < this.dState; j++) {
+                Bd[i][j] = B[i][j] * (Math.exp(A[j][i] * dt) - 1) / (A[j][i] + 1e-8);
             }
         }
-
-        // ======================================================================
-        // MAMBA CORE
-        // ======================================================================
-        class MambaCore {
-            constructor() {
-                this.dModel = CONFIG.LATENT_DIM;
-                this.dState = CONFIG.SSM_DIM;
-                
-                // A - диагональная
-                this.A = [];
-                for (let i = 0; i < this.dState; i++) {
-                    this.A[i] = [];
-                    for (let j = 0; j < this.dState; j++) {
-                        this.A[i][j] = (i === j) ? (Math.random() * 2 - 1) * 0.5 : 0;
-                    }
-                }
-                
-                // B - входная
-                this.B = [];
-                for (let i = 0; i < this.dState; i++) {
-                    this.B[i] = [];
-                    for (let j = 0; j < this.dModel; j++) {
-                        this.B[i][j] = (Math.random() * 2 - 1) * 0.15;
-                    }
-                }
-                
-                // C - выходная
-                this.C = [];
-                for (let i = 0; i < this.dModel; i++) {
-                    this.C[i] = [];
-                    for (let j = 0; j < this.dState; j++) {
-                        this.C[i][j] = (Math.random() * 2 - 1) * 0.15;
-                    }
-                }
-                
-                // D - skip
-                this.D = [];
-                for (let i = 0; i < this.dModel; i++) {
-                    this.D[i] = [];
-                    for (let j = 0; j < this.dModel; j++) {
-                        this.D[i][j] = (Math.random() * 2 - 1) * 0.02;
-                    }
-                }
-                
-                // Селективная проекция
-                this.sProj = [];
-                for (let i = 0; i < this.dModel; i++) {
-                    this.sProj[i] = [];
-                    for (let j = 0; j < 2 * this.dState + 1; j++) {
-                        this.sProj[i][j] = (Math.random() * 2 - 1) * 0.1;
-                    }
-                }
-                
-                this.h = new Array(this.dState).fill(0);
-                this.delta = 0.1;
+        
+        return [Ad, Bd];
+    }
+    
+    // SSM шаг
+    ssmStep(x, dt = 0.1) {
+        const [Ad, Bd] = this.discretize(this.A, this.B, dt);
+        
+        // Обновление состояния: h = Ad * h + Bd * x
+        const newH = new Array(this.dState).fill(0);
+        for (let i = 0; i < this.dState; i++) {
+            let sum = 0;
+            // Ad * h
+            for (let j = 0; j < this.dState; j++) {
+                sum += Ad[i][j] * this.h[j];
             }
-            
-            forward(x) {
-                if (!x || x.length !== this.dModel) {
-                    x = new Array(this.dModel).fill(0);
-                }
-                
-                // Селективные параметры
-                const params = new Array(2 * this.dState + 1).fill(0);
-                for (let i = 0; i < params.length; i++) {
-                    let sum = 0;
-                    for (let j = 0; j < this.dModel; j++) {
-                        sum += (x[j] || 0) * (this.sProj[j][i] || 0);
-                    }
-                    params[i] = Math.tanh(sum);
-                }
-                
-                const B_sel = params.slice(0, this.dState);
-                const C_sel = params.slice(this.dState, 2 * this.dState);
-                const delta = Math.exp(params[2 * this.dState]) * 0.1;
-                this.delta = Math.min(0.5, Math.max(0.01, delta));
-                
-                // Дискретизация
-                const A_bar = [];
-                const B_bar = [];
-                
-                for (let i = 0; i < this.dState; i++) {
-                    A_bar[i] = [];
-                    B_bar[i] = [];
-                    const aVal = this.A[i][i];
-                    const expA = Math.exp(this.delta * aVal);
-                    
-                    for (let j = 0; j < this.dState; j++) {
-                        A_bar[i][j] = (i === j) ? expA : 0;
-                    }
-                    
-                    for (let j = 0; j < this.dModel; j++) {
-                        B_bar[i][j] = (expA - 1) / (Math.abs(aVal) + 1e-6) * B_sel[i];
-                    }
-                }
-                
-                // Обновление состояния
-                const h_new = new Array(this.dState).fill(0);
-                
-                for (let i = 0; i < this.dState; i++) {
-                    h_new[i] = A_bar[i][i] * this.h[i];
-                    let sumB = 0;
-                    for (let j = 0; j < this.dModel; j++) {
-                        sumB += B_bar[i][j] * x[j];
-                    }
-                    h_new[i] += sumB;
-                }
-                
-                for (let i = 0; i < this.dState; i++) {
-                    this.h[i] = Math.tanh(h_new[i]);
-                }
-                
-                // Выход
-                const y = new Array(this.dModel).fill(0);
-                
+            // Bd * x
+            for (let j = 0; j < this.dModel; j++) {
+                sum += Bd[j][i] * x[j];
+            }
+            newH[i] = Math.tanh(sum);
+        }
+        this.h = newH;
+        
+        // Выход: y = C * h + D * x
+        const y = new Array(this.dModel).fill(0);
+        for (let i = 0; i < this.dModel; i++) {
+            for (let j = 0; j < this.dState; j++) {
+                y[i] += this.C[j][i] * this.h[j];
+            }
+            y[i] += this.D[i][0] * x[i];
+            y[i] = Math.tanh(y[i]);
+        }
+        
+        return y;
+    }
+    
+    // Convolution шаг
+    convStep(x) {
+        // Сохраняем в буфер
+        this.convBuffer[this.convIdx] = [...x];
+        
+        // Применяем свертку по буферу
+        const convOut = new Array(this.dModel).fill(0);
+        for (let k = 0; k < this.dConv; k++) {
+            const bufIdx = (this.convIdx - k + this.dConv) % this.dConv;
+            if (this.convBuffer[bufIdx]) {
                 for (let i = 0; i < this.dModel; i++) {
-                    let sumC = 0;
-                    for (let j = 0; j < this.dState; j++) {
-                        sumC += C_sel[j] * this.h[j];
-                    }
-                    let sumD = 0;
                     for (let j = 0; j < this.dModel; j++) {
-                        sumD += this.D[i][j] * x[j];
-                    }
-                    y[i] = Math.tanh(sumC + sumD);
-                }
-                
-                return y;
-            }
-            
-            reset() {
-                this.h.fill(0);
-            }
-            
-            clone() {
-                const clone = new MambaCore();
-                clone.A = JSON.parse(JSON.stringify(this.A));
-                clone.B = JSON.parse(JSON.stringify(this.B));
-                clone.C = JSON.parse(JSON.stringify(this.C));
-                clone.D = JSON.parse(JSON.stringify(this.D));
-                clone.sProj = JSON.parse(JSON.stringify(this.sProj));
-                return clone;
-            }
-            
-            mutate(rate, strength) {
-                for (let i = 0; i < this.A.length; i++) {
-                    for (let j = 0; j < this.A[i].length; j++) {
-                        if (Math.random() < rate) this.A[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                for (let i = 0; i < this.B.length; i++) {
-                    for (let j = 0; j < this.B[i].length; j++) {
-                        if (Math.random() < rate) this.B[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                for (let i = 0; i < this.C.length; i++) {
-                    for (let j = 0; j < this.C[i].length; j++) {
-                        if (Math.random() < rate) this.C[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                for (let i = 0; i < this.D.length; i++) {
-                    for (let j = 0; j < this.D[i].length; j++) {
-                        if (Math.random() < rate) this.D[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                for (let i = 0; i < this.sProj.length; i++) {
-                    for (let j = 0; j < this.sProj[i].length; j++) {
-                        if (Math.random() < rate) this.sProj[i][j] += (Math.random() * 2 - 1) * strength;
+                        convOut[i] += this.convBuffer[bufIdx][j] * this.conv1d[k][j][i];
                     }
                 }
             }
         }
+        
+        this.convIdx = (this.convIdx + 1) % this.dConv;
+        return convOut.map(v => Math.tanh(v));
+    }
+    
+    // Forward pass
+    forward(sensors) {
+        // Входная проекция
+        let x = new Array(this.dModel).fill(0);
+        for (let i = 0; i < this.dModel; i++) {
+            for (let j = 0; j < sensors.length; j++) {
+                x[i] += sensors[j] * this.W_in[j][i];
+            }
+            x[i] = Math.tanh(x[i]);
+        }
+        
+        // Convolution (локальная обработка последовательности)
+        x = this.convStep(x);
+        
+        // SSM (глобальная память + время)
+        x = this.ssmStep(x);
+        
+        // Выходная проекция -> действия
+        const actions = new Array(5).fill(0);
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < this.dModel; j++) {
+                actions[i] += x[j] * this.W_out[j][i];
+            }
+            actions[i] = Math.tanh(actions[i]);
+        }
+        
+        this.step++;
+        return actions;
+    }
+    
+    // Обучение (упрощенный градиентный шаг)
+    learn(reward, prevState, prevAction, exploreRate = 0.2) {
+        if (Math.abs(reward) < 0.1) return 0;
+        
+        // Добавляем exploration noise
+        const exploreNoise = (Math.random() < exploreRate) ? 0.1 : 0;
+        
+        // Обновляем выходные веса
+        let totalLoss = 0;
+        for (let i = 0; i < 5; i++) {
+            // Цель: усилить выбранное действие, ослабить остальные
+            const target = (i === prevAction) ? 1.0 : -1.0;
+            const error = target - this.W_out[i];
+            totalLoss += Math.abs(error);
+            
+            for (let j = 0; j < this.dModel; j++) {
+                const grad = error * prevState[j] * reward;
+                this.W_out[j][i] += this.learningRate * (grad + exploreNoise * (Math.random() - 0.5));
+                // Clip weights
+                this.W_out[j][i] = Math.max(-1, Math.min(1, this.W_out[j][i]));
+            }
+        }
+        
+        // Обновляем SSM параметры (немного)
+        for (let i = 0; i < this.dState; i++) {
+            for (let j = 0; j < this.dModel; j++) {
+                this.A[i][j] += this.learningRate * reward * 0.01 * this.h[i] * (Math.random() - 0.5);
+                this.B[j][i] += this.learningRate * reward * 0.01 * prevState[j] * (Math.random() - 0.5);
+                this.C[i][j] += this.learningRate * reward * 0.01 * this.h[i] * (Math.random() - 0.5);
+                this.D[j][0] += this.learningRate * reward * 0.01 * prevState[j] * (Math.random() - 0.5);
+            }
+        }
+        
+        this.loss = this.loss * 0.9 + totalLoss * 0.1;
+        return totalLoss;
+    }
+    
+    reset() {
+        this.h = new Array(this.dState).fill(0);
+        this.convBuffer = new Array(this.dConv).fill().map(
+            () => new Array(this.dModel).fill(0)
+        );
+        this.convIdx = 0;
+        this.step = 0;
+        this.loss = 0;
+    }
+    
+    getState() {
+        return [...this.h];
+    }
+    
+    getLoss() {
+        return this.loss;
+    }
+}
 
-        // ======================================================================
-        // WORLD MODEL
-        // ======================================================================
-        class WorldModel {
-            constructor(weights = null) {
-                this.obsDim = CONFIG.OBS_DIM;
-                this.latentDim = CONFIG.LATENT_DIM;
-                this.actionDim = CONFIG.ACTION_DIM;
-                
-                if (weights) {
-                    this.load(weights);
-                } else {
-                    // Embedding
-                    this.embed = [];
-                    for (let i = 0; i < this.obsDim; i++) {
-                        this.embed[i] = [];
-                        for (let j = 0; j < this.latentDim; j++) {
-                            this.embed[i][j] = (Math.random() * 2 - 1) * 0.15;
-                        }
-                    }
-                    
-                    this.mamba = new MambaCore();
-                    
-                    // Decoder
-                    this.decoder = [];
-                    for (let i = 0; i < this.latentDim; i++) {
-                        this.decoder[i] = [];
-                        for (let j = 0; j < this.obsDim; j++) {
-                            this.decoder[i][j] = (Math.random() * 2 - 1) * 0.1;
-                        }
-                    }
-                    
-                    // Perceptron (увеличенный)
-                    this.p1 = [];
-                    for (let i = 0; i < this.latentDim; i++) {
-                        this.p1[i] = [];
-                        for (let j = 0; j < 128; j++) {
-                            this.p1[i][j] = (Math.random() * 2 - 1) * 0.1;
-                        }
-                    }
-                    
-                    this.p2 = [];
-                    for (let i = 0; i < 128; i++) {
-                        this.p2[i] = [];
-                        for (let j = 0; j < 64; j++) {
-                            this.p2[i][j] = (Math.random() * 2 - 1) * 0.1;
-                        }
-                    }
-                    
-                    this.p3 = [];
-                    for (let i = 0; i < 64; i++) {
-                        this.p3[i] = [];
-                        for (let j = 0; j < this.actionDim; j++) {
-                            this.p3[i][j] = (Math.random() * 2 - 1) * 0.1;
-                        }
-                    }
-                    
-                    this.b1 = new Array(128).fill(0);
-                    this.b2 = new Array(64).fill(0);
-                    this.b3 = new Array(this.actionDim).fill(0);
-                }
-                
-                this.latent = new Array(this.latentDim).fill(0);
-                this.actions = new Array(this.actionDim).fill(0);
-                this.memory = [];
+// ==================== ВЕКТОРНАЯ МАТЕМАТИКА ====================
+const V = {
+    dist: (a, b) => Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2),
+    angle: (a, b) => Math.atan2(b.y - a.y, b.x - a.x),
+    normAngle: (a) => {
+        while (a <= -Math.PI) a += Math.PI * 2;
+        while (a > Math.PI) a -= Math.PI * 2;
+        return a;
+    }
+};
+
+// ==================== ПРЕДСКАЗАТЕЛЬ ДВИЖЕНИЯ ====================
+class Predictor {
+    constructor() {
+        this.x = 0; this.y = 0;
+        this.vx = 0; this.vy = 0;
+        this.lastX = 0; this.lastY = 0;
+        this.lastTime = 0;
+        this.confidence = 0;
+    }
+    
+    update(x, y) {
+        const now = performance.now();
+        
+        if (this.lastTime === 0) {
+            this.x = x; this.y = y;
+            this.lastX = x; this.lastY = y;
+            this.lastTime = now;
+            this.confidence = 0.5;
+            return;
+        }
+        
+        const dt = Math.max(0.016, (now - this.lastTime) / 1000);
+        
+        // Скорость
+        this.vx = (x - this.lastX) / dt;
+        this.vy = (y - this.lastY) / dt;
+        
+        // Сглаживание
+        this.vx = this.vx * 0.7 + this.vx * 0.3;
+        this.vy = this.vy * 0.7 + this.vy * 0.3;
+        
+        this.x = x; this.y = y;
+        this.lastX = x; this.lastY = y;
+        this.lastTime = now;
+        this.confidence = Math.min(1, this.confidence + 0.1);
+    }
+    
+    predict(dt = 0.5) {
+        if (this.confidence < 0.3) return null;
+        return { x: this.x + this.vx * dt, y: this.y + this.vy * dt };
+    }
+    
+    reset() {
+        this.lastTime = 0;
+        this.confidence = 0;
+    }
+}
+
+// ==================== ТАНК ====================
+class Tank {
+    constructor(id, x, y, color, game) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.game = game;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = 0;
+        this.maxSpeed = 3.0;
+        this.radius = 20;
+        this.hp = 100;
+        this.cooldown = 0;
+        
+        // Нейросеть
+        const modelSize = parseInt(document.getElementById('modelSize').value);
+        const learnRate = parseFloat(document.getElementById('learnRate').value);
+        this.brain = new MambaBlock(modelSize, Math.floor(modelSize/2), 3, learnRate);
+        this.predictors = {};
+        
+        // Зрение
+        this.visionAngle = 30 * Math.PI / 180;
+        this.visionDistance = 250;
+        this.targets = [];
+        
+        // Статистика
+        this.shots = 0;
+        this.hits = 0;
+        this.kills = 0;
+        this.lastBrainState = null;
+        this.lastAction = 0;
+        
+        // Обучение
+        this.experience = [];
+        this.maxExp = 100;
+    }
+    
+    canSee(target) {
+        const dx = target.x - this.x;
+        const dy = target.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > this.visionDistance || dist < 40) return false;
+        
+        const angleToTarget = Math.atan2(dy, dx);
+        const angleDiff = V.normAngle(angleToTarget - this.angle);
+        
+        return Math.abs(angleDiff) < this.visionAngle / 2;
+    }
+    
+    getSensors() {
+        const s = [];
+        this.targets = [];
+        
+        // 1-3: Дистанция до стен
+        s.push(this.raycast(this.angle) / this.visionDistance);
+        s.push(this.raycast(this.angle - 0.7) / this.visionDistance);
+        s.push(this.raycast(this.angle + 0.7) / this.visionDistance);
+        
+        // 4-10: Ближайший враг
+        let nearest = null;
+        let minDist = Infinity;
+        
+        this.game.tanks.forEach(t => {
+            if (t !== this && t.hp > 0 && this.canSee(t)) {
+                this.targets.push(t);
+                const d = V.dist(this, t);
+                if (d < minDist) { minDist = d; nearest = t; }
+            }
+        });
+        
+        if (nearest) {
+            s.push(minDist / this.visionDistance);
+            
+            const angleToEnemy = V.normAngle(Math.atan2(nearest.y - this.y, nearest.x - this.x) - this.angle);
+            s.push(angleToEnemy / Math.PI);
+            s.push(nearest.speed / this.maxSpeed);
+            s.push(Math.cos(nearest.angle));
+            s.push(Math.sin(nearest.angle));
+            
+            // Предсказание
+            if (!this.predictors[nearest.id]) this.predictors[nearest.id] = new Predictor();
+            const pred = this.predictors[nearest.id].predict(0.5);
+            
+            if (pred) {
+                const predAngle = V.normAngle(Math.atan2(pred.y - this.y, pred.x - this.x) - this.angle);
+                s.push(predAngle / Math.PI);
+                s.push(V.dist(this, pred) / this.visionDistance);
+            } else {
+                s.push(0, 1);
+            }
+        } else {
+            s.push(1, 0, 0, 1, 0, 1);
+        }
+        
+        // 11-13: Своё состояние
+        s.push(this.speed / this.maxSpeed);
+        s.push(Math.sin(this.angle));
+        s.push(Math.cos(this.angle));
+        
+        return s;
+    }
+    
+    raycast(angle, maxDist = 400) {
+        const step = 15;
+        let dist = 0;
+        let x = this.x, y = this.y;
+        
+        while (dist < maxDist) {
+            x += Math.cos(angle) * step;
+            y += Math.sin(angle) * step;
+            dist += step;
+            
+            if (x < 0 || x > this.game.width || y < 0 || y > this.game.height) return dist;
+            
+            for (let t of this.game.tanks) {
+                if (t !== this && t.hp > 0 && V.dist({x, y}, t) < t.radius) return dist;
+            }
+        }
+        return maxDist;
+    }
+    
+    update() {
+        if (this.hp <= 0) return;
+        
+        // Обновление предсказателей
+        this.game.tanks.forEach(t => {
+            if (t !== this && t.hp > 0) {
+                if (!this.predictors[t.id]) this.predictors[t.id] = new Predictor();
+                this.predictors[t.id].update(t.x, t.y);
+            }
+        });
+        
+        // Нейросеть
+        const sensors = this.getSensors();
+        const outputs = this.brain.forward(sensors);
+        
+        // Запоминаем состояние ДО действия
+        this.lastBrainState = this.brain.getState();
+        this.lastAction = outputs.indexOf(Math.max(...outputs));
+        
+        // Действия из нейросети
+        const move = outputs[0];
+        const turn = outputs[1];
+        const fire = outputs[2];
+        
+        // === ДВИЖЕНИЕ ===
+        if (this.targets.length > 0) {
+            const target = this.targets[0];
+            const distToTarget = V.dist(this, target);
+            
+            // Газ
+            if (move > 0.1) {
+                this.speed = Math.min(this.speed + 0.2, this.maxSpeed);
+            } else if (move < -0.1) {
+                this.speed = Math.max(this.speed - 0.15, -this.maxSpeed * 0.5);
+            } else {
+                this.speed = Math.min(this.speed + 0.1, this.maxSpeed * 0.5);
             }
             
-            load(weights) {
-                this.embed = weights.embed;
-                this.mamba = weights.mamba;
-                this.decoder = weights.decoder;
-                this.p1 = weights.p1;
-                this.p2 = weights.p2;
-                this.p3 = weights.p3;
-                this.b1 = weights.b1;
-                this.b2 = weights.b2;
-                this.b3 = weights.b3;
+            // Поворот к цели + нейросеть
+            const angleToTarget = Math.atan2(target.y - this.y, target.x - this.x);
+            const angleDiff = V.normAngle(angleToTarget - this.angle);
+            
+            if (Math.abs(angleDiff) > 0.2) {
+                this.angle += Math.sign(angleDiff) * 0.06;
+            }
+            this.angle += turn * 0.06;
+            
+            // Дистанция
+            if (distToTarget < 100) this.speed *= 0.9;
+            if (distToTarget > 200) this.speed = Math.min(this.speed + 0.1, this.maxSpeed);
+            
+        } else {
+            // Патрулирование
+            if (move > 0) {
+                this.speed = Math.min(this.speed + 0.15, this.maxSpeed * 0.7);
+            } else {
+                this.speed = Math.min(this.speed + 0.08, this.maxSpeed * 0.4);
             }
             
-            save() {
-                return {
-                    embed: JSON.parse(JSON.stringify(this.embed)),
-                    mamba: this.mamba.clone(),
-                    decoder: JSON.parse(JSON.stringify(this.decoder)),
-                    p1: JSON.parse(JSON.stringify(this.p1)),
-                    p2: JSON.parse(JSON.stringify(this.p2)),
-                    p3: JSON.parse(JSON.stringify(this.p3)),
-                    b1: [...this.b1],
-                    b2: [...this.b2],
-                    b3: [...this.b3]
-                };
-            }
+            this.angle += turn * 0.06 + (Math.random() - 0.5) * 0.03;
             
-            clone() {
-                return new WorldModel(this.save());
+            // Избегание стен
+            const frontDist = this.raycast(this.angle);
+            if (frontDist < 100) {
+                this.angle += 0.15;
+                this.speed *= 0.7;
             }
-            
-            mutate(rate, strength) {
-                for (let i = 0; i < this.embed.length; i++) {
-                    for (let j = 0; j < this.embed[i].length; j++) {
-                        if (Math.random() < rate) this.embed[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
+        }
+        
+        // Трение
+        this.speed *= 0.96;
+        
+        // Физика
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        
+        // Границы
+        const margin = this.radius + 5;
+        if (this.x < margin) {
+            this.x = margin;
+            this.angle = Math.PI - this.angle + (Math.random() - 0.5) * 0.5;
+            this.speed *= 0.5;
+        }
+        if (this.x > this.game.width - margin) {
+            this.x = this.game.width - margin;
+            this.angle = Math.PI - this.angle + (Math.random() - 0.5) * 0.5;
+            this.speed *= 0.5;
+        }
+        if (this.y < margin) {
+            this.y = margin;
+            this.angle = -this.angle + (Math.random() - 0.5) * 0.5;
+            this.speed *= 0.5;
+        }
+        if (this.y > this.game.height - margin) {
+            this.y = this.game.height - margin;
+            this.angle = -this.angle + (Math.random() - 0.5) * 0.5;
+            this.speed *= 0.5;
+        }
+        
+        // Коллизии с танками
+        this.game.tanks.forEach(other => {
+            if (other !== this && other.hp > 0) {
+                const dist = V.dist(this, other);
+                const minDist = this.radius + other.radius;
                 
-                this.mamba.mutate(rate, strength);
-                
-                for (let i = 0; i < this.decoder.length; i++) {
-                    for (let j = 0; j < this.decoder[i].length; j++) {
-                        if (Math.random() < rate) this.decoder[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                
-                for (let i = 0; i < this.p1.length; i++) {
-                    for (let j = 0; j < this.p1[i].length; j++) {
-                        if (Math.random() < rate) this.p1[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                
-                for (let i = 0; i < this.p2.length; i++) {
-                    for (let j = 0; j < this.p2[i].length; j++) {
-                        if (Math.random() < rate) this.p2[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                
-                for (let i = 0; i < this.p3.length; i++) {
-                    for (let j = 0; j < this.p3[i].length; j++) {
-                        if (Math.random() < rate) this.p3[i][j] += (Math.random() * 2 - 1) * strength;
-                    }
-                }
-                
-                for (let i = 0; i < this.b1.length; i++) {
-                    if (Math.random() < rate) this.b1[i] += (Math.random() * 2 - 1) * strength;
-                }
-                for (let i = 0; i < this.b2.length; i++) {
-                    if (Math.random() < rate) this.b2[i] += (Math.random() * 2 - 1) * strength;
-                }
-                for (let i = 0; i < this.b3.length; i++) {
-                    if (Math.random() < rate) this.b3[i] += (Math.random() * 2 - 1) * strength;
-                }
-            }
-            
-            encode(enemies, allies, resources) {
-                const vec = new Array(this.latentDim).fill(0);
-                
-                // Враги (опасность)
-                for (let enemy of enemies.slice(0, 3)) {
-                    const input = [
-                        enemy.distance / CONFIG.VIEW_DIST,
-                        (enemy.angle / Math.PI + 1) / 2,
-                        enemy.health,
-                        1, 0, 0
-                    ];
+                if (dist < minDist) {
+                    const pushAngle = Math.atan2(this.y - other.y, this.x - other.x);
+                    const overlap = (minDist - dist) / 2 + 1;
                     
-                    for (let i = 0; i < this.latentDim; i++) {
-                        let sum = 0;
-                        for (let j = 0; j < this.obsDim; j++) {
-                            sum += input[j] * (this.embed[j][i] || 0);
-                        }
-                        vec[i] += sum * 0.3;
-                    }
+                    this.x += Math.cos(pushAngle) * overlap;
+                    this.y += Math.sin(pushAngle) * overlap;
+                    this.speed *= 0.5;
                 }
+            }
+        });
+        
+        // Стрельба
+        if (this.cooldown > 0) this.cooldown--;
+        
+        if (fire > 0.5 && this.cooldown <= 0 && this.targets.length > 0) {
+            this.shoot();
+        }
+    }
+    
+    shoot() {
+        if (this.targets.length === 0) return;
+        const target = this.targets[0];
+        
+        // Честное упреждение на основе физики
+        const dist = V.dist(this, target);
+        const bulletSpeed = 12;
+        const timeToHit = dist / bulletSpeed;
+        
+        // Предсказание позиции через время полета пули
+        const targetX = target.x + Math.cos(target.angle) * target.speed * timeToHit * 1.2;
+        const targetY = target.y + Math.sin(target.angle) * target.speed * timeToHit * 1.2;
+        
+        const fireAngle = Math.atan2(targetY - this.y, targetX - this.x);
+        
+        this.game.bullets.push({
+            x: this.x + Math.cos(this.angle) * 30,
+            y: this.y + Math.sin(this.angle) * 30,
+            vx: Math.cos(fireAngle) * bulletSpeed,
+            vy: Math.sin(fireAngle) * bulletSpeed,
+            color: this.color,
+            owner: this
+        });
+        
+        this.cooldown = 30;
+        this.shots++;
+    }
+    
+    takeDamage(amount, attacker) {
+        this.hp -= amount;
+        if (attacker) {
+            attacker.hits++;
+            
+            // НАГРАДА ЗА ПОПАДАНИЕ
+            const rewardHit = parseFloat(document.getElementById('rewardHit').value);
+            if (attacker.lastBrainState) {
+                const exploreRate = parseFloat(document.getElementById('exploreRate').value);
+                attacker.brain.learn(rewardHit, attacker.lastBrainState, attacker.lastAction, exploreRate);
                 
-                // Союзники
-                for (let ally of allies.slice(0, 2)) {
-                    const input = [
-                        ally.distance / CONFIG.VIEW_DIST,
-                        0.5,
-                        ally.health,
-                        0, 1, 0
-                    ];
+                // Сохраняем опыт
+                attacker.experience.push({
+                    state: attacker.lastBrainState,
+                    action: attacker.lastAction,
+                    reward: rewardHit
+                });
+                if (attacker.experience.length > attacker.maxExp) {
+                    attacker.experience.shift();
+                }
+            }
+        }
+        
+        if (this.hp <= 0) {
+            if (attacker) {
+                attacker.kills++;
+                
+                // НАГРАДА ЗА УБИЙСТВО
+                const rewardKill = parseFloat(document.getElementById('rewardKill').value);
+                if (attacker.lastBrainState) {
+                    const exploreRate = parseFloat(document.getElementById('exploreRate').value);
+                    attacker.brain.learn(rewardKill, attacker.lastBrainState, attacker.lastAction, exploreRate);
                     
-                    for (let i = 0; i < this.latentDim; i++) {
-                        let sum = 0;
-                        for (let j = 0; j < this.obsDim; j++) {
-                            sum += input[j] * (this.embed[j][i] || 0);
-                        }
-                        vec[i] += sum * 0.2;
-                    }
+                    attacker.experience.push({
+                        state: attacker.lastBrainState,
+                        action: attacker.lastAction,
+                        reward: rewardKill
+                    });
                 }
-                
-                // Ресурсы
-                for (let res of resources.slice(0, 2)) {
-                    const input = [
-                        res.distance / CONFIG.VIEW_DIST,
-                        0,
-                        1,
-                        0, 0, 1
-                    ];
-                    
-                    for (let i = 0; i < this.latentDim; i++) {
-                        let sum = 0;
-                        for (let j = 0; j < this.obsDim; j++) {
-                            sum += input[j] * (this.embed[j][i] || 0);
-                        }
-                        vec[i] += sum * 0.2;
-                    }
-                }
-                
-                // Добавляем шум для exploration
-                for (let i = 0; i < this.latentDim; i++) {
-                    vec[i] += (Math.random() - 0.5) * 0.05;
-                }
-                
-                return vec;
             }
             
-            forward(agent, allAgents, resources, walls) {
-                const enemies = VisionSystem.getVisibleEnemies(agent, allAgents, walls);
-                const allies = VisionSystem.getVisibleAllies(agent, allAgents, walls);
-                const visibleResources = VisionSystem.getVisibleResources(agent, resources, walls);
+            this.hp = 0;
+            
+            setTimeout(() => {
+                this.hp = 100;
+                this.x = 150 + Math.random() * (this.game.width - 300);
+                this.y = 150 + Math.random() * (this.game.height - 300);
+                this.speed = 0;
+                this.angle = Math.random() * Math.PI * 2;
+                this.brain.reset();
+                this.predictors = {};
+                this.experience = [];
+            }, 2000);
+        }
+    }
+    
+    draw(ctx, debug) {
+        if (this.hp <= 0) return;
+        
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = this.color;
+        
+        // Корпус
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-22, -16, 44, 32);
+        
+        // Башня
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(-8, -8, 16, 16);
+        
+        // Пушка
+        ctx.fillStyle = '#ccc';
+        ctx.fillRect(0, -5, 28, 10);
+        
+        ctx.restore();
+        
+        // HP bar
+        ctx.fillStyle = '#000';
+        ctx.fillRect(this.x - 25, this.y - 40, 50, 6);
+        ctx.fillStyle = this.hp > 30 ? this.color : '#f00';
+        ctx.fillRect(this.x - 25, this.y - 40, 50 * (this.hp / 100), 6);
+        
+        // DEBUG
+        if (debug) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            
+            // Конус зрения
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.visionDistance);
+            gradient.addColorStop(0, 'rgba(0,255,0,0.2)');
+            gradient.addColorStop(1, 'rgba(0,255,0,0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, this.visionDistance, -this.visionAngle / 2, this.visionAngle / 2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Loss
+            ctx.fillStyle = '#ff0';
+            ctx.font = '10px monospace';
+            ctx.fillText('L:' + this.brain.getLoss().toFixed(3), -20, -50);
+            
+            ctx.restore();
+        }
+    }
+}
+
+// ==================== ИГРОВОЙ ДВИЖОК ====================
+class GameEngine {
+    constructor() {
+        this.canvas = document.getElementById('canvas');
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        
+        this.tanks = [];
+        this.bullets = [];
+        this.running = false;
+        this.debug = true;
+        this.training = false;
+        
+        this.colors = ['#0ff','#f0f','#ff0','#0f0','#f00','#00f','#fa0','#808','#088','#f6f'];
+        
+        this.lastFrameTime = performance.now();
+        this.fps = 0;
+        this.totalShots = 0;
+        this.totalHits = 0;
+        this.learnSteps = 0;
+        
+        window.addEventListener('resize', () => {
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+        });
+        
+        // UI Events
+        document.getElementById('startBtn').onclick = () => this.toggle();
+        document.getElementById('resetBtn').onclick = () => this.reset();
+        document.getElementById('debugBtn').onclick = () => this.toggleDebug();
+        document.getElementById('learnBtn').onclick = () => this.showLearningPanel();
+        
+        document.getElementById('tankCount').onchange = () => this.reset();
+        document.getElementById('modelSize').onchange = () => this.reset();
+        document.getElementById('learnRate').onchange = () => this.updateLearnRate();
+        
+        this.spawn(6);
+        this.loop();
+    }
+    
+    spawn(count) {
+        this.tanks = [];
+        this.bullets = [];
+        
+        for (let i = 0; i < count; i++) {
+            const x = 200 + Math.random() * (this.width - 400);
+            const y = 200 + Math.random() * (this.height - 400);
+            this.tanks.push(new Tank(i, x, y, this.colors[i % this.colors.length], this));
+        }
+        
+        document.getElementById('tanks').textContent = count;
+        this.totalShots = 0;
+        this.totalHits = 0;
+        this.learnSteps = 0;
+    }
+    
+    toggle() {
+        this.running = !this.running;
+        const btn = document.getElementById('startBtn');
+        const state = document.getElementById('state');
+        
+        if (this.running) {
+            btn.textContent = '⏸ PAUSE';
+            state.textContent = 'RUNNING';
+            state.style.color = '#0f0';
+        } else {
+            btn.textContent = '▶ START';
+            state.textContent = 'PAUSED';
+            state.style.color = '#ff0';
+        }
+    }
+    
+    reset() {
+        const count = parseInt(document.getElementById('tankCount').value);
+        this.bullets = [];
+        this.spawn(count);
+        this.running = false;
+        
+        document.getElementById('startBtn').textContent = '▶ START';
+        document.getElementById('state').textContent = 'READY';
+        document.getElementById('state').style.color = '#0ff';
+    }
+    
+    toggleDebug() {
+        this.debug = !this.debug;
+    }
+    
+    updateLearnRate() {
+        const rate = parseFloat(document.getElementById('learnRate').value);
+        this.tanks.forEach(t => t.brain.learningRate = rate);
+    }
+    
+    showLearningPanel() {
+        const panel = document.getElementById('learningPanel');
+        panel.classList.add('show');
+        this.updateTrainingStats();
+    }
+    
+    updateTrainingStats() {
+        let totalLoss = 0;
+        let totalExp = 0;
+        this.tanks.forEach(t => {
+            totalLoss += t.brain.getLoss();
+            totalExp += t.experience.length;
+        });
+        
+        document.getElementById('trainStats').innerHTML = `
+            <div>AVG LOSS: ${(totalLoss / this.tanks.length).toFixed(4)}</div>
+            <div>TOTAL EXPERIENCE: ${totalExp}</div>
+            <div>HIT RATIO: ${this.totalShots ? Math.round(this.totalHits / this.totalShots * 100) : 0}%</div>
+        `;
+    }
+    
+    update() {
+        const now = performance.now();
+        this.fps = Math.round(1000 / (now - this.lastFrameTime));
+        this.lastFrameTime = now;
+        document.getElementById('fps').textContent = this.fps;
+        
+        // Очистка
+        this.ctx.fillStyle = 'rgba(10, 10, 10, 0.4)';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        
+        // Сетка
+        this.ctx.strokeStyle = '#1a1a1a';
+        this.ctx.lineWidth = 1;
+        for (let x = 0; x < this.width; x += 60) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.height);
+            this.ctx.stroke();
+        }
+        for (let y = 0; y < this.height; y += 60) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.width, y);
+            this.ctx.stroke();
+        }
+        
+        if (this.running) {
+            // Танки
+            this.tanks.forEach(t => t.update());
+            
+            // Пули
+            for (let i = this.bullets.length - 1; i >= 0; i--) {
+                const b = this.bullets[i];
+                b.x += b.vx;
+                b.y += b.vy;
                 
-                const x = this.encode(enemies, allies, visibleResources);
-                const y = this.mamba.forward(x);
-                this.latent = y;
+                this.ctx.beginPath();
+                this.ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+                this.ctx.fillStyle = b.color;
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowColor = b.color;
+                this.ctx.fill();
+                this.ctx.shadowBlur = 0;
                 
-                // Perceptron
-                let h1 = new Array(128).fill(0);
-                for (let i = 0; i < 128; i++) {
-                    let sum = 0;
-                    for (let j = 0; j < this.latentDim; j++) {
-                        sum += this.latent[j] * (this.p1[j][i] || 0);
+                let hit = false;
+                this.tanks.forEach(t => {
+                    if (t !== b.owner && t.hp > 0 && V.dist({x: b.x, y: b.y}, t) < t.radius + 5) {
+                        t.takeDamage(12, b.owner);
+                        hit = true;
+                        this.totalShots++;
+                        this.totalHits++;
                     }
-                    h1[i] = Math.max(0, sum + this.b1[i] + (Math.random() - 0.5) * 0.1);
-                }
-                
-                let h2 = new Array(64).fill(0);
-                for (let i = 0; i < 64; i++) {
-                    let sum = 0;
-                    for (let j = 0; j < 128; j++) {
-                        sum += h1[j] * (this.p2[j][i] || 0);
-                    }
-                    h2[i] = Math.max(0, sum + this.b2[i]);
-                }
-                
-                for (let i = 0; i < this.actionDim; i++) {
-                    let sum = 0;
-                    for (let j = 0; j < 64; j++) {
-                        sum += h2[j] * (this.p3[j][i] || 0);
-                    }
-                    this.actions[i] = Math.tanh(sum + this.b3[i]);
-                }
-                
-                this.memory.push({
-                    state: x,
-                    actions: this.actions.slice(),
-                    latent: this.latent.slice()
                 });
                 
-                return {
-                    actions: this.actions,
-                    latent: this.latent,
-                    delta: this.mamba.delta,
-                    enemies: enemies.length,
-                    allies: allies.length,
-                    resources: visibleResources.length
-                };
-            }
-            
-            learn(reward) {
-                if (this.memory.length === 0) return;
-                
-                const scale = reward * CONFIG.LEARNING_RATE * 100;
-                
-                // Простое обучение - усиливаем последние действия
-                const last = this.memory[this.memory.length - 1];
-                
-                for (let i = 0; i < 64; i++) {
-                    for (let j = 0; j < this.actionDim; j++) {
-                        this.p3[i][j] += scale * last.actions[j] * 0.001;
-                    }
-                }
-                
-                this.memory = [];
-            }
-        }
-
-        // ======================================================================
-        // ИГРОВЫЕ ОБЪЕКТЫ
-        // ======================================================================
-        class GameObject {
-            constructor(x, y, type) {
-                this.x = x;
-                this.y = y;
-                this.vx = 0;
-                this.vy = 0;
-                this.type = type;
-                this.radius = CONFIG.AGENT_RADIUS;
-                this.id = Math.random().toString(36).substr(2, 4).toUpperCase();
-            }
-        }
-
-        class Bullet extends GameObject {
-            constructor(x, y, vx, vy, owner) {
-                super(x, y, 'bullet');
-                this.vx = vx;
-                this.vy = vy;
-                this.owner = owner;
-                this.life = 70;
-                this.radius = 4;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life--;
-            }
-        }
-
-        class Resource extends GameObject {
-            constructor(x, y) {
-                super(x, y, 'resource');
-                this.radius = 8;
-                this.value = 25;
-                this.respawn = 0;
-            }
-        }
-
-        class Wall {
-            constructor(x, y, w, h) {
-                this.x = x;
-                this.y = y;
-                this.w = w;
-                this.h = h;
-            }
-            contains(x, y) {
-                return x >= this.x && x <= this.x + this.w && y >= this.y && y <= this.y + this.h;
-            }
-        }
-
-        class Agent extends GameObject {
-            constructor(x, y, team, brain = null) {
-                super(x, y, 'agent');
-                this.team = team;
-                this.hp = CONFIG.MAX_HP;
-                this.maxHp = CONFIG.MAX_HP;
-                this.brain = brain || new WorldModel();
-                this.cooldown = 0;
-                this.fitness = 0;
-                this.kills = 0;
-                this.angle = 0;
-                this.color = team === 'green' ? '#00ff88' : '#ff4444';
-                this.glowColor = team === 'green' ? 'rgba(0,255,136,0.3)' : 'rgba(255,68,68,0.3)';
-                this.latent = new Array(CONFIG.LATENT_DIM).fill(0);
-                this.lastActions = new Array(CONFIG.ACTION_DIM).fill(0);
-                
-                this.stats = {
-                    damageDealt: 0,
-                    damageTaken: 0,
-                    kill: false,
-                    resourcesCollected: 0,
-                    healingDone: 0,
-                    died: false,
-                    nearestEnemy: Infinity,
-                    nearestResource: Infinity,
-                    alliesNearby: 0
-                };
-            }
-
-            think(agents, resources, walls) {
-                const out = this.brain.forward(this, agents, resources, walls);
-                this.latent = out.latent;
-                this.lastActions = out.actions.slice();
-                
-                this.updateStats(agents, resources);
-                
-                // Движение
-                const moveX = (out.actions[3] || 0) - (out.actions[2] || 0);
-                const moveY = (out.actions[1] || 0) - (out.actions[0] || 0);
-                const len = Math.sqrt(moveX*moveX + moveY*moveY);
-                
-                if (len > 0.01) {
-                    this.vx += (moveX/len) * CONFIG.AGENT_SPEED * 0.5;
-                    this.vy += (moveY/len) * CONFIG.AGENT_SPEED * 0.5;
-                }
-                
-                // Стрельба
-                if ((out.actions[4] || 0) > 0.3 && this.cooldown <= 0) {
-                    const enemies = VisionSystem.getVisibleEnemies(this, agents, walls);
-                    if (enemies.length > 0) {
-                        this.cooldown = CONFIG.SHOOT_COOLDOWN;
-                        const target = enemies[0].agent;
-                        const angle = Math.atan2(target.y - this.y, target.x - this.x);
-                        const bullet = new Bullet(
-                            this.x + Math.cos(angle)*20,
-                            this.y + Math.sin(angle)*20,
-                            Math.cos(angle)*CONFIG.BULLET_SPEED,
-                            Math.sin(angle)*CONFIG.BULLET_SPEED,
-                            this
-                        );
-                        if (window.game) game.bullets.push(bullet);
-                    }
-                }
-                
-                // Лечение
-                if ((out.actions[5] || 0) > 0.2 && this.hp < this.maxHp) {
-                    const allies = VisionSystem.getVisibleAllies(this, agents, walls);
-                    if (allies.length > 0 || Math.random() < 0.3) {
-                        const heal = CONFIG.HEAL * 0.3;
-                        this.hp = Math.min(this.maxHp, this.hp + heal);
-                        this.stats.healingDone += heal;
-                    }
-                }
-                
-                // Retreat
-                if ((out.actions[6] || 0) > 0.3) {
-                    const enemies = VisionSystem.getVisibleEnemies(this, agents, walls);
-                    if (enemies.length > 0) {
-                        const avgX = enemies.reduce((s, e) => s + e.agent.x, 0) / enemies.length;
-                        const avgY = enemies.reduce((s, e) => s + e.agent.y, 0) / enemies.length;
-                        const dx = this.x - avgX;
-                        const dy = this.y - avgY;
-                        const dist = Math.hypot(dx, dy);
-                        if (dist > 0) {
-                            this.vx += (dx/dist) * CONFIG.AGENT_SPEED * 0.3;
-                            this.vy += (dy/dist) * CONFIG.AGENT_SPEED * 0.3;
-                        }
-                    }
-                }
-                
-                // Cover
-                if ((out.actions[7] || 0) > 0.3) {
-                    let bestWall = null;
-                    let bestScore = -Infinity;
-                    for (let wall of walls) {
-                        const wx = wall.x + wall.w/2;
-                        const wy = wall.y + wall.h/2;
-                        const dist = Math.hypot(wx - this.x, wy - this.y);
-                        if (dist < 250 && dist > 30) {
-                            const enemies = VisionSystem.getVisibleEnemies(this, agents, walls);
-                            const safety = enemies.length === 0 ? 2 : 1 / enemies.length;
-                            const score = (1 / dist) * 100 + safety * 10;
-                            if (score > bestScore) {
-                                bestScore = score;
-                                bestWall = wall;
-                            }
-                        }
-                    }
-                    if (bestWall) {
-                        const tx = bestWall.x + bestWall.w/2;
-                        const ty = bestWall.y + bestWall.h/2;
-                        const dx = tx - this.x;
-                        const dy = ty - this.y;
-                        const dist = Math.hypot(dx, dy);
-                        this.vx += (dx/dist) * CONFIG.AGENT_SPEED * 0.2;
-                        this.vy += (dy/dist) * CONFIG.AGENT_SPEED * 0.2;
-                    }
-                }
-                
-                // Угол
-                if (Math.abs(this.vx) > 0.1 || Math.abs(this.vy) > 0.1) {
-                    this.angle = Math.atan2(this.vy, this.vx);
-                }
-                
-                return out;
-            }
-            
-            updateStats(agents, resources) {
-                // Сброс
-                this.stats.damageDealt = 0;
-                this.stats.healingDone = 0;
-                this.stats.resourcesCollected = 0;
-                
-                // Ближайший враг
-                let minEnemy = Infinity;
-                for (let a of agents) {
-                    if (a.team !== this.team && a.hp > 0) {
-                        const dist = Math.hypot(a.x - this.x, a.y - this.y);
-                        minEnemy = Math.min(minEnemy, dist);
-                    }
-                }
-                this.stats.nearestEnemy = minEnemy;
-                
-                // Ближайший ресурс
-                let minRes = Infinity;
-                for (let r of resources) {
-                    if (r.respawn === 0) {
-                        const dist = Math.hypot(r.x - this.x, r.y - this.y);
-                        minRes = Math.min(minRes, dist);
-                    }
-                }
-                this.stats.nearestResource = minRes;
-                
-                // Союзники рядом
-                let alliesNear = 0;
-                for (let a of agents) {
-                    if (a.team === this.team && a !== this && a.hp > 0) {
-                        const dist = Math.hypot(a.x - this.x, a.y - this.y);
-                        if (dist < 150) alliesNear++;
-                    }
-                }
-                this.stats.alliesNearby = alliesNear;
-            }
-
-            update(agents, walls) {
-                this.vx *= CONFIG.FRICTION;
-                this.vy *= CONFIG.FRICTION;
-                
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                this.x = Math.max(this.radius, Math.min(CONFIG.WIDTH - this.radius, this.x));
-                this.y = Math.max(this.radius, Math.min(CONFIG.HEIGHT - this.radius, this.y));
-                
-                for (let w of walls) {
-                    if (w.contains(this.x, this.y)) {
-                        const cx = w.x + w.w/2;
-                        const cy = w.y + w.h/2;
-                        const dx = this.x - cx;
-                        const dy = this.y - cy;
-                        if (Math.abs(dx)/w.w > Math.abs(dy)/w.h) {
-                            this.x = dx > 0 ? w.x + w.w + this.radius : w.x - this.radius;
-                        } else {
-                            this.y = dy > 0 ? w.y + w.h + this.radius : w.y - this.radius;
-                        }
-                    }
-                }
-                
-                if (this.cooldown > 0) this.cooldown--;
-            }
-
-            hit(dmg, attacker) {
-                this.hp -= dmg;
-                this.stats.damageTaken += dmg;
-                
-                if (attacker) {
-                    attacker.stats.damageDealt += dmg;
-                    attacker.fitness += dmg * 0.3;
-                }
-                
-                if (this.hp <= 0) {
-                    this.stats.died = true;
-                    if (attacker) {
-                        attacker.stats.kill = true;
-                        attacker.fitness += 50;
-                        attacker.kills++;
-                    }
+                if (hit || b.x < 0 || b.x > this.width || b.y < 0 || b.y > this.height) {
+                    this.bullets.splice(i, 1);
                 }
             }
             
-            collectResource(value) {
-                this.hp = Math.min(this.maxHp, this.hp + value);
-                this.stats.resourcesCollected++;
-                this.fitness += 15;
+            // Обучение на опыте
+            if (this.training && Math.random() < 0.1) {
+                this.tanks.forEach(t => {
+                    if (t.experience.length > 10) {
+                        const exp = t.experience[Math.floor(Math.random() * t.experience.length)];
+                        t.brain.learn(exp.reward * 0.5, exp.state, exp.action);
+                        this.learnSteps++;
+                    }
+                });
             }
         }
-
-        // ======================================================================
-        // GAME ENGINE
-        // ======================================================================
-        class Game {
-            constructor() {
-                this.canvas = document.getElementById('canvas');
-                this.ctx = this.canvas.getContext('2d');
-                
-                this.agents = [];
-                this.bullets = [];
-                this.resources = [];
-                this.walls = [];
-                
-                this.gen = 1;
-                this.bestFitness = 0;
-                this.bestBrain = null;
-                this.running = false;
-                this.paused = true;
-                this.speed = 1;
-                this.mutationRate = CONFIG.MUTATION_RATE;
-                
-                this.selected = null;
-                this.stats = {
-                    latent: new Array(CONFIG.LATENT_DIM).fill(0),
-                    actions: new Array(CONFIG.ACTION_DIM).fill(0),
-                    delta: 0.1,
-                    enemies: 0,
-                    reward: 0
-                };
-                
-                this.init();
-                window.game = this;
-                
-                // Обучение каждые 2 секунды
-                setInterval(() => this.learn(), 2000);
-            }
-
-            init() {
-                this.canvas.width = CONFIG.WIDTH;
-                this.canvas.height = CONFIG.HEIGHT;
-                
-                // Стены
-                this.walls = [
-                    new Wall(200,150,150,20),
-                    new Wall(200,350,150,20),
-                    new Wall(550,150,150,20),
-                    new Wall(550,350,150,20),
-                    new Wall(350,250,200,20),
-                    new Wall(100,500,200,20),
-                    new Wall(600,500,200,20),
-                    new Wall(400,450,20,150),
-                    new Wall(800,200,20,200),
-                    new Wall(900,400,200,20)
-                ];
-                
-                // Ресурсы
-                this.resources = [
-                    new Resource(150,150),
-                    new Resource(550,150),
-                    new Resource(350,300),
-                    new Resource(150,450),
-                    new Resource(550,450),
-                    new Resource(350,550),
-                    new Resource(750,250),
-                    new Resource(850,450)
-                ];
-                
-                this.spawn();
-            }
-
-            spawn() {
-                this.agents = [];
-                
-                // Зеленые
-                for (let i = 0; i < CONFIG.POPULATION; i++) {
-                    let brain;
-                    if (this.bestBrain) {
-                        brain = new WorldModel(this.bestBrain);
-                        if (this.running) brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
-                    } else {
-                        brain = new WorldModel();
-                    }
-                    const x = 150 + Math.random() * 150;
-                    const y = 150 + i * 120 + Math.random() * 50;
-                    this.agents.push(new Agent(x, y, 'green', brain));
-                }
-                
-                // Красные
-                for (let i = 0; i < CONFIG.POPULATION; i++) {
-                    let brain;
-                    if (this.bestBrain) {
-                        brain = new WorldModel(this.bestBrain);
-                        if (this.running) brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
-                    } else {
-                        brain = new WorldModel();
-                    }
-                    const x = CONFIG.WIDTH - 150 - Math.random() * 150;
-                    const y = 150 + i * 120 + Math.random() * 50;
-                    this.agents.push(new Agent(x, y, 'red', brain));
-                }
-                
-                this.selected = this.agents[0];
-            }
-
-            update() {
-                if (this.paused || !this.running) return;
-                
-                for (let s = 0; s < this.speed; s++) {
-                    const alive = this.agents.filter(a => a.hp > 0);
-                    
-                    // Think для всех
-                    for (let a of alive) {
-                        const out = a.think(this.agents, this.resources, this.walls);
-                        if (a === this.selected) {
-                            this.stats.latent = out.latent.slice();
-                            this.stats.actions = out.actions.slice();
-                            this.stats.delta = out.delta;
-                            this.stats.enemies = out.enemies;
-                        }
-                    }
-                    
-                    // Update физики
-                    for (let a of alive) a.update(this.agents, this.walls);
-                    
-                    // Пули
-                    for (let i = this.bullets.length-1; i >= 0; i--) {
-                        const b = this.bullets[i];
-                        b.update();
-                        let hit = false;
-                        for (let a of this.agents) {
-                            if (a.hp <= 0 || a === b.owner) continue;
-                            if (a.team === b.owner.team) continue;
-                            if (Math.hypot(a.x - b.x, a.y - b.y) < a.radius) {
-                                a.hit(CONFIG.DAMAGE, b.owner);
-                                hit = true;
-                                break;
-                            }
-                        }
-                        if (hit || b.life <= 0 || b.x < 0 || b.x > CONFIG.WIDTH || b.y < 0 || b.y > CONFIG.HEIGHT) {
-                            this.bullets.splice(i, 1);
-                        }
-                    }
-                    
-                    // Ресурсы
-                    for (let a of alive) {
-                        for (let r of this.resources) {
-                            if (r.respawn > 0) continue;
-                            if (Math.hypot(a.x - r.x, a.y - r.y) < a.radius + r.radius) {
-                                a.collectResource(r.value);
-                                r.respawn = 200;
-                            }
-                        }
-                    }
-                    
-                    for (let r of this.resources) if (r.respawn > 0) r.respawn--;
-                    
-                    // Проверка конца поколения
-                    const green = this.agents.filter(a => a.team === 'green' && a.hp > 0).length;
-                    const red = this.agents.filter(a => a.team === 'red' && a.hp > 0).length;
-                    
-                    if (green === 0 || red === 0) {
-                        this.nextGen();
-                        break;
-                    }
-                }
-            }
-            
-            learn() {
-                if (!this.running || this.paused) return;
-                
-                for (let a of this.agents) {
-                    if (a.hp > 0) {
-                        const reward = RewardSystem.calculate(a);
-                        a.brain.learn(reward);
-                        a.fitness += reward;
-                        if (a === this.selected) {
-                            this.stats.reward = reward;
-                        }
-                    }
-                }
-            }
-            
-            nextGen() {
-                // Сортируем по фитнесу
-                const sorted = [...this.agents].sort((a, b) => b.fitness - a.fitness);
-                const elites = sorted.slice(0, 2);
-                
-                // Сохраняем лучший
-                if (elites[0].fitness > this.bestFitness) {
-                    this.bestFitness = elites[0].fitness;
-                    this.bestBrain = elites[0].brain.save();
-                }
-                
-                // Новое поколение
-                const newAgents = [];
-                
-                // Элиты
-                for (let elite of elites) {
-                    const brain = new WorldModel(elite.brain.save());
-                    const x = elite.team === 'green' ? 200 : CONFIG.WIDTH - 200;
-                    const y = 200 + Math.random() * 400;
-                    newAgents.push(new Agent(x, y, elite.team, brain));
-                }
-                
-                // Мутанты
-                for (let i = elites.length; i < CONFIG.POPULATION * 2; i++) {
-                    const parent = elites[Math.floor(Math.random() * elites.length)];
-                    const brain = new WorldModel(parent.brain.save());
-                    brain.mutate(this.mutationRate, CONFIG.MUTATION_STRENGTH);
-                    
-                    const team = i < CONFIG.POPULATION ? 'green' : 'red';
-                    const x = team === 'green' ? 150 + Math.random() * 200 : CONFIG.WIDTH - 150 - Math.random() * 200;
-                    const y = 150 + (i % CONFIG.POPULATION) * 120 + Math.random() * 50;
-                    newAgents.push(new Agent(x, y, team, brain));
-                }
-                
-                this.agents = newAgents;
-                this.gen++;
-                this.bullets = [];
-                this.selected = this.agents[0];
-            }
-
-            draw() {
-                // Очистка
-                this.ctx.fillStyle = '#0a0a0f';
-                this.ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
-                
-                // Сетка
-                this.ctx.strokeStyle = 'rgba(0,255,255,0.03)';
-                this.ctx.lineWidth = 1;
-                for (let x = 0; x < CONFIG.WIDTH; x += 40) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(x, 0);
-                    this.ctx.lineTo(x, CONFIG.HEIGHT);
-                    this.ctx.stroke();
-                }
-                for (let y = 0; y < CONFIG.HEIGHT; y += 40) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(0, y);
-                    this.ctx.lineTo(CONFIG.WIDTH, y);
-                    this.ctx.stroke();
-                }
-                
-                // Стены
-                for (let w of this.walls) {
-                    this.ctx.fillStyle = '#1a1a2e';
-                    this.ctx.fillRect(w.x, w.y, w.w, w.h);
-                    this.ctx.strokeStyle = '#2a2a4a';
-                    this.ctx.strokeRect(w.x, w.y, w.w, w.h);
-                }
-                
-                // Ресурсы
-                for (let r of this.resources) {
-                    if (r.respawn === 0) {
-                        const pulse = Math.sin(Date.now() / 200) * 2;
-                        this.ctx.beginPath();
-                        this.ctx.arc(r.x, r.y, r.radius + pulse, 0, Math.PI*2);
-                        this.ctx.fillStyle = '#00ffff';
-                        this.ctx.shadowBlur = 20;
-                        this.ctx.shadowColor = '#00ffff';
-                        this.ctx.fill();
-                    }
-                }
-                
-                // Пули
-                for (let b of this.bullets) {
-                    this.ctx.beginPath();
-                    this.ctx.arc(b.x, b.y, 4, 0, Math.PI*2);
-                    this.ctx.fillStyle = '#ffff00';
-                    this.ctx.shadowBlur = 10;
-                    this.ctx.shadowColor = '#ffff00';
-                    this.ctx.fill();
-                }
-                
-                // Агенты
-                for (let a of this.agents) {
-                    if (a.hp <= 0) continue;
-                    
-                    // Свечение
-                    const intensity = a.latent.reduce((s, v) => s + Math.abs(v), 0) / 32;
-                    const grad = this.ctx.createRadialGradient(a.x, a.y, 0, a.x, a.y, a.radius * 3);
-                    grad.addColorStop(0, a.color + '40');
-                    grad.addColorStop(1, 'transparent');
-                    this.ctx.fillStyle = grad;
-                    this.ctx.fillRect(a.x - a.radius*3, a.y - a.radius*3, a.radius*6, a.radius*6);
-                    
-                    // Тело
-                    this.ctx.save();
-                    this.ctx.translate(a.x, a.y);
-                    this.ctx.rotate(a.angle);
-                    
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(a.radius, 0);
-                    this.ctx.lineTo(-a.radius*0.7, a.radius*0.7);
-                    this.ctx.lineTo(-a.radius*0.4, 0);
-                    this.ctx.lineTo(-a.radius*0.7, -a.radius*0.7);
-                    this.ctx.closePath();
-                    
-                    this.ctx.fillStyle = a.color;
-                    this.ctx.shadowBlur = 15;
-                    this.ctx.shadowColor = a.color;
-                    this.ctx.fill();
-                    
-                    this.ctx.restore();
-                    
-                    // HP бар
-                    const barW = 35;
-                    this.ctx.fillStyle = '#000';
-                    this.ctx.fillRect(a.x - barW/2, a.y - a.radius - 15, barW, 5);
-                    
-                    const hpPercent = a.hp / a.maxHp;
-                    this.ctx.fillStyle = hpPercent > 0.6 ? '#00ff88' : (hpPercent > 0.3 ? '#ffff00' : '#ff4444');
-                    this.ctx.fillRect(a.x - barW/2, a.y - a.radius - 15, barW * hpPercent, 5);
-                }
-                
-                // Конус выбранного
-                if (this.selected && this.selected.hp > 0) {
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.selected.x, this.selected.y, CONFIG.VIEW_DIST, 0, Math.PI*2);
-                    this.ctx.fillStyle = 'rgba(0,255,255,0.02)';
-                    this.ctx.fill();
-                    this.ctx.strokeStyle = 'rgba(0,255,255,0.15)';
-                    this.ctx.setLineDash([5, 8]);
-                    this.ctx.stroke();
-                    this.ctx.setLineDash([]);
-                }
-                
-                this.ctx.shadowBlur = 0;
-            }
-
-            updateUI() {
-                const green = this.agents.filter(a => a.team === 'green' && a.hp > 0).length;
-                const red = this.agents.filter(a => a.team === 'red' && a.hp > 0).length;
-                
-                document.getElementById('greenCount').textContent = green;
-                document.getElementById('redCount').textContent = red;
-                document.getElementById('gen').textContent = this.gen;
-                document.getElementById('best').textContent = Math.floor(this.bestFitness);
-                
-                document.getElementById('status').innerHTML = this.running 
-                    ? (this.paused ? '⏸ PAUSED' : '🚀 MAMBA ACTIVE')
-                    : '⏹ STOPPED';
-                document.getElementById('status').style.borderColor = this.running 
-                    ? (this.paused ? '#ffff00' : '#00ff88') 
-                    : '#ff4444';
-                
-                document.getElementById('delta').textContent = this.stats.delta.toFixed(3);
-                document.getElementById('enemyCount').textContent = this.stats.enemies;
-                document.getElementById('reward').textContent = this.stats.reward.toFixed(2);
-                
-                // Нормы матриц
-                if (this.selected && this.selected.brain) {
-                    let aSum = 0, bSum = 0;
-                    for (let i = 0; i < 16; i++) {
-                        aSum += this.selected.brain.mamba.A[i][i] ** 2;
-                        for (let j = 0; j < 32; j++) {
-                            bSum += this.selected.brain.mamba.B[i][j] ** 2;
-                        }
-                    }
-                    document.getElementById('aNorm').textContent = Math.sqrt(aSum).toFixed(3);
-                    document.getElementById('bNorm').textContent = Math.sqrt(bSum).toFixed(3);
-                }
-                
-                // Нейроны
-                const map = document.getElementById('neuron-map');
-                map.innerHTML = '';
-                for (let i = 0; i < 32; i++) {
-                    const n = document.createElement('div');
-                    n.className = 'neuron';
-                    const val = this.stats.latent[i] || 0;
-                    const bright = Math.floor(30 + Math.abs(val) * 70);
-                    n.style.background = val > 0 
-                        ? `rgb(0, ${bright}, ${bright})` 
-                        : `rgb(${bright}, 50, 50)`;
-                    n.style.boxShadow = `0 0 ${Math.abs(val) * 15}px ${val > 0 ? '#00ffff' : '#ff4444'}`;
-                    map.appendChild(n);
-                }
-                
-                // Действия
-                for (let i = 0; i < 8; i++) {
-                    const el = document.getElementById(`act${i}`);
-                    if (el) {
-                        const val = this.stats.actions[i] || 0;
-                        el.textContent = val.toFixed(2);
-                        el.style.color = Math.abs(val) > 0.2 ? '#00ffff' : '#666';
-                    }
-                }
-                
-                // Loss (разнообразие latent)
-                if (this.stats.latent) {
-                    let variance = 0;
-                    const mean = this.stats.latent.reduce((a, b) => a + b, 0) / 32;
-                    for (let v of this.stats.latent) {
-                        variance += (v - mean) ** 2;
-                    }
-                    document.getElementById('loss').textContent = (variance / 32).toFixed(4);
-                }
-                
-                // Список агентов
-                const list = document.getElementById('agentList');
-                list.innerHTML = '';
-                for (let a of this.agents) {
-                    if (a.hp <= 0) continue;
-                    const item = document.createElement('div');
-                    item.className = 'agent-item';
-                    item.onclick = () => this.selected = a;
-                    item.innerHTML = `
-                        <div class="agent-color" style="background:${a.color}"></div>
-                        <div style="flex:1">
-                            <div style="display:flex; justify-content:space-between">
-                                <span>${a.team === 'green' ? '🟢' : '🔴'} ${a.id}</span>
-                                <span>K:${a.kills}</span>
-                            </div>
-                            <div style="font-size:10px; color:#00ffff">fit:${Math.floor(a.fitness)}</div>
-                            <div class="agent-hp">
-                                <div class="agent-hp-fill" style="width:${a.hp/a.maxHp*100}%"></div>
-                            </div>
+        
+        // Танки
+        this.tanks.forEach(t => t.draw(this.ctx, this.debug));
+        
+        // UI
+        this.updateUI();
+        document.getElementById('brainInfo').textContent = 
+            `MAMBA ${document.getElementById('modelSize').value}x${Math.floor(document.getElementById('modelSize').value/2)}`;
+    }
+    
+    updateUI() {
+        let html = '';
+        this.tanks.forEach((t, i) => {
+            if (t.hp > 0) {
+                const acc = t.shots > 0 ? Math.round(t.hits / t.shots * 100) : 0;
+                html += `
+                    <div class="tank-info" style="border-color:${t.color}" onclick="game.tanks[${i}].brain.learn(1, game.tanks[${i}].lastBrainState, game.tanks[${i}].lastAction)">
+                        <div style="color:${t.color};font-weight:bold">T${i+1} | L:${t.brain.getLoss().toFixed(3)}</div>
+                        <div class="hp-bar">
+                            <div class="hp-fill" style="width:${t.hp}%;background:${t.color}"></div>
                         </div>
-                    `;
-                    list.appendChild(item);
-                }
+                        <div style="font-size:9px;color:#0a0">ACC:${acc}% S:${t.shots} K:${t.kills} EXP:${t.experience.length}</div>
+                    </div>
+                `;
             }
+        });
+        document.getElementById('tankStats').innerHTML = html;
+        
+        document.getElementById('totalShots').textContent = this.totalShots;
+        document.getElementById('hitRatio').textContent = this.totalShots ? Math.round(this.totalHits / this.totalShots * 100) + '%' : '0%';
+        document.getElementById('learnSteps').textContent = this.learnSteps;
+    }
+    
+    loop() {
+        this.update();
+        requestAnimationFrame(() => this.loop());
+    }
+}
 
-            loop() {
-                this.update();
-                this.draw();
-                this.updateUI();
-                requestAnimationFrame(() => this.loop());
-            }
-        }
-
-        // ======================================================================
-        // ГЛОБАЛЬНОЕ
-        // ======================================================================
-        let game;
-        let frameCount = 0;
-
-        window.onload = function() {
-            game = new Game();
-            game.loop();
-            
-            setInterval(() => {
-                document.getElementById('fps').textContent = `FPS: ${frameCount}`;
-                frameCount = 0;
-            }, 1000);
-            
-            document.getElementById('speed').addEventListener('input', e => {
-                if (game) game.speed = parseInt(e.target.value);
-            });
-            
-            document.getElementById('mutation').addEventListener('input', e => {
-                if (game) game.mutationRate = parseFloat(e.target.value);
-            });
-        };
-
-        window.toggleRun = function() {
-            if (!game) return;
-            const btn = document.getElementById('startBtn');
-            if (game.running) {
-                game.running = false;
-                btn.textContent = '🚀 START MAMBA';
-                btn.classList.remove('active');
-            } else {
-                game.running = true;
-                game.paused = false;
-                btn.textContent = '⏹ STOP MAMBA';
-                btn.classList.add('active');
-            }
-        };
-
-        window.togglePause = function() {
-            if (!game || !game.running) return;
-            game.paused = !game.paused;
-        };
-
-        window.reset = function() {
-            if (!game) return;
-            game.running = false;
-            game.paused = true;
-            game.gen = 1;
-            game.bestFitness = 0;
-            game.bestBrain = null;
-            game.spawn();
-            game.bullets = [];
-            document.getElementById('startBtn').textContent = '🚀 START MAMBA';
-            document.getElementById('startBtn').classList.remove('active');
-        };
-
-        // FPS
-        const originalRaf = window.requestAnimationFrame;
-        window.requestAnimationFrame = function(cb) {
-            return originalRaf(function(t) {
-                frameCount++;
-                cb(t);
-            });
-        };
-    </script>
+// ЗАПУСК
+const game = new GameEngine();
+console.log('✓ REAL MAMBA TANKS - ONLINE LEARNING');
+</script>
 </body>
-    </html>
+</html>
