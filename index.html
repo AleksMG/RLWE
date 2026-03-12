@@ -3,1843 +3,928 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAMBA SSM · TANK BATTLE · PRODUCTION</title>
+    <title>SNN Мозг Муравья с 6 лапами</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            background: #0a0c0e;
-            overflow: hidden;
+            background: #1a2f1a;
+            color: #7cfc00;
             font-family: 'Courier New', monospace;
-        }
-
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-            background: #0a0c0e;
-        }
-
-        #ui {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            pointer-events: none;
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            z-index: 1000;
-        }
-
-        .panel {
-            pointer-events: auto;
-            background: rgba(18, 22, 28, 0.98);
-            border: 2px solid #00ff00;
-            border-radius: 8px;
+            margin: 0;
             padding: 20px;
-            width: 340px;
-            color: #00ff00;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
-        .panel-header {
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        #brainCanvas {
+            background: #0a1a0a;
+            border: 4px solid #7cfc00;
+            border-radius: 10px;
+            box-shadow: 0 0 30px #7cfc00;
+        }
+        
+        #antCanvas {
+            background: #2a3f2a;
+            border: 4px solid #7cfc00;
+            border-radius: 10px;
+        }
+        
+        .panel {
+            background: #0a1a0a;
+            border: 4px solid #7cfc00;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+        
+        .leg-control {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-weight: bold;
-            font-size: 16px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #00ff00;
-            padding-bottom: 10px;
+            margin: 10px 0;
+            padding: 5px;
+            background: #1a2f1a;
+            border-radius: 5px;
         }
-
-        .badge {
-            background: #000;
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            padding: 4px 10px;
+        
+        .leg-number {
+            width: 30px;
+            font-weight: bold;
+        }
+        
+        .leg-angle {
+            width: 60px;
+            text-align: center;
+            color: #ff0;
+        }
+        
+        .leg-bar {
+            flex-grow: 1;
+            height: 20px;
+            background: #2a3f2a;
+            margin: 0 10px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .leg-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #7cfc00, #ff0);
+            transition: width 0.05s;
+        }
+        
+        .neuron-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .neuron-cell {
+            background: #1a2f1a;
+            padding: 5px;
+            text-align: center;
+            border-radius: 3px;
             font-size: 12px;
         }
-
-        .control-group {
-            margin-bottom: 20px;
+        
+        .spike-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
         }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
+        
+        button {
+            background: #1a2f1a;
+            color: #7cfc00;
+            border: 2px solid #7cfc00;
+            padding: 10px;
+            margin: 5px;
+            font-family: inherit;
             font-size: 14px;
-        }
-
-        .control-label {
-            color: #00ff00;
-            opacity: 0.8;
-        }
-
-        .control-value {
-            font-weight: bold;
-        }
-
-        select, input {
-            background: #000;
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            padding: 6px 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            width: 120px;
-            outline: none;
-        }
-
-        select:hover, input:hover {
-            background: #00ff00;
-            color: #000;
-        }
-
-        .metric-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .metric-card {
-            background: #000;
-            border: 2px solid #00ff00;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .metric-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #00ff00;
-        }
-
-        .metric-label {
-            font-size: 11px;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-
-        .btn {
-            background: #000;
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            padding: 12px 16px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            font-size: 13px;
             cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
-            text-transform: uppercase;
+            border-radius: 5px;
+            transition: 0.3s;
         }
-
-        .btn:hover {
-            background: #00ff00;
-            color: #000;
+        
+        button:hover {
+            background: #7cfc00;
+            color: #1a2f1a;
         }
-
-        .btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .tank-list {
-            max-height: 360px;
-            overflow-y: auto;
-            margin: 16px 0;
-            padding-right: 4px;
-        }
-
-        .tank-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .tank-list::-webkit-scrollbar-track {
-            background: #000;
-        }
-
-        .tank-list::-webkit-scrollbar-thumb {
-            background: #00ff00;
-        }
-
-        .tank-item {
-            background: #000;
-            border: 2px solid #00ff00;
-            padding: 12px;
-            margin-bottom: 8px;
-        }
-
-        .tank-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .tank-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            margin: 8px 0;
-            opacity: 0.8;
-        }
-
-        .health-bar {
-            height: 4px;
-            background: #111;
-            border: 1px solid #00ff00;
-        }
-
-        .health-fill {
-            height: 100%;
-            background: #00ff00;
-            transition: width 0.2s;
-        }
-
-        .status-bar {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #000;
-            border: 2px solid #00ff00;
-            padding: 12px 30px;
-            display: flex;
-            gap: 30px;
-            pointer-events: auto;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: #00ff00;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        
+        .brain-part {
+            background: #1a2f1a;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #7cfc00;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-
-    <div id="ui">
-        <!-- Левая панель -->
+    <h1>🧠 SNN МОЗГ МУРАВЬЯ (6 ЛАП) 🐜</h1>
+    
+    <div class="container">
+        <!-- Мозг SNN -->
+        <canvas id="brainCanvas" width="600" height="600"></canvas>
+        
+        <!-- Муравей -->
+        <canvas id="antCanvas" width="400" height="400"></canvas>
+    </div>
+    
+    <div style="display: flex; width: 100%; justify-content: center;">
         <div class="panel">
-            <div class="panel-header">
-                <span>⚡ MAMBA CORE</span>
-                <span class="badge">v4.0</span>
+            <h3>🦵 УПРАВЛЕНИЕ ЛАПАМИ</h3>
+            
+            <div id="legControls">
+                <!-- Заполняется JS -->
             </div>
-
-            <div class="control-group">
-                <div class="control-row">
-                    <span class="control-label">Количество танков</span>
-                    <select id="tankCount" class="control-select">
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6" selected>6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                    </select>
-                </div>
-
-                <div class="control-row">
-                    <span class="control-label">Размерность модели (dModel)</span>
-                    <select id="dModel" class="control-select">
-                        <option value="16">16 (быстро)</option>
-                        <option value="32">32 (средне)</option>
-                        <option value="64" selected>64 (точно)</option>
-                        <option value="128">128 (макс)</option>
-                    </select>
-                </div>
-
-                <div class="control-row">
-                    <span class="control-label">Размер состояния (dState)</span>
-                    <select id="dState" class="control-select">
-                        <option value="8">8</option>
-                        <option value="16">16</option>
-                        <option value="32" selected>32</option>
-                        <option value="64">64</option>
-                    </select>
-                </div>
-
-                <div class="control-row">
-                    <span class="control-label">Скорость обучения</span>
-                    <input type="number" id="lr" class="control-input" value="0.0001" step="0.00001" min="0.00001" max="0.01">
-                </div>
-
-                <div class="control-row">
-                    <span class="control-label">Горизонт предсказания</span>
-                    <input type="number" id="predHorizon" class="control-input" value="0.5" step="0.1" min="0.1" max="2.0">
+            
+            <div class="brain-part">
+                <h4>🧠 АКТИВНОСТЬ МОЗГА</h4>
+                <div class="neuron-stats" id="brainActivity">
+                    <!-- Заполняется JS -->
                 </div>
             </div>
-
-            <div class="metric-grid">
-                <div class="metric-card">
-                    <div class="metric-value" id="neurons">0</div>
-                    <div class="metric-label">НЕЙРОНОВ</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="params">0</div>
-                    <div class="metric-label">ПАРАМЕТРОВ</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="fps">60</div>
-                    <div class="metric-label">FPS</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="loss">0.000</div>
-                    <div class="metric-label">LOSS</div>
-                </div>
+            
+            <div class="brain-part">
+                <h4>🎮 РЕЖИМЫ ДВИЖЕНИЯ</h4>
+                <button onclick="setGait('walk')">🚶 Ходьба</button>
+                <button onclick="setGait('turnLeft')">⬅️ Поворот налево</button>
+                <button onclick="setGait('turnRight')">➡️ Поворот направо</button>
+                <button onclick="setGait('stop')">⏹️ Стоп</button>
+                <button onclick="randomStimulus()">🎲 Случайный стимул</button>
+                <button onclick="resetBrain()">🔄 Сброс мозга</button>
             </div>
-
-            <div class="button-group">
-                <button class="btn" id="startBtn">▶ ПУСК</button>
-                <button class="btn" id="resetBtn">↻ СБРОС</button>
-                <button class="btn" id="debugBtn">👁 DEBUG</button>
-            </div>
-        </div>
-
-        <!-- Правая панель -->
-        <div class="panel">
-            <div class="panel-header">
-                <span>📊 СТАТИСТИКА БОЯ</span>
-                <span class="badge" id="activeCount">0/0</span>
-            </div>
-
-            <div class="tank-list" id="tankStats"></div>
-
-            <div class="control-group">
-                <div class="control-row">
-                    <span class="control-label">Всего выстрелов</span>
-                    <span class="control-value" id="totalShots">0</span>
-                </div>
-                <div class="control-row">
-                    <span class="control-label">Точность попаданий</span>
-                    <span class="control-value" id="accuracy">0%</span>
-                </div>
-                <div class="control-row">
-                    <span class="control-label">Средний Loss</span>
-                    <span class="control-value" id="avgLoss">0.000</span>
-                </div>
-                <div class="control-row">
-                    <span class="control-label">Норма градиента</span>
-                    <span class="control-value" id="gradNorm">0.000</span>
-                </div>
-                <div class="control-row">
-                    <span class="control-label">Дисконт (γ)</span>
-                    <span class="control-value">0.99</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Нижняя панель -->
-        <div class="status-bar">
-            <div class="status-item">
-                <div class="dot"></div>
-                <span id="state">ГОТОВ</span>
-            </div>
-            <div class="status-item">
-                <span>MAMBA · SELECTIVE SSM</span>
-            </div>
-            <div class="status-item">
-                <span>BPTT · ADAM · γ=0.99</span>
+            
+            <div>
+                <h4>📊 СТАТУС</h4>
+                <div>Время: <span id="time">0</span></div>
+                <div>Спайков/сек: <span id="spikeRate">0</span></div>
+                <div>Режим: <span id="currentGait">ходьба</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            'use strict';
-
-            // ======================================================================
-            // КОНФИГУРАЦИЯ
-            // ======================================================================
-            
-            const CONFIG = {
-                TANK: {
-                    MAX_SPEED: 4.0,
-                    VISION_DISTANCE: 320,
-                    RADIUS: 24,
-                    COOLDOWN_FRAMES: 20,
-                    RESPAWN_DELAY: 3000,
-                    MARGIN: 15,
-                    START_HEALTH: 100
-                },
-                BULLET: {
-                    SPEED: 14.0,
-                    LIFETIME: 120,
-                    DAMAGE: 25,
-                    SIZE: 5
-                },
-                MAMBA: {
-                    DT_MIN: 0.001,
-                    DT_MAX: 0.1,
-                    GAMMA: 0.99,
-                    EPS: 1e-8,
-                    TEMPERATURE: 0.7,
-                    MAX_HISTORY_SIZE: 50 * 1024, // 50KB
-                    GRAD_CLIP: 1.0
-                },
-                REWARD: {
-                    HIT: 1.0,
-                    KILL: 5.0,
-                    SURVIVE: 0.01,
-                    DISTANCE: -0.001
-                },
-                COLORS: [
-                    '#00ff00', '#33ff33', '#66ff66', '#99ff99', 
-                    '#00cc00', '#33cc33', '#66cc66', '#99cc99'
-                ]
-            };
-
-            // ======================================================================
-            // УТИЛИТЫ И МАТЕМАТИКА
-            // ======================================================================
-            
-            const Utils = {
-                // Проверка на валидное число
-                isValid: (x) => typeof x === 'number' && isFinite(x) && !isNaN(x),
+        // ============================================
+        // LIF НЕЙРОН (реальный, не симуляция)
+        // ============================================
+        class LIFNeuron {
+            constructor(id, type, x, y, threshold = 1.0, leak = 0.85) {
+                this.id = id;
+                this.type = type; // 'sensory', 'motor', 'inter', 'command'
+                this.x = x;
+                this.y = y;
                 
-                // Проверка на невалидное число
-                isInvalid: (x) => x === null || x === undefined || (typeof x === 'number' && (isNaN(x) || !isFinite(x))),
+                // Параметры нейрона
+                this.potential = 0.0;
+                this.threshold = threshold;
+                this.leak = leak;
+                this.reset = 0.0;
+                this.refractory = 0;
+                this.refractoryPeriod = 2;
                 
-                // Клиппинг значения
-                clip: (x, min, max) => {
-                    if (Utils.isInvalid(x)) return min;
-                    return Math.max(min, Math.min(max, x));
-                },
+                // Состояние
+                this.spiked = false;
+                this.lastSpikeTime = -100;
+                this.firingRate = 0;
                 
-                // Softplus активация
-                softplus: (x) => {
-                    x = Utils.clip(x, -20, 20);
-                    return Math.log(1 + Math.exp(x));
-                },
+                // Входы/выходы
+                this.inputs = []; // {synapse, weight}
+                this.outputs = [];
                 
-                // Tanh активация
-                tanh: (x) => {
-                    x = Utils.clip(x, -10, 10);
-                    return Math.tanh(x);
-                },
-                
-                // Softmax с температурой
-                softmax: (logits, temperature = CONFIG.MAMBA.TEMPERATURE) => {
-                    if (!logits || logits.length === 0) {
-                        return new Float64Array(5).fill(0.2);
-                    }
-                    
-                    // Проверка на невалидные значения
-                    let hasValid = false;
-                    for (let i = 0; i < logits.length; i++) {
-                        if (Utils.isValid(logits[i])) {
-                            hasValid = true;
-                        } else {
-                            logits[i] = 0;
-                        }
-                    }
-                    
-                    if (!hasValid) {
-                        return new Float64Array(logits.length).fill(1 / logits.length);
-                    }
-                    
-                    // Max subtraction для численной стабильности
-                    const maxLogit = Math.max(...logits);
-                    const exp = new Float64Array(logits.length);
-                    let sumExp = 0;
-                    
-                    for (let i = 0; i < logits.length; i++) {
-                        exp[i] = Math.exp((logits[i] - maxLogit) / temperature);
-                        if (!Utils.isValid(exp[i])) exp[i] = 0;
-                        sumExp += exp[i];
-                    }
-                    
-                    if (sumExp < CONFIG.MAMBA.EPS) {
-                        return new Float64Array(logits.length).fill(1 / logits.length);
-                    }
-                    
-                    const probs = new Float64Array(logits.length);
-                    for (let i = 0; i < logits.length; i++) {
-                        probs[i] = exp[i] / sumExp;
-                    }
-                    
-                    return probs;
-                },
-                
-                // Умножение матрицы на вектор
-                matVecMul: (mat, vec) => {
-                    if (!mat || !vec || mat.length === 0 || vec.length === 0) {
-                        return new Float64Array(mat?.length || 0);
-                    }
-                    
-                    const rows = mat.length;
-                    const cols = vec.length;
-                    const result = new Float64Array(rows);
-                    
-                    for (let i = 0; i < rows; i++) {
-                        const row = mat[i];
-                        if (!row) continue;
-                        
-                        let sum = 0;
-                        for (let j = 0; j < cols; j++) {
-                            sum += (row[j] || 0) * (vec[j] || 0);
-                        }
-                        result[i] = sum;
-                    }
-                    
-                    return result;
-                },
-                
-                // Евклидово расстояние
-                distance: (x1, y1, x2, y2) => {
-                    const dx = x1 - x2;
-                    const dy = y1 - y2;
-                    return Math.sqrt(dx * dx + dy * dy);
-                },
-                
-                // Нормализация угла
-                normalizeAngle: (angle) => {
-                    while (angle > Math.PI) angle -= 2 * Math.PI;
-                    while (angle < -Math.PI) angle += 2 * Math.PI;
-                    return angle;
-                }
-            };
-
-            // ======================================================================
-            // МАТРИЧНЫЕ ОПЕРАЦИИ
-            // ======================================================================
-            
-            const Matrix = {
-                // Создание матрицы
-                create: (rows, cols) => {
-                    return Array.from({ length: rows }, () => new Float64Array(cols));
-                },
-                
-                // Копирование матрицы
-                clone: (mat) => {
-                    if (!mat) return null;
-                    return mat.map(row => row.slice());
-                },
-                
-                // Случайная матрица
-                random: (rows, cols, scale = 0.1) => {
-                    const mat = Matrix.create(rows, cols);
-                    for (let i = 0; i < rows; i++) {
-                        for (let j = 0; j < cols; j++) {
-                            mat[i][j] = (Math.random() * 2 - 1) * scale;
-                        }
-                    }
-                    return mat;
-                },
-                
-                // Xavier инициализация
-                xavier: (rows, cols, fanIn) => {
-                    const scale = Math.sqrt(2.0 / fanIn);
-                    const mat = Matrix.create(rows, cols);
-                    for (let i = 0; i < rows; i++) {
-                        for (let j = 0; j < cols; j++) {
-                            mat[i][j] = (Math.random() * 2 - 1) * scale;
-                        }
-                    }
-                    return mat;
-                },
-                
-                // Нулевая матрица
-                zeros: (rows, cols) => {
-                    return Matrix.create(rows, cols);
-                }
-            };
-
-            // ======================================================================
-            // MAMBA SSM (ПОЛНАЯ РЕАЛИЗАЦИЯ)
-            // ======================================================================
-            
-            class MambaSSM {
-                constructor(config) {
-                    // Размерности
-                    this.dModel = config.dModel || 64;
-                    this.dState = config.dState || 32;
-                    this.lr = config.lr || 0.0001;
-                    
-                    // Диагональная матрица A (вектор!)
-                    this.A_log = new Float64Array(this.dState);
-                    for (let i = 0; i < this.dState; i++) {
-                        this.A_log[i] = (Math.random() * 2 - 1) * 0.1;
-                    }
-                    
-                    // Проекции для selectivity
-                    this.W_dt = Matrix.xavier(this.dModel, this.dState, this.dModel);
-                    this.W_B = Matrix.xavier(this.dModel, this.dState, this.dModel);
-                    this.W_C = Matrix.xavier(this.dModel, this.dState, this.dModel);
-                    
-                    // Входная и выходная проекции
-                    this.W_in = Matrix.xavier(12, this.dModel, 12);
-                    this.W_out = Matrix.xavier(this.dModel, 5, this.dModel);
-                    
-                    // Skip connection
-                    this.D = new Float64Array(this.dModel).fill(0.1);
-                    
-                    // Состояние SSM
-                    this.h = new Float64Array(this.dState);
-                    
-                    // История для BPTT (с ограничением по памяти)
-                    this.history = [];
-                    this.historySize = 0;
-                    this.maxHistorySize = CONFIG.MAMBA.MAX_HISTORY_SIZE;
-                    
-                    // Adam оптимизатор
-                    this.adamStep = 0;
-                    this.adamM = {};
-                    this.adamV = {};
-                    
-                    // Статистика
-                    this.loss = 0;
-                    this.gradNorm = 0;
-                    this.forwardCalls = 0;
-                }
-                
-                // Селективность: вычисление параметров от входа
-                getParams(x) {
-                    try {
-                        // Проверка входных данных
-                        if (!x || x.length !== this.dModel) {
-                            console.warn('MambaSSM.getParams: invalid input');
-                            return null;
-                        }
-                        
-                        // dt = softplus(W_dt @ x)
-                        const dtRaw = Utils.matVecMul(this.W_dt, x);
-                        const dt = new Float64Array(this.dState);
-                        for (let i = 0; i < this.dState; i++) {
-                            dt[i] = Utils.softplus(dtRaw[i]) + CONFIG.MAMBA.DT_MIN;
-                            dt[i] = Utils.clip(dt[i], CONFIG.MAMBA.DT_MIN, CONFIG.MAMBA.DT_MAX);
-                        }
-                        
-                        // B = линейная проекция (без активации)
-                        const B = Matrix.create(this.dModel, this.dState);
-                        for (let i = 0; i < this.dModel; i++) {
-                            for (let j = 0; j < this.dState; j++) {
-                                B[i][j] = (this.W_B[i][j] || 0) * (x[i] || 0);
-                                if (Utils.isInvalid(B[i][j])) B[i][j] = 0;
-                            }
-                        }
-                        
-                        // C = линейная проекция (без активации)
-                        const C = Matrix.create(this.dState, this.dModel);
-                        for (let i = 0; i < this.dState; i++) {
-                            for (let j = 0; j < this.dModel; j++) {
-                                C[i][j] = (this.W_C[j][i] || 0) * (x[j] || 0);
-                                if (Utils.isInvalid(C[i][j])) C[i][j] = 0;
-                            }
-                        }
-                        
-                        return { dt, B, C };
-                    } catch (e) {
-                        console.error('MambaSSM.getParams error:', e);
-                        return null;
-                    }
-                }
-                
-                // Дискретизация SSM
-                discretize(dt, B) {
-                    try {
-                        if (!dt || !B) return null;
-                        
-                        const A = new Float64Array(this.dState);
-                        const A_bar = new Float64Array(this.dState);
-                        const B_bar = Matrix.create(this.dState, this.dModel);
-                        
-                        for (let i = 0; i < this.dState; i++) {
-                            // A = -exp(A_log) (отрицательная для стабильности)
-                            A[i] = -Math.exp(Utils.clip(this.A_log[i], -10, 10));
-                            
-                            // A_bar = exp(A * dt)
-                            const expArg = Utils.clip(A[i] * dt[i], -20, 20);
-                            A_bar[i] = Math.exp(expArg);
-                            
-                            // B_bar = (A_bar - 1) * B / A (с защитой от деления на 0)
-                            if (Math.abs(A[i]) < 1e-6) {
-                                for (let j = 0; j < this.dModel; j++) {
-                                    B_bar[i][j] = dt[i] * (B[j] ? B[j][i] || 0 : 0);
-                                }
-                            } else {
-                                const factor = (A_bar[i] - 1) / A[i];
-                                for (let j = 0; j < this.dModel; j++) {
-                                    B_bar[i][j] = factor * (B[j] ? B[j][i] || 0 : 0);
-                                }
-                            }
-                        }
-                        
-                        return { A, A_bar, B_bar };
-                    } catch (e) {
-                        console.error('MambaSSM.discretize error:', e);
-                        return null;
-                    }
-                }
-                
-                // Последовательный scan (ассоциативный)
-                scan(A_bars, B_bars_xs) {
-                    try {
-                        if (!A_bars || !B_bars_xs || A_bars.length === 0) {
-                            return [];
-                        }
-                        
-                        const L = A_bars.length;
-                        const h_states = new Array(L);
-                        
-                        // Начальное состояние
-                        h_states[0] = B_bars_xs[0] ? B_bars_xs[0].slice() : new Float64Array(this.dState);
-                        
-                        // Рекуррентное обновление
-                        for (let t = 1; t < L; t++) {
-                            const h_prev = h_states[t-1];
-                            const A_bar = A_bars[t];
-                            const Bx = B_bars_xs[t];
-                            
-                            const h = new Float64Array(this.dState);
-                            for (let i = 0; i < this.dState; i++) {
-                                h[i] = (A_bar[i] || 0) * (h_prev[i] || 0) + (Bx[i] || 0);
-                                if (Utils.isInvalid(h[i])) h[i] = 0;
-                            }
-                            h_states[t] = h;
-                        }
-                        
-                        return h_states;
-                    } catch (e) {
-                        console.error('MambaSSM.scan error:', e);
-                        return [];
-                    }
-                }
-                
-                // Прямой проход (один шаг)
-                forward(x) {
-                    try {
-                        this.forwardCalls++;
-                        
-                        // Проверка входных данных
-                        if (!x || x.length !== 12) {
-                            console.warn('MambaSSM.forward: invalid input');
-                            return new Float64Array(5).fill(0.2);
-                        }
-                        
-                        // Входная проекция
-                        let proj = Utils.matVecMul(this.W_in, x);
-                        for (let i = 0; i < this.dModel; i++) {
-                            proj[i] = Utils.tanh(proj[i]);
-                            if (Utils.isInvalid(proj[i])) proj[i] = 0;
-                        }
-                        
-                        // Селективность
-                        const params = this.getParams(proj);
-                        if (!params) return new Float64Array(5).fill(0.2);
-                        
-                        const { dt, B, C } = params;
-                        
-                        // Дискретизация
-                        const disc = this.discretize(dt, B);
-                        if (!disc) return new Float64Array(5).fill(0.2);
-                        
-                        const { A_bar, B_bar } = disc;
-                        
-                        // Вычисление Bx = B_bar @ proj
-                        const Bx = new Float64Array(this.dState);
-                        for (let i = 0; i < this.dState; i++) {
-                            let sum = 0;
-                            const row = B_bar[i];
-                            if (row) {
-                                for (let j = 0; j < this.dModel; j++) {
-                                    sum += (row[j] || 0) * proj[j];
-                                }
-                            }
-                            Bx[i] = sum;
-                        }
-                        
-                        // Обновление состояния SSM
-                        const newH = new Float64Array(this.dState);
-                        for (let i = 0; i < this.dState; i++) {
-                            newH[i] = (A_bar[i] || 0) * this.h[i] + Bx[i];
-                            newH[i] = Utils.tanh(newH[i]);
-                            if (Utils.isInvalid(newH[i])) newH[i] = 0;
-                        }
-                        
-                        // Сохранение в историю для BPTT
-                        this.addToHistory({
-                            h_prev: this.h.slice(),
-                            x: proj.slice(),
-                            dt: dt.slice(),
-                            B: Matrix.clone(B),
-                            C: Matrix.clone(C),
-                            A_bar: A_bar.slice(),
-                            Bx: Bx.slice(),
-                            newH: newH.slice(),
-                            timestamp: Date.now()
-                        });
-                        
-                        this.h = newH;
-                        
-                        // Выход: y = C @ h + D * x
-                        const y = new Float64Array(this.dModel);
-                        for (let i = 0; i < this.dModel; i++) {
-                            let sum = 0;
-                            for (let j = 0; j < this.dState; j++) {
-                                sum += (C[j] ? C[j][i] || 0 : 0) * this.h[j];
-                            }
-                            y[i] = Utils.tanh(sum + this.D[i] * proj[i]);
-                            if (Utils.isInvalid(y[i])) y[i] = 0;
-                        }
-                        
-                        // Выходная проекция
-                        const logits = Utils.matVecMul(this.W_out, y);
-                        
-                        return Utils.softmax(logits);
-                    } catch (e) {
-                        console.error('MambaSSM.forward error:', e);
-                        return new Float64Array(5).fill(0.2);
-                    }
-                }
-                
-                // Добавление в историю с контролем размера
-                addToHistory(entry) {
-                    try {
-                        // Оценка размера в байтах
-                        const size = JSON.stringify(entry).length;
-                        
-                        this.history.push(entry);
-                        this.historySize += size;
-                        
-                        // Удаление старых записей при превышении лимита
-                        while (this.history.length > 0 && this.historySize > this.maxHistorySize) {
-                            const removed = this.history.shift();
-                            this.historySize -= JSON.stringify(removed).length;
-                        }
-                    } catch (e) {
-                        console.error('MambaSSM.addToHistory error:', e);
-                    }
-                }
-                
-                // Вычисление градиентов через BPTT
-                computeGradients(reward, action) {
-                    try {
-                        if (this.history.length < 2) return null;
-                        
-                        // Инициализация градиентов
-                        const gradW_out = Matrix.zeros(this.dModel, 5);
-                        const gradW_dt = Matrix.zeros(this.dModel, this.dState);
-                        const gradW_B = Matrix.zeros(this.dModel, this.dState);
-                        const gradW_C = Matrix.zeros(this.dModel, this.dState);
-                        const gradD = new Float64Array(this.dModel);
-                        const gradA_log = new Float64Array(this.dState);
-                        
-                        let totalGrad = 0;
-                        let validSteps = 0;
-                        
-                        // Обратный проход по времени
-                        let gradH = new Float64Array(this.dState).fill(0);
-                        
-                        for (let t = this.history.length - 1; t >= 0; t--) {
-                            const exp = this.history[t];
-                            
-                            // Discount factor
-                            const discount = Math.pow(CONFIG.MAMBA.GAMMA, this.history.length - 1 - t);
-                            const scaledReward = reward * discount;
-                            
-                            // Прямой проход для текущего шага (нужен для градиентов)
-                            const y = new Float64Array(this.dModel);
-                            for (let i = 0; i < this.dModel; i++) {
-                                let sum = 0;
-                                for (let j = 0; j < this.dState; j++) {
-                                    sum += (exp.C[j] ? exp.C[j][i] || 0 : 0) * exp.newH[j];
-                                }
-                                y[i] = Utils.tanh(sum + this.D[i] * exp.x[i]);
-                            }
-                            
-                            const logits = Utils.matVecMul(this.W_out, y);
-                            const probs = Utils.softmax(logits);
-                            
-                            // Градиенты выходного слоя
-                            for (let i = 0; i < 5; i++) {
-                                const target = (i === action) ? 1.0 : 0.0;
-                                const error = target - probs[i];
-                                totalGrad += Math.abs(error) * scaledReward;
-                                
-                                for (let j = 0; j < this.dModel; j++) {
-                                    gradW_out[j][i] += error * y[j] * scaledReward;
-                                }
-                            }
-                            
-                            // Градиенты по y
-                            const gradY = new Float64Array(this.dModel);
-                            for (let i = 0; i < this.dModel; i++) {
-                                let sum = 0;
-                                for (let j = 0; j < 5; j++) {
-                                    sum += this.W_out[i][j] * (probs[j] - (j === action ? 1 : 0));
-                                }
-                                // Производная tanh: 1 - tanh^2
-                                gradY[i] = sum * (1 - y[i] * y[i]) * scaledReward;
-                                if (Utils.isInvalid(gradY[i])) gradY[i] = 0;
-                            }
-                            
-                            // Градиенты по C
-                            const newGradH = new Float64Array(this.dState);
-                            for (let i = 0; i < this.dState; i++) {
-                                let sumC = 0;
-                                for (let j = 0; j < this.dModel; j++) {
-                                    // Градиент по C
-                                    gradW_C[j][i] += gradY[j] * exp.newH[i] * exp.x[j] * 0.1;
-                                    
-                                    // Вклад в градиент по h
-                                    sumC += gradY[j] * (exp.C[i] ? exp.C[i][j] || 0 : 0);
-                                }
-                                
-                                // Градиенты по D
-                                for (let j = 0; j < this.dModel; j++) {
-                                    gradD[j] += gradY[j] * exp.x[j] * 0.1;
-                                }
-                                
-                                // Градиенты по A_log
-                                const A = -Math.exp(this.A_log[i]);
-                                gradA_log[i] += gradH[i] * A * exp.dt[i] * 0.1;
-                                
-                                // Новый градиент по h (backprop through time)
-                                newGradH[i] = gradH[i] * (exp.A_bar[i] || 0) + sumC;
-                                if (Utils.isInvalid(newGradH[i])) newGradH[i] = 0;
-                            }
-                            
-                            gradH = newGradH;
-                            validSteps++;
-                        }
-                        
-                        if (validSteps > 0) {
-                            this.gradNorm = totalGrad / validSteps;
-                            this.loss = this.loss * 0.95 + this.gradNorm * 0.05;
-                        }
-                        
-                        return {
-                            W_out: gradW_out,
-                            W_dt: gradW_dt,
-                            W_B: gradW_B,
-                            W_C: gradW_C,
-                            D: gradD,
-                            A_log: gradA_log
-                        };
-                    } catch (e) {
-                        console.error('MambaSSM.computeGradients error:', e);
-                        return null;
-                    }
-                }
-                
-                // Adam оптимизатор
-                adamUpdate(param, grad, name) {
-                    try {
-                        if (!param || !grad) return;
-                        
-                        // Инициализация моментов
-                        if (!this.adamM[name]) {
-                            if (Array.isArray(param) && param[0] instanceof Float64Array) {
-                                this.adamM[name] = Matrix.zeros(param.length, param[0].length);
-                                this.adamV[name] = Matrix.zeros(param.length, param[0].length);
-                            } else {
-                                this.adamM[name] = new Float64Array(param.length);
-                                this.adamV[name] = new Float64Array(param.length);
-                            }
-                        }
-                        
-                        this.adamStep++;
-                        
-                        const beta1 = 0.9;
-                        const beta2 = 0.999;
-                        const eps = CONFIG.MAMBA.EPS;
-                        
-                        if (Array.isArray(param) && param[0] instanceof Float64Array) {
-                            // Обновление матрицы
-                            for (let i = 0; i < param.length; i++) {
-                                for (let j = 0; j < param[0].length; j++) {
-                                    if (!Utils.isValid(grad[i]?.[j])) continue;
-                                    
-                                    this.adamM[name][i][j] = beta1 * this.adamM[name][i][j] + (1 - beta1) * grad[i][j];
-                                    this.adamV[name][i][j] = beta2 * this.adamV[name][i][j] + (1 - beta2) * grad[i][j] * grad[i][j];
-                                    
-                                    const mHat = this.adamM[name][i][j] / (1 - Math.pow(beta1, this.adamStep));
-                                    const vHat = this.adamV[name][i][j] / (1 - Math.pow(beta2, this.adamStep));
-                                    
-                                    const update = this.lr * mHat / (Math.sqrt(vHat) + eps);
-                                    if (Utils.isValid(update)) {
-                                        param[i][j] += update;
-                                    }
-                                }
-                            }
-                        } else {
-                            // Обновление вектора
-                            for (let i = 0; i < param.length; i++) {
-                                if (!Utils.isValid(grad[i])) continue;
-                                
-                                this.adamM[name][i] = beta1 * this.adamM[name][i] + (1 - beta1) * grad[i];
-                                this.adamV[name][i] = beta2 * this.adamV[name][i] + (1 - beta2) * grad[i] * grad[i];
-                                
-                                const mHat = this.adamM[name][i] / (1 - Math.pow(beta1, this.adamStep));
-                                const vHat = this.adamV[name][i] / (1 - Math.pow(beta2, this.adamStep));
-                                
-                                const update = this.lr * mHat / (Math.sqrt(vHat) + eps);
-                                if (Utils.isValid(update)) {
-                                    param[i] += update;
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.error('MambaSSM.adamUpdate error:', e);
-                    }
-                }
-                
-                // Обучение на одном примере
-                learn(reward, action) {
-                    try {
-                        if (Math.abs(reward) < 0.01 || this.history.length === 0) return;
-                        
-                        const grads = this.computeGradients(reward, action);
-                        if (!grads) return;
-                        
-                        // Обновление всех параметров через Adam
-                        this.adamUpdate(this.W_out, grads.W_out, 'W_out');
-                        this.adamUpdate(this.W_dt, grads.W_dt, 'W_dt');
-                        this.adamUpdate(this.W_B, grads.W_B, 'W_B');
-                        this.adamUpdate(this.W_C, grads.W_C, 'W_C');
-                        
-                        // Обновление векторных параметров
-                        for (let i = 0; i < this.dState; i++) {
-                            if (Utils.isValid(grads.A_log[i])) {
-                                this.A_log[i] += this.lr * grads.A_log[i] * 0.1;
-                                this.A_log[i] = Utils.clip(this.A_log[i], -5, 5);
-                            }
-                        }
-                        
-                        for (let i = 0; i < this.dModel; i++) {
-                            if (Utils.isValid(grads.D[i])) {
-                                this.D[i] += this.lr * grads.D[i] * 0.1;
-                                this.D[i] = Utils.clip(this.D[i], -1, 1);
-                            }
-                        }
-                    } catch (e) {
-                        console.error('MambaSSM.learn error:', e);
-                    }
-                }
-                
-                // Сброс состояния
-                reset() {
-                    this.h = new Float64Array(this.dState);
-                    this.history = [];
-                    this.historySize = 0;
-                    this.adamStep = 0;
-                    this.adamM = {};
-                    this.adamV = {};
-                    this.loss = 0;
-                    this.gradNorm = 0;
-                }
-                
-                // Геттеры
-                getLoss() {
-                    return this.loss;
-                }
-                
-                getGradNorm() {
-                    return this.gradNorm;
-                }
+                // Для статистики
+                this.spikeCount = 0;
+                this.activity = 0;
             }
-
-            // ======================================================================
-            // КАЛМАНОВСКИЙ ФИЛЬТР ДЛЯ ПРЕДСКАЗАНИЯ
-            // ======================================================================
             
-            class KalmanFilter {
-                constructor() {
-                    // Состояние: [x, y, vx, vy]
-                    this.x = new Float64Array(4);
-                    
-                    // Ковариационная матрица
-                    this.P = new Array(4);
-                    for (let i = 0; i < 4; i++) {
-                        this.P[i] = new Float64Array(4);
-                    }
-                    
-                    // Начальная ковариация
-                    this.P[0][0] = 10;
-                    this.P[1][1] = 10;
-                    this.P[2][2] = 20;
-                    this.P[3][3] = 20;
-                    
-                    this.lastTime = 0;
-                    this.confidence = 0;
-                    this.steps = 0;
-                }
-                
-                update(x, y, time) {
-                    try {
-                        const now = time || performance.now();
-                        
-                        if (this.lastTime === 0) {
-                            this.x[0] = x;
-                            this.x[1] = y;
-                            this.lastTime = now;
-                            this.confidence = 0.3;
-                            this.steps = 1;
-                            return;
-                        }
-                        
-                        const dt = Math.max(0.016, (now - this.lastTime) / 1000);
-                        
-                        // Предсказание
-                        this.x[0] += this.x[2] * dt;
-                        this.x[1] += this.x[3] * dt;
-                        
-                        // Обновление ковариации предсказания
-                        for (let i = 0; i < 4; i++) {
-                            this.P[i][i] += 0.1 * dt;
-                        }
-                        
-                        // Коэффициент Калмана
-                        const Kx = this.P[0][0] / (this.P[0][0] + 0.5);
-                        const Ky = this.P[1][1] / (this.P[1][1] + 0.5);
-                        
-                        // Обновление по измерению
-                        this.x[0] += Kx * (x - this.x[0]);
-                        this.x[1] += Ky * (y - this.x[1]);
-                        
-                        // Обновление скорости
-                        this.x[2] = (this.x[0] - (this.x[0] - this.x[2] * dt)) / dt;
-                        this.x[3] = (this.x[1] - (this.x[1] - this.x[3] * dt)) / dt;
-                        
-                        // Обновление ковариации
-                        this.P[0][0] *= (1 - Kx);
-                        this.P[1][1] *= (1 - Ky);
-                        
-                        this.lastTime = now;
-                        this.confidence = Math.min(1, this.confidence + 0.05);
-                        this.steps++;
-                    } catch (e) {
-                        console.error('KalmanFilter.update error:', e);
-                    }
-                }
-                
-                predict(dt = 0.5) {
-                    if (this.confidence < 0.2 || this.steps < 5) return null;
-                    
-                    try {
-                        const x = this.x[0] + this.x[2] * dt;
-                        const y = this.x[1] + this.x[3] * dt;
-                        
-                        if (!Utils.isValid(x) || !Utils.isValid(y)) return null;
-                        
-                        return { x, y };
-                    } catch (e) {
-                        console.error('KalmanFilter.predict error:', e);
-                        return null;
-                    }
-                }
-                
-                reset() {
-                    this.x = new Float64Array(4);
-                    for (let i = 0; i < 4; i++) {
-                        this.P[i] = new Float64Array(4);
-                    }
-                    this.P[0][0] = 10;
-                    this.P[1][1] = 10;
-                    this.P[2][2] = 20;
-                    this.P[3][3] = 20;
-                    this.lastTime = 0;
-                    this.confidence = 0;
-                    this.steps = 0;
-                }
+            addInput(neuron, weight = 0.3, delay = 1) {
+                const synapse = new Synapse(neuron, this, weight, delay);
+                this.inputs.push({synapse, neuron});
+                return synapse;
             }
-
-            // ======================================================================
-            // ТАНК
-            // ======================================================================
             
-            class Tank {
-                constructor(id, x, y, game) {
-                    this.id = id;
-                    this.x = x;
-                    this.y = y;
-                    this.game = game;
-                    
-                    this.angle = Math.random() * Math.PI * 2;
-                    this.speed = 0;
-                    this.hp = CONFIG.TANK.START_HEALTH;
-                    this.cooldown = 0;
-                    
-                    this.radius = CONFIG.TANK.RADIUS;
-                    this.maxSpeed = CONFIG.TANK.MAX_SPEED;
-                    
-                    this.targets = [];
-                    this.predictors = new Map();
-                    
-                    // Инициализация Mamba
-                    const dModel = parseInt(document.getElementById('dModel').value);
-                    const dState = parseInt(document.getElementById('dState').value);
-                    const lr = parseFloat(document.getElementById('lr').value);
-                    
-                    this.brain = new MambaSSM({
-                        dModel: dModel,
-                        dState: dState,
-                        lr: lr
-                    });
-                    
-                    // Статистика
-                    this.shots = 0;
-                    this.hits = 0;
-                    this.kills = 0;
-                    this.lastAction = 0;
-                    
-                    // Буфер сенсоров
-                    this.sensorBuffer = [];
-                    this.maxBufferSize = 5 * 12 * 8; // ~480 байт
+            addOutput(neuron, weight = 0.3, delay = 1) {
+                const synapse = new Synapse(this, neuron, weight, delay);
+                this.outputs.push({synapse, neuron});
+                return synapse;
+            }
+            
+            step(currentTime, externalInput = 0) {
+                // Рефрактерность
+                if (this.refractory > 0) {
+                    this.refractory--;
+                    this.spiked = false;
+                    return 0;
                 }
                 
-                // Получение сенсоров
-                getSensors() {
-                    try {
-                        const s = new Float64Array(12);
-                        this.targets = [];
-                        
-                        // Базовые сенсоры (расстояние до стен)
-                        s[0] = 0.5 + Math.random() * 0.5;
-                        s[1] = 0.5 + Math.random() * 0.5;
-                        s[2] = 0.5 + Math.random() * 0.5;
-                        
-                        // Поиск ближайшего врага
-                        let nearest = null;
-                        let minDist = Infinity;
-                        
-                        for (let t of this.game.tanks) {
-                            if (t !== this && t.hp > 0) {
-                                const dist = Utils.distance(this.x, this.y, t.x, t.y);
-                                
-                                if (dist < minDist && dist < CONFIG.TANK.VISION_DISTANCE) {
-                                    minDist = dist;
-                                    nearest = t;
-                                    this.targets.push(t);
-                                }
-                            }
-                        }
-                        
-                        if (nearest) {
-                            s[3] = minDist / CONFIG.TANK.VISION_DISTANCE;
-                            
-                            const angleToEnemy = Math.atan2(nearest.y - this.y, nearest.x - this.x);
-                            const angleDiff = Utils.normalizeAngle(angleToEnemy - this.angle);
-                            
-                            s[4] = angleDiff / Math.PI;
-                            s[5] = nearest.speed / this.maxSpeed;
-                            s[6] = Math.cos(nearest.angle);
-                            s[7] = Math.sin(nearest.angle);
-                            
-                            // Предсказание через Калман
-                            if (!this.predictors.has(nearest.id)) {
-                                this.predictors.set(nearest.id, new KalmanFilter());
-                            }
-                            const pred = this.predictors.get(nearest.id);
-                            pred.update(nearest.x, nearest.y, performance.now());
-                            
-                            const predHorizon = parseFloat(document.getElementById('predHorizon').value);
-                            const prediction = pred.predict(predHorizon);
-                            
-                            if (prediction) {
-                                const predAngle = Math.atan2(prediction.y - this.y, prediction.x - this.x);
-                                const predDiff = Utils.normalizeAngle(predAngle - this.angle);
-                                
-                                s[8] = predDiff / Math.PI;
-                                s[9] = Utils.distance(this.x, this.y, prediction.x, prediction.y) / CONFIG.TANK.VISION_DISTANCE;
-                            } else {
-                                s[8] = s[4];
-                                s[9] = s[3];
-                            }
-                        } else {
-                            s[3] = 1.0;
-                            s[4] = 0.0;
-                            s[5] = 0.0;
-                            s[6] = 1.0;
-                            s[7] = 0.0;
-                            s[8] = 0.0;
-                            s[9] = 1.0;
-                        }
-                        
-                        s[10] = this.speed / this.maxSpeed;
-                        s[11] = this.angle / Math.PI;
-                        
-                        // Валидация
-                        for (let i = 0; i < 12; i++) {
-                            if (Utils.isInvalid(s[i])) s[i] = 0;
-                        }
-                        
-                        return s;
-                    } catch (e) {
-                        console.error('Tank.getSensors error:', e);
-                        return new Float64Array(12).fill(0);
+                // Суммируем входы от синапсов
+                let inputSum = externalInput;
+                for (let inp of this.inputs) {
+                    inputSum += inp.synapse.getOutput();
+                }
+                
+                // Обновляем потенциал (LIF)
+                this.potential = this.potential * this.leak + inputSum;
+                
+                // Проверка порога
+                if (this.potential >= this.threshold) {
+                    this.spiked = true;
+                    this.lastSpikeTime = currentTime;
+                    this.spikeCount++;
+                    this.potential = this.reset;
+                    this.refractory = this.refractoryPeriod;
+                    
+                    // Рассылаем спайк по выходам
+                    for (let out of this.outputs) {
+                        out.synapse.receiveSpike(this.potential);
                     }
+                    
+                    return 1; // Спайк
                 }
                 
-                // Обновление состояния
-                update() {
-                    if (this.hp <= 0) return;
-                    
-                    try {
-                        const sensors = this.getSensors();
-                        
-                        // Добавление в буфер
-                        this.sensorBuffer.push(sensors);
-                        if (this.sensorBuffer.length * 12 * 8 > this.maxBufferSize) {
-                            this.sensorBuffer.shift();
-                        }
-                        
-                        // Forward через Mamba
-                        const probs = this.brain.forward(sensors);
-                        
-                        // Выбор действия (жадный)
-                        let actionIdx = 0;
-                        let maxProb = 0;
-                        for (let i = 0; i < 5; i++) {
-                            if (probs[i] > maxProb) {
-                                maxProb = probs[i];
-                                actionIdx = i;
-                            }
-                        }
-                        this.lastAction = actionIdx;
-                        
-                        // Декодирование действий
-                        const move = probs[0] * 2 - 1;  // -1..1
-                        const turn = probs[1] * 2 - 1;  // -1..1
-                        const fire = probs[2];           // 0..1
-                        const brake = probs[3];          // 0..1
-                        const boost = probs[4];          // 0..1
-                        
-                        // Управление скоростью
-                        const targetSpeed = move * this.maxSpeed * (boost > 0.6 ? 1.5 : 1.0);
-                        this.speed += (targetSpeed - this.speed) * 0.15;
-                        
-                        if (brake > 0.7) {
-                            this.speed *= 0.5;
-                        }
-                        
-                        // Поворот
-                        this.angle += turn * 0.15;
-                        
-                        // Ограничение скорости
-                        this.speed = Utils.clip(this.speed, -this.maxSpeed * 0.5, this.maxSpeed);
-                        
-                        // Физика
-                        this.x += Math.cos(this.angle) * this.speed;
-                        this.y += Math.sin(this.angle) * this.speed;
-                        
-                        // Границы
-                        const margin = this.radius + CONFIG.TANK.MARGIN;
-                        this.x = Utils.clip(this.x, margin, this.game.width - margin);
-                        this.y = Utils.clip(this.y, margin, this.game.height - margin);
-                        
-                        // Перезарядка
-                        if (this.cooldown > 0) this.cooldown--;
-                        
-                        // Стрельба
-                        if (fire > 0.6 && this.cooldown <= 0 && this.targets.length > 0) {
-                            this.shoot();
-                        }
-                        
-                        // Очистка предикторов для мертвых танков
-                        const activeIds = new Set(this.game.tanks.map(t => t.id));
-                        for (let [id, pred] of this.predictors.entries()) {
-                            if (!activeIds.has(id)) {
-                                this.predictors.delete(id);
-                            }
-                        }
-                    } catch (e) {
-                        console.error(`Tank ${this.id} update error:`, e);
-                    }
+                this.spiked = false;
+                return 0;
+            }
+            
+            getActivity() {
+                // Активность за последние 10 шагов
+                return this.spiked ? 1 : 0;
+            }
+        }
+
+        // ============================================
+        // СИНАПС
+        // ============================================
+        class Synapse {
+            constructor(pre, post, weight, delay = 1) {
+                this.pre = pre;
+                this.post = post;
+                this.weight = weight;
+                this.delay = delay;
+                this.buffer = new Array(delay + 1).fill(0);
+                this.strength = weight; // Для пластичности
+            }
+            
+            receiveSpike(value) {
+                // Получаем спайк от пресинаптического нейрона
+                this.buffer[0] = value * this.weight;
+            }
+            
+            step() {
+                // Сдвигаем буфер
+                for (let i = this.buffer.length - 1; i > 0; i--) {
+                    this.buffer[i] = this.buffer[i-1];
+                }
+                this.buffer[0] = 0;
+            }
+            
+            getOutput() {
+                return this.buffer[this.buffer.length - 1];
+            }
+        }
+
+        // ============================================
+        // ЛАПА МУРАВЬЯ
+        // ============================================
+        class Leg {
+            constructor(index, side) {
+                this.index = index;
+                this.side = side; // 'left' или 'right'
+                this.position = index; // 0-2 для передней/средней/задней
+                
+                // Углы суставов (в градусах)
+                this.coxa = 0;    // Базовый сустав (вверх-вниз)
+                this.femur = 45;  // Средний сустав
+                this.tibia = 90;  // Нижний сустав
+                
+                // Целевые углы (от моторных нейронов)
+                this.targetCoxa = 0;
+                this.targetFemur = 45;
+                this.targetTibia = 90;
+                
+                // Скорость движения
+                this.speed = 2;
+                
+                // Фаза шага (для ходьбы)
+                this.phase = index * 0.5; // Сдвиг фаз между лапами
+            }
+            
+            update(motorSignals) {
+                // Получаем сигналы от моторных нейронов
+                // motorSignals: [coxaL, coxaR, femurL, femurR, tibiaL, tibiaR]
+                
+                // Обновляем целевые углы
+                if (this.side === 'left') {
+                    this.targetCoxa = motorSignals[0] * 90;
+                    this.targetFemur = 45 + motorSignals[2] * 90;
+                    this.targetTibia = 90 + motorSignals[4] * 90;
+                } else {
+                    this.targetCoxa = motorSignals[1] * 90;
+                    this.targetFemur = 45 + motorSignals[3] * 90;
+                    this.targetTibia = 90 + motorSignals[5] * 90;
                 }
                 
-                // Стрельба
-                shoot() {
-                    if (this.targets.length === 0) return;
-                    
-                    try {
-                        const target = this.targets[0];
-                        const dist = Utils.distance(this.x, this.y, target.x, target.y);
-                        const timeToHit = dist / CONFIG.BULLET.SPEED;
-                        
-                        // Предсказание с упреждением
-                        let targetX = target.x;
-                        let targetY = target.y;
-                        
-                        if (this.predictors.has(target.id)) {
-                            const pred = this.predictors.get(target.id).predict(timeToHit * 1.2);
-                            if (pred) {
-                                targetX = pred.x;
-                                targetY = pred.y;
-                            }
-                        }
-                        
-                        const fireAngle = Math.atan2(targetY - this.y, targetX - this.x);
-                        
-                        this.game.bullets.push({
-                            x: this.x + Math.cos(this.angle) * 35,
-                            y: this.y + Math.sin(this.angle) * 35,
-                            vx: Math.cos(fireAngle) * CONFIG.BULLET.SPEED,
-                            vy: Math.sin(fireAngle) * CONFIG.BULLET.SPEED,
-                            owner: this,
-                            life: CONFIG.BULLET.LIFETIME,
-                            damage: CONFIG.BULLET.DAMAGE
-                        });
-                        
-                        this.cooldown = CONFIG.TANK.COOLDOWN_FRAMES;
-                        this.shots++;
-                    } catch (e) {
-                        console.error('Tank.shoot error:', e);
-                    }
+                // Плавно двигаем к цели
+                this.coxa += (this.targetCoxa - this.coxa) * 0.1;
+                this.femur += (this.targetFemur - this.femur) * 0.1;
+                this.tibia += (this.targetTibia - this.tibia) * 0.1;
+                
+                // Ограничения
+                this.coxa = Math.max(-45, Math.min(45, this.coxa));
+                this.femur = Math.max(0, Math.min(180, this.femur));
+                this.tibia = Math.max(0, Math.min(180, this.tibia));
+            }
+            
+            getAngles() {
+                return {
+                    coxa: this.coxa,
+                    femur: this.femur,
+                    tibia: this.tibia
+                };
+            }
+        }
+
+        // ============================================
+        // МОЗГ МУРАВЬЯ (SNN)
+        // ============================================
+        class AntBrain {
+            constructor() {
+                this.neurons = [];
+                this.synapses = [];
+                this.time = 0;
+                
+                this.createBrain();
+                this.connectBrain();
+            }
+            
+            createBrain() {
+                // === СЕНСОРНЫЕ НЕЙРОНЫ (вход) ===
+                // Зрение (4 нейрона)
+                for (let i = 0; i < 4; i++) {
+                    this.neurons.push(new LIFNeuron(
+                        `vision_${i}`, 'sensory', 
+                        100 + i*80, 100, 0.8
+                    ));
                 }
                 
-                // Получение урона
-                takeDamage(amount, attacker) {
-                    if (this.hp <= 0) return;
-                    
-                    try {
-                        this.hp = Math.max(0, this.hp - amount);
-                        
-                        if (attacker && attacker !== this) {
-                            attacker.hits++;
-                            
-                            const reward = this.hp <= 0 ? CONFIG.REWARD.KILL : CONFIG.REWARD.HIT;
-                            
-                            if (this.hp <= 0) {
-                                attacker.kills++;
-                            }
-                            
-                            // Обучение с задержкой
-                            setTimeout(() => {
-                                try {
-                                    attacker.brain.learn(reward, attacker.lastAction);
-                                } catch (e) {
-                                    console.error('Brain learn error:', e);
-                                }
-                            }, 0);
-                        }
-                        
-                        if (this.hp <= 0) {
-                            // Респаун
-                            setTimeout(() => {
-                                try {
-                                    this.hp = CONFIG.TANK.START_HEALTH;
-                                    this.x = 200 + Math.random() * (this.game.width - 400);
-                                    this.y = 200 + Math.random() * (this.game.height - 400);
-                                    this.speed = 0;
-                                    this.angle = Math.random() * Math.PI * 2;
-                                    this.brain.reset();
-                                    this.predictors.clear();
-                                    this.sensorBuffer = [];
-                                } catch (e) {
-                                    console.error('Respawn error:', e);
-                                }
-                            }, CONFIG.TANK.RESPAWN_DELAY);
-                        }
-                    } catch (e) {
-                        console.error('Tank.takeDamage error:', e);
-                    }
+                // Тактильные (6 нейронов - по одному на лапу)
+                for (let i = 0; i < 6; i++) {
+                    this.neurons.push(new LIFNeuron(
+                        `touch_${i}`, 'sensory', 
+                        100 + (i%3)*80, 200 + Math.floor(i/3)*60, 0.7
+                    ));
                 }
                 
-                // Отрисовка
-                draw(ctx, debug) {
-                    if (this.hp <= 0) return;
-                    
-                    try {
-                        ctx.save();
-                        ctx.translate(this.x, this.y);
-                        ctx.rotate(this.angle);
-                        
-                        ctx.strokeStyle = '#00ff00';
-                        ctx.lineWidth = 2;
-                        
-                        // Корпус
-                        ctx.strokeRect(-20, -15, 40, 30);
-                        
-                        // Башня
-                        ctx.beginPath();
-                        ctx.arc(0, 0, 10, 0, Math.PI * 2);
-                        ctx.stroke();
-                        
-                        // Пушка
-                        ctx.strokeRect(5, -4, 25, 8);
-                        
-                        ctx.restore();
-                        
-                        // Полоска здоровья
-                        ctx.fillStyle = '#00ff00';
-                        ctx.fillRect(this.x - 25, this.y - 35, 50 * (this.hp / 100), 4);
-                        
-                        if (debug) {
-                            ctx.fillStyle = '#00ff00';
-                            ctx.font = '10px monospace';
-                            ctx.fillText(`L:${this.brain.getLoss().toFixed(3)}`, this.x - 20, this.y - 45);
-                            ctx.fillText(`G:${this.brain.getGradNorm().toFixed(3)}`, this.x - 20, this.y - 55);
+                // Проприоцепция (положение лап)
+                for (let i = 0; i < 6; i++) {
+                    this.neurons.push(new LIFNeuron(
+                        `prop_${i}`, 'sensory', 
+                        100 + (i%3)*80, 320 + Math.floor(i/3)*60, 0.6
+                    ));
+                }
+                
+                // === ЦЕНТРАЛЬНЫЙ ПАТТЕРН-ГЕНЕРАТОР (CPG) ===
+                // Нейроны для генерации ритма ходьбы
+                for (let i = 0; i < 6; i++) {
+                    this.neurons.push(new LIFNeuron(
+                        `cpg_${i}`, 'inter', 
+                        300 + i*40, 200, 0.9, 0.8
+                    ));
+                }
+                
+                // === КОМАНДНЫЕ НЕЙРОНЫ ===
+                const commands = ['walk', 'turnLeft', 'turnRight', 'stop', 'fast', 'slow'];
+                for (let i = 0; i < commands.length; i++) {
+                    this.neurons.push(new LIFNeuron(
+                        `cmd_${commands[i]}`, 'command', 
+                        450, 100 + i*60, 0.5
+                    ));
+                }
+                
+                // === МОТОРНЫЕ НЕЙРОНЫ (выход) ===
+                // Для каждой лапы: поднять/опустить, вперед/назад
+                // 6 лап * 3 сустава * 2 стороны = 36 моторных нейронов
+                for (let leg = 0; leg < 6; leg++) {
+                    for (let joint = 0; joint < 3; joint++) { // coxa, femur, tibia
+                        for (let dir = 0; dir < 2; dir++) { // flex/extend
+                            this.neurons.push(new LIFNeuron(
+                                `motor_${leg}_${joint}_${dir}`, 'motor',
+                                500 + joint*80, 250 + leg*40, 0.7
+                            ));
                         }
-                    } catch (e) {
-                        console.error('Tank.draw error:', e);
                     }
                 }
             }
-
-            // ======================================================================
-            // ТЕСТЫ
-            // ======================================================================
             
-            class Tests {
-                static async run() {
-                    console.log('🧪 ЗАПУСК ТЕСТОВ...');
+            connectBrain() {
+                // Связываем сенсоры с CPG
+                for (let i = 0; i < 6; i++) {
+                    const cpg = this.getNeuron(`cpg_${i}`);
+                    const touch = this.getNeuron(`touch_${i}`);
+                    if (cpg && touch) {
+                        touch.addOutput(cpg, 0.5, 2);
+                    }
+                }
+                
+                // Связываем CPG между собой (для генерации паттерна)
+                for (let i = 0; i < 6; i++) {
+                    const cpg1 = this.getNeuron(`cpg_${i}`);
+                    const cpg2 = this.getNeuron(`cpg_${(i+1)%6}`);
+                    const cpg3 = this.getNeuron(`cpg_${(i+3)%6}`);
+                    if (cpg1 && cpg2) {
+                        cpg1.addOutput(cpg2, 0.3, 3);
+                        cpg1.addOutput(cpg3, -0.2, 4); // Торможение противоположной
+                    }
+                }
+                
+                // Связываем команды с CPG
+                const walk = this.getNeuron('cmd_walk');
+                const turnL = this.getNeuron('cmd_turnLeft');
+                const turnR = this.getNeuron('cmd_turnRight');
+                
+                for (let i = 0; i < 6; i++) {
+                    const cpg = this.getNeuron(`cpg_${i}`);
+                    if (walk && cpg) walk.addOutput(cpg, 0.4, 1);
+                    if (turnL && cpg) turnL.addOutput(cpg, i < 3 ? 0.6 : -0.3, 1);
+                    if (turnR && cpg) turnR.addOutput(cpg, i >= 3 ? 0.6 : -0.3, 1);
+                }
+                
+                // Связываем CPG с моторными нейронами
+                for (let leg = 0; leg < 6; leg++) {
+                    const cpg = this.getNeuron(`cpg_${leg}`);
                     
-                    try {
-                        // Тест 1: Создание Mamba
-                        const mamba = new MambaSSM({ dModel: 16, dState: 8 });
-                        console.assert(mamba.A_log.length === 8, '❌ A_log должен быть вектором');
-                        console.log('✅ Тест 1: Создание Mamba');
+                    for (let joint = 0; joint < 3; joint++) {
+                        const motorFlex = this.getNeuron(`motor_${leg}_${joint}_0`);
+                        const motorExt = this.getNeuron(`motor_${leg}_${joint}_1`);
                         
-                        // Тест 2: Селективность
-                        const x = new Float64Array(16).fill(0.5);
-                        const params = mamba.getParams(x);
-                        console.assert(params && params.dt.length === 8, '❌ dt должен быть вектором dState');
-                        console.log('✅ Тест 2: Селективность');
-                        
-                        // Тест 3: Дискретизация
-                        const disc = mamba.discretize(params.dt, params.B);
-                        console.assert(disc && disc.A_bar.length === 8, '❌ A_bar должен быть вектором');
-                        console.log('✅ Тест 3: Дискретизация');
-                        
-                        // Тест 4: Forward
-                        const sensors = new Float64Array(12).fill(0.5);
-                        const probs = await mamba.forward(sensors);
-                        console.assert(probs.length === 5 && Math.abs(probs.reduce((a,b)=>a+b,0) - 1) < 0.001, '❌ Softmax должен давать сумму 1');
-                        console.log('✅ Тест 4: Forward');
-                        
-                        // Тест 5: Обучение
-                        mamba.learn(1.0, 2);
-                        console.assert(!Utils.isInvalid(mamba.getLoss()), '❌ Loss не должен быть NaN');
-                        console.log('✅ Тест 5: Обучение');
-                        
-                        // Тест 6: Сброс
-                        mamba.reset();
-                        console.assert(mamba.getLoss() === 0, '❌ Сброс должен обнулять loss');
-                        console.log('✅ Тест 6: Сброс');
-                        
-                        console.log('🎉 ВСЕ ТЕСТЫ ПРОЙДЕНЫ');
-                        return true;
-                    } catch (e) {
-                        console.error('❌ Тесты не пройдены:', e);
-                        return false;
+                        if (cpg && motorFlex && motorExt) {
+                            // Прямые и перекрестные связи для создания ритма
+                            cpg.addOutput(motorFlex, 0.5, 2);
+                            cpg.addOutput(motorExt, -0.3, 2);
+                            
+                            // Связи между суставами для координации
+                            if (joint > 0) {
+                                const prevFlex = this.getNeuron(`motor_${leg}_${joint-1}_0`);
+                                if (prevFlex) prevFlex.addOutput(motorFlex, 0.2, 1);
+                            }
+                        }
                     }
                 }
             }
-
-            // ======================================================================
-            // ИГРОВОЙ ДВИЖОК
-            // ======================================================================
             
-            class Game {
-                constructor() {
-                    this.canvas = document.getElementById('canvas');
-                    this.ctx = this.canvas.getContext('2d');
-                    
-                    this.resize();
-                    window.addEventListener('resize', () => this.resize());
-                    
-                    this.tanks = [];
-                    this.bullets = [];
-                    this.running = false;
-                    this.debug = false;
-                    
-                    this.lastTime = performance.now();
-                    this.fps = 60;
-                    this.frameCount = 0;
-                    this.lastFpsUpdate = 0;
-                    
-                    this.totalShots = 0;
-                    this.totalHits = 0;
-                    
-                    this.initUI();
-                    
-                    // Запуск тестов
-                    Tests.run().then(passed => {
-                        if (passed) {
-                            this.spawn(6);
-                            this.loop();
-                        } else {
-                            console.error('❌ Тесты не пройдены, игра не запущена');
-                        }
-                    });
-                }
-                
-                resize() {
-                    this.width = window.innerWidth;
-                    this.height = window.innerHeight;
-                    this.canvas.width = this.width;
-                    this.canvas.height = this.height;
-                }
-                
-                initUI() {
-                    document.getElementById('startBtn').onclick = () => this.toggle();
-                    document.getElementById('resetBtn').onclick = () => this.reset();
-                    document.getElementById('debugBtn').onclick = () => this.debug = !this.debug;
-                    
-                    document.getElementById('tankCount').onchange = () => this.reset();
-                    document.getElementById('dModel').onchange = () => this.reset();
-                    document.getElementById('dState').onchange = () => this.reset();
-                }
-                
-                spawn(count) {
-                    this.tanks = [];
-                    this.bullets = [];
-                    
-                    for (let i = 0; i < count; i++) {
-                        let x, y, overlapping;
-                        do {
-                            overlapping = false;
-                            x = 200 + Math.random() * (this.width - 400);
-                            y = 200 + Math.random() * (this.height - 400);
-                            
-                            for (let t of this.tanks) {
-                                if (Utils.distance(x, y, t.x, t.y) < 100) {
-                                    overlapping = true;
-                                    break;
-                                }
-                            }
-                        } while (overlapping);
-                        
-                        this.tanks.push(new Tank(i, x, y, this));
-                    }
-                    
-                    this.totalShots = 0;
-                    this.totalHits = 0;
-                }
-                
-                toggle() {
-                    this.running = !this.running;
-                    document.getElementById('startBtn').textContent = this.running ? '⏸ ПАУЗА' : '▶ ПУСК';
-                    document.getElementById('state').textContent = this.running ? 'БОЙ' : 'ГОТОВ';
-                    
-                    // Блокировка контролов во время боя
-                    document.querySelectorAll('#ui select, #ui input').forEach(el => {
-                        el.disabled = this.running;
-                    });
-                }
-                
-                reset() {
-                    const count = parseInt(document.getElementById('tankCount').value);
-                    this.spawn(count);
-                    this.running = false;
-                    document.getElementById('startBtn').textContent = '▶ ПУСК';
-                    document.getElementById('state').textContent = 'ГОТОВ';
-                    
-                    document.querySelectorAll('#ui select, #ui input').forEach(el => {
-                        el.disabled = false;
-                    });
-                }
-                
-                update() {
-                    const now = performance.now();
-                    
-                    // FPS
-                    this.frameCount++;
-                    if (now - this.lastFpsUpdate > 1000) {
-                        this.fps = this.frameCount;
-                        this.frameCount = 0;
-                        this.lastFpsUpdate = now;
-                    }
-                    document.getElementById('fps').textContent = this.fps;
-                    
-                    // Очистка canvas
-                    this.ctx.fillStyle = '#0a0c0e';
-                    this.ctx.fillRect(0, 0, this.width, this.height);
-                    
-                    // Сетка
-                    this.ctx.strokeStyle = '#00ff00';
-                    this.ctx.lineWidth = 0.5;
-                    this.ctx.globalAlpha = 0.1;
-                    
-                    for (let i = 0; i < this.width; i += 50) {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(i, 0);
-                        this.ctx.lineTo(i, this.height);
-                        this.ctx.stroke();
-                    }
-                    
-                    for (let i = 0; i < this.height; i += 50) {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(0, i);
-                        this.ctx.lineTo(this.width, i);
-                        this.ctx.stroke();
-                    }
-                    
-                    this.ctx.globalAlpha = 1;
-                    
-                    if (this.running) {
-                        // Обновление танков
-                        for (let tank of this.tanks) {
-                            try {
-                                tank.update();
-                            } catch (e) {
-                                console.error('Tank update error:', e);
-                            }
-                        }
-                        
-                        // Обновление пуль
-                        for (let i = this.bullets.length - 1; i >= 0; i--) {
-                            const b = this.bullets[i];
-                            b.x += b.vx;
-                            b.y += b.vy;
-                            b.life--;
-                            
-                            // Отрисовка пули
-                            this.ctx.beginPath();
-                            this.ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-                            this.ctx.strokeStyle = '#00ff00';
-                            this.ctx.lineWidth = 2;
-                            this.ctx.stroke();
-                            
-                            // Проверка попаданий
-                            for (let tank of this.tanks) {
-                                if (tank !== b.owner && tank.hp > 0) {
-                                    const dx = b.x - tank.x;
-                                    const dy = b.y - tank.y;
-                                    if (dx * dx + dy * dy < (tank.radius + 5) ** 2) {
-                                        tank.takeDamage(b.damage, b.owner);
-                                        this.bullets.splice(i, 1);
-                                        this.totalShots++;
-                                        if (tank.hp <= 0) this.totalHits++;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            // Удаление пули
-                            if (b.life <= 0 || b.x < -100 || b.x > this.width + 100 || b.y < -100 || b.y > this.height + 100) {
-                                this.bullets.splice(i, 1);
-                            }
-                        }
-                    }
-                    
-                    // Отрисовка танков
-                    for (let tank of this.tanks) {
-                        tank.draw(this.ctx, this.debug);
-                    }
-                    
-                    this.updateUI();
-                }
-                
-                updateUI() {
-                    try {
-                        const active = this.tanks.filter(t => t.hp > 0).length;
-                        document.getElementById('activeCount').textContent = `${active}/${this.tanks.length}`;
-                        document.getElementById('totalShots').textContent = this.totalShots;
-                        
-                        const acc = this.totalShots > 0 ? Math.round(this.totalHits / this.totalShots * 100) : 0;
-                        document.getElementById('accuracy').textContent = acc + '%';
-                        
-                        let totalLoss = 0;
-                        let totalGrad = 0;
-                        let lossCount = 0;
-                        
-                        let html = '';
-                        for (let i = 0; i < this.tanks.length; i++) {
-                            const t = this.tanks[i];
-                            if (t.hp > 0) {
-                                const tankAcc = t.shots > 0 ? Math.round(t.hits / t.shots * 100) : 0;
-                                totalLoss += t.brain.getLoss();
-                                totalGrad += t.brain.getGradNorm();
-                                lossCount++;
-                                
-                                html += `
-                                    <div class="tank-item">
-                                        <div class="tank-header">
-                                            <span>ТАНК-${i + 1}</span>
-                                            <span>L:${t.brain.getLoss().toFixed(3)}</span>
-                                        </div>
-                                        <div class="tank-stats">
-                                            <span>Т:${tankAcc}%</span>
-                                            <span>В:${t.shots}</span>
-                                            <span>У:${t.kills}</span>
-                                            <span>G:${t.brain.getGradNorm().toFixed(3)}</span>
-                                        </div>
-                                        <div class="health-bar">
-                                            <div class="health-fill" style="width: ${t.hp}%"></div>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                        }
-                        
-                        document.getElementById('tankStats').innerHTML = html || '<div class="tank-item">Нет активных танков</div>';
-                        
-                        if (lossCount > 0) {
-                            document.getElementById('loss').textContent = (totalLoss / lossCount).toFixed(3);
-                            document.getElementById('gradNorm').textContent = (totalGrad / lossCount).toFixed(3);
-                            document.getElementById('avgLoss').textContent = (totalLoss / lossCount).toFixed(3);
-                        }
-                        
-                        const dModel = parseInt(document.getElementById('dModel').value);
-                        const dState = parseInt(document.getElementById('dState').value);
-                        const neurons = this.tanks.length * (dModel + dState);
-                        const params = this.tanks.length * (
-                            dModel * 12 + // W_in
-                            dModel * dState * 3 + // W_dt, W_B, W_C
-                            dState + // A_log
-                            dModel + // D
-                            dModel * 5 // W_out
-                        );
-                        
-                        document.getElementById('neurons').textContent = neurons.toLocaleString();
-                        document.getElementById('params').textContent = Math.round(params / 1000) + 'K';
-                    } catch (e) {
-                        console.error('updateUI error:', e);
-                    }
-                }
-                
-                loop() {
-                    try {
-                        this.update();
-                        requestAnimationFrame(() => this.loop());
-                    } catch (e) {
-                        console.error('Game loop error:', e);
-                        setTimeout(() => this.loop(), 100);
-                    }
-                }
+            getNeuron(id) {
+                return this.neurons.find(n => n.id === id);
             }
+            
+            step(externalStimulus = {}) {
+                this.time++;
+                
+                // Внешние стимулы
+                if (externalStimulus.walk) {
+                    const walkNeuron = this.getNeuron('cmd_walk');
+                    if (walkNeuron) walkNeuron.step(this.time, 1.0);
+                }
+                
+                if (externalStimulus.touch) {
+                    for (let i = 0; i < externalStimulus.touch.length; i++) {
+                        if (externalStimulus.touch[i] > 0) {
+                            const touchNeuron = this.getNeuron(`touch_${i}`);
+                            if (touchNeuron) touchNeuron.step(this.time, externalStimulus.touch[i]);
+                        }
+                    }
+                }
+                
+                // Шаг всех нейронов
+                let spikes = 0;
+                for (let neuron of this.neurons) {
+                    spikes += neuron.step(this.time);
+                }
+                
+                // Шаг всех синапсов
+                for (let neuron of this.neurons) {
+                    for (let out of neuron.outputs) {
+                        out.synapse.step();
+                    }
+                }
+                
+                return spikes;
+            }
+            
+            getMotorOutputs() {
+                // Получаем сигналы от моторных нейронов
+                const motors = new Array(36).fill(0);
+                
+                for (let leg = 0; leg < 6; leg++) {
+                    for (let joint = 0; joint < 3; joint++) {
+                        for (let dir = 0; dir < 2; dir++) {
+                            const neuron = this.getNeuron(`motor_${leg}_${joint}_${dir}`);
+                            if (neuron && neuron.spiked) {
+                                const idx = leg * 6 + joint * 2 + dir;
+                                motors[idx] = 1.0;
+                            }
+                        }
+                    }
+                }
+                
+                // Преобразуем в сигналы для каждой лапы
+                // Формат: [coxaL, coxaR, femurL, femurR, tibiaL, tibiaR]
+                const legSignals = new Array(6).fill(0);
+                
+                for (let leg = 0; leg < 6; leg++) {
+                    // Суммируем сигналы для каждого сустава
+                    let coxa = 0, femur = 0, tibia = 0;
+                    
+                    for (let dir = 0; dir < 2; dir++) {
+                        const coxaNeuron = this.getNeuron(`motor_${leg}_0_${dir}`);
+                        const femurNeuron = this.getNeuron(`motor_${leg}_1_${dir}`);
+                        const tibiaNeuron = this.getNeuron(`motor_${leg}_2_${dir}`);
+                        
+                        if (coxaNeuron && coxaNeuron.spiked) coxa += dir === 0 ? 0.5 : -0.5;
+                        if (femurNeuron && femurNeuron.spiked) femur += dir === 0 ? 0.5 : -0.5;
+                        if (tibiaNeuron && tibiaNeuron.spiked) tibia += dir === 0 ? 0.5 : -0.5;
+                    }
+                    
+                    legSignals[leg] = {coxa, femur, tibia};
+                }
+                
+                return legSignals;
+            }
+        }
 
-            // Запуск
-            window.addEventListener('load', () => {
-                window.game = new Game();
+        // ============================================
+        // МУРАВЕЙ
+        // ============================================
+        class Ant {
+            constructor() {
+                this.legs = [];
+                
+                // Создаем 6 лап (3 левых, 3 правых)
+                for (let i = 0; i < 3; i++) {
+                    this.legs.push(new Leg(i, 'left'));
+                }
+                for (let i = 0; i < 3; i++) {
+                    this.legs.push(new Leg(i, 'right'));
+                }
+                
+                this.bodyX = 200;
+                this.bodyY = 200;
+                this.bodyAngle = 0;
+                this.headAngle = 0;
+            }
+            
+            update(brainOutputs) {
+                // Обновляем лапы
+                for (let i = 0; i < this.legs.length; i++) {
+                    this.legs[i].update(brainOutputs);
+                }
+                
+                // Движение тела зависит от паттерна лап
+                const leftLegs = this.legs.filter(l => l.side === 'left');
+                const rightLegs = this.legs.filter(l => l.side === 'right');
+                
+                const leftAvg = leftLegs.reduce((sum, leg) => sum + leg.femur, 0) / 3;
+                const rightAvg = rightLegs.reduce((sum, leg) => sum + leg.femur, 0) / 3;
+                
+                // Поворот
+                this.bodyAngle += (rightAvg - leftAvg) * 0.001;
+                
+                // Движение вперед
+                this.bodyX += Math.cos(this.bodyAngle) * 0.5;
+                this.bodyY += Math.sin(this.bodyAngle) * 0.5;
+                
+                // Голова следит за движением
+                this.headAngle = this.bodyAngle + Math.sin(Date.now() * 0.01) * 0.1;
+            }
+            
+            draw(ctx) {
+                ctx.clearRect(0, 0, 400, 400);
+                ctx.save();
+                ctx.translate(this.bodyX, this.bodyY);
+                ctx.rotate(this.bodyAngle);
+                
+                // Тело
+                ctx.fillStyle = '#3a5a3a';
+                ctx.strokeStyle = '#7cfc00';
+                ctx.lineWidth = 3;
+                
+                // Брюшко
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 30, 20, 0, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Грудь
+                ctx.beginPath();
+                ctx.ellipse(20, 0, 25, 18, 0, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Голова (поворачивается отдельно)
+                ctx.save();
+                ctx.translate(45, 0);
+                ctx.rotate(this.headAngle - this.bodyAngle);
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 15, 12, 0, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Глаза
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(5, -4, 3, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(5, 4, 3, 0, 2*Math.PI);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(7, -4, 1.5, 0, 2*Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(7, 4, 1.5, 0, 2*Math.PI);
+                ctx.fill();
+                
+                // Усики
+                ctx.strokeStyle = '#7cfc00';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(8, -6);
+                ctx.lineTo(20, -15);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(8, 6);
+                ctx.lineTo(20, 15);
+                ctx.stroke();
+                
+                ctx.restore();
+                
+                // Лапы
+                ctx.strokeStyle = '#7cfc00';
+                ctx.lineWidth = 3;
+                
+                // Левая сторона
+                for (let i = 0; i < 3; i++) {
+                    const leg = this.legs[i];
+                    const angles = leg.getAngles();
+                    
+                    const xOffset = -10 + i * 20;
+                    
+                    ctx.save();
+                    ctx.translate(xOffset, 0);
+                    
+                    // Coxa (базовый сустав)
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(10, 5 + angles.coxa * 0.2);
+                    
+                    // Femur (средний)
+                    ctx.lineTo(20 + angles.femur * 0.2, 15 + angles.femur * 0.3);
+                    
+                    // Tibia (нижний)
+                    ctx.lineTo(30 + angles.tibia * 0.2, 25 + angles.tibia * 0.4);
+                    
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                // Правая сторона
+                for (let i = 0; i < 3; i++) {
+                    const leg = this.legs[i+3];
+                    const angles = leg.getAngles();
+                    
+                    const xOffset = -10 + i * 20;
+                    
+                    ctx.save();
+                    ctx.translate(xOffset, 0);
+                    ctx.scale(1, -1);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(10, 5 + angles.coxa * 0.2);
+                    ctx.lineTo(20 + angles.femur * 0.2, 15 + angles.femur * 0.3);
+                    ctx.lineTo(30 + angles.tibia * 0.2, 25 + angles.tibia * 0.4);
+                    
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                ctx.restore();
+            }
+        }
+
+        // ============================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ============================================
+        const brainCanvas = document.getElementById('brainCanvas');
+        const antCanvas = document.getElementById('antCanvas');
+        const ctxBrain = brainCanvas.getContext('2d');
+        const ctxAnt = antCanvas.getContext('2d');
+        
+        const brain = new AntBrain();
+        const ant = new Ant();
+        
+        let time = 0;
+        let gait = 'walk';
+        
+        // Создаем интерфейс для лап
+        function updateLegUI() {
+            const container = document.getElementById('legControls');
+            let html = '';
+            
+            ant.legs.forEach((leg, i) => {
+                const angles = leg.getAngles();
+                const side = leg.side === 'left' ? '⬅️' : '➡️';
+                const pos = ['передняя', 'средняя', 'задняя'][leg.position];
+                
+                html += `
+                    <div class="leg-control">
+                        <span class="leg-number">${side} ${pos}</span>
+                        <div class="leg-bar">
+                            <div class="leg-fill" id="legFill${i}" style="width: ${(angles.femur/180)*100}%"></div>
+                        </div>
+                        <span class="leg-angle">${Math.round(angles.femur)}°</span>
+                    </div>
+                `;
             });
-        })();
+            
+            container.innerHTML = html;
+        }
+        
+        // Отрисовка мозга
+        function drawBrain() {
+            ctxBrain.clearRect(0, 0, 600, 600);
+            
+            // Рисуем связи
+            ctxBrain.strokeStyle = '#7cfc00';
+            ctxBrain.lineWidth = 1;
+            ctxBrain.globalAlpha = 0.3;
+            
+            for (let neuron of brain.neurons) {
+                for (let out of neuron.outputs) {
+                    if (out.synapse && out.synapse.post) {
+                        ctxBrain.beginPath();
+                        ctxBrain.moveTo(neuron.x, neuron.y);
+                        ctxBrain.lineTo(out.synapse.post.x, out.synapse.post.y);
+                        
+                        // Цвет в зависимости от веса
+                        const weight = out.synapse.weight;
+                        if (weight > 0) {
+                            ctxBrain.strokeStyle = `rgba(124, 252, 0, ${Math.abs(weight)})`;
+                        } else {
+                            ctxBrain.strokeStyle = `rgba(255, 0, 0, ${Math.abs(weight)})`;
+                        }
+                        
+                        ctxBrain.stroke();
+                    }
+                }
+            }
+            
+            // Рисуем нейроны
+            ctxBrain.globalAlpha = 1;
+            for (let neuron of brain.neurons) {
+                // Цвет по типу
+                switch(neuron.type) {
+                    case 'sensory': ctxBrain.fillStyle = '#44f'; break;
+                    case 'motor': ctxBrain.fillStyle = '#f44'; break;
+                    case 'inter': ctxBrain.fillStyle = '#ff4'; break;
+                    case 'command': ctxBrain.fillStyle = '#f4f'; break;
+                }
+                
+                // Размер по активности
+                let radius = 5;
+                if (neuron.spiked) {
+                    radius = 10;
+                    ctxBrain.shadowBlur = 20;
+                    ctxBrain.shadowColor = '#7cfc00';
+                }
+                
+                ctxBrain.beginPath();
+                ctxBrain.arc(neuron.x, neuron.y, radius, 0, 2*Math.PI);
+                ctxBrain.fill();
+                
+                if (neuron.spiked) {
+                    ctxBrain.strokeStyle = '#fff';
+                    ctxBrain.lineWidth = 2;
+                    ctxBrain.stroke();
+                }
+                
+                ctxBrain.shadowBlur = 0;
+                
+                // ID для маленьких
+                if (neuron.id.length < 10) {
+                    ctxBrain.fillStyle = '#fff';
+                    ctxBrain.font = '8px Courier New';
+                    ctxBrain.fillText(neuron.id.split('_')[0], neuron.x-10, neuron.y-10);
+                }
+            }
+            
+            // Обновляем статистику
+            const activityDiv = document.getElementById('brainActivity');
+            let activityHtml = '';
+            
+            const neuronTypes = ['sensory', 'inter', 'motor', 'command'];
+            neuronTypes.forEach(type => {
+                const neurons = brain.neurons.filter(n => n.type === type);
+                const active = neurons.filter(n => n.spiked).length;
+                
+                activityHtml += `
+                    <div class="neuron-cell">
+                        <span class="spike-indicator" style="background: ${active>0?'#7cfc00':'#444'}"></span>
+                        ${type}: ${active}/${neurons.length}
+                    </div>
+                `;
+            });
+            
+            activityDiv.innerHTML = activityHtml;
+        }
+        
+        // Функции управления
+        function setGait(newGait) {
+            gait = newGait;
+            document.getElementById('currentGait').textContent = newGait;
+            
+            // Подаем команды в мозг
+            if (newGait === 'walk') {
+                brain.step({walk: true});
+            } else if (newGait === 'stop') {
+                // Останавливаем
+            }
+        }
+        
+        function randomStimulus() {
+            // Случайные тактильные стимулы
+            const touch = new Array(6).fill(0);
+            for (let i = 0; i < 3; i++) {
+                touch[Math.floor(Math.random() * 6)] = Math.random();
+            }
+            brain.step({touch});
+        }
+        
+        function resetBrain() {
+            brain.neurons = [];
+            brain.synapses = [];
+            brain.time = 0;
+            brain.createBrain();
+            brain.connectBrain();
+        }
+        
+        // Основной цикл
+        function step() {
+            time++;
+            
+            // Подаем текущую команду
+            if (gait === 'walk') {
+                brain.step({walk: true});
+            } else if (gait === 'turnLeft') {
+                // Стимуляция левых сенсоров
+                const touch = new Array(6).fill(0);
+                for (let i = 0; i < 3; i++) touch[i] = 0.5;
+                brain.step({walk: true, touch});
+            } else if (gait === 'turnRight') {
+                const touch = new Array(6).fill(0);
+                for (let i = 3; i < 6; i++) touch[i] = 0.5;
+                brain.step({walk: true, touch});
+            } else {
+                brain.step({});
+            }
+            
+            // Получаем моторные выходы
+            const motorOutputs = brain.getMotorOutputs();
+            
+            // Обновляем муравья
+            ant.update(motorOutputs);
+            
+            // Отрисовка
+            drawBrain();
+            ant.draw(ctxAnt);
+            
+            // Обновляем UI
+            updateLegUI();
+            
+            // Статистика
+            document.getElementById('time').textContent = time;
+            
+            const spikes = brain.neurons.filter(n => n.spiked).length;
+            document.getElementById('spikeRate').textContent = spikes * 10; // за секунду
+            
+            requestAnimationFrame(step);
+        }
+        
+        // Запуск
+        updateLegUI();
+        step();
     </script>
 </body>
 </html>
