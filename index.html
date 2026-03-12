@@ -433,7 +433,7 @@
                     </div>
                 </div>
                 <div style="margin-top: 15px; font-size: 11px; color: #00ffff; text-align: center;">
-                    h_t = exp(Δ·A)·h_{{t-1}} + (Δ·A)⁻¹(exp(Δ·A)-I)·Δ·B·x_t
+                    h_t = exp(Δ·A)·h_{t-1} + (Δ·A)⁻¹(exp(Δ·A)-I)·Δ·B·x_t
                 </div>
             </div>
             
@@ -456,7 +456,7 @@
                     <b>1. Encoder:</b> Linear(6 → 32) + LayerNorm<br>
                     <b>2. SSM Parameters:</b> A (diag), B(x), C(x), Δ(x)<br>
                     <b>3. Discretization:</b> ZOH: Ā = exp(ΔA), B̄ = (ΔA)⁻¹(exp(ΔA)-I)·ΔB<br>
-                    <b>4. State Update:</b> h_t = Ā·h_{{t-1}} + B̄·x_t<br>
+                    <b>4. State Update:</b> h_t = Ā·h_{t-1} + B̄·x_t<br>
                     <b>5. Output:</b> y_t = C·h_t + D·x_t<br>
                     <b>6. Perceptron:</b> Linear(32 → 8) + Tanh
                 </div>
@@ -682,8 +682,9 @@
                 const B_bar = Matrix.zeros(n, n);
                 for (let i = 0; i < n; i++) {
                     for (let j = 0; j < n; j++) {
-                        if (A[i][i] !== 0) {
-                            B_bar[i][j] = (Math.exp(delta * A[i][i]) - 1) / A[i][i] * B[i][j];
+                        const a_val = A[i][i];
+                        if (Math.abs(a_val) > 1e-6) {
+                            B_bar[i][j] = (Math.exp(delta * a_val) - 1) / a_val * B[i][j];
                         } else {
                             B_bar[i][j] = delta * B[i][j];
                         }
@@ -697,6 +698,10 @@
                 // Кодирование видимых объектов с attention pooling
                 let aggregated = new Array(this.latentDim).fill(0);
                 let attentionSum = 0;
+                
+                if (!objects || objects.length === 0) {
+                    return aggregated;
+                }
                 
                 for (let obj of objects.slice(0, CONFIG.MAX_VISIBLE_OBJECTS)) {
                     const inputVec = Matrix.fromArray([
@@ -744,10 +749,6 @@
                 delta = Math.min(CONFIG.SSM_DELTA_MAX, Math.max(CONFIG.SSM_DELTA_MIN, delta));
                 this.delta = delta;
                 
-                // Селективные B и C (могут зависеть от входа)
-                const xMat = Matrix.fromArray(x);
-                const deltaFactor = this.W_delta[0].reduce((a, b) => a + b, 0) * xMean;
-                
                 // 3. Discretization
                 const { A_bar, B_bar } = this.discretize(this.A, this.B, delta);
                 
@@ -765,7 +766,7 @@
                 for (let i = 0; i < this.latentDim; i++) {
                     const ah = Ah[0][i] || 0;
                     const bx = Bx[0][i] || 0;
-                    this.state[i] = Math.tanh(ah + bx + deltaFactor * x[i]);
+                    this.state[i] = Math.tanh(ah + bx);
                 }
                 
                 // LayerNorm
@@ -1115,7 +1116,7 @@
                     let bestScore = -Infinity;
                     for (let wall of walls) {
                         const dist = Math.hypot(wall.x + wall.w/2 - this.x, wall.y + wall.h/2 - this.y);
-                        const coverScore = 1 / (dist + 1) + state[0] * 0.1; // SSM влияет на выбор
+                        const coverScore = 1 / (dist + 1) + (state[0] || 0) * 0.1; // SSM влияет на выбор
                         if (coverScore > bestScore) {
                             bestScore = coverScore;
                             bestCover = wall;
@@ -1237,7 +1238,9 @@
                 ctx.save();
                 
                 // Свечение от SSM состояния
-                const intensity = this.mambaState.reduce((a, b) => a + Math.abs(b), 0) / this.mambaState.length;
+                const intensity = this.mambaState.length > 0 
+                    ? this.mambaState.reduce((a, b) => a + Math.abs(b), 0) / this.mambaState.length 
+                    : 0;
                 const glowSize = this.radius * (2 + intensity);
                 
                 const gradient = ctx.createRadialGradient(
@@ -1353,7 +1356,7 @@
                 this.bestFitness = 0;
                 this.bestBrain = null;
                 this.isRunning = false;
-                this.isPaused = false;
+                this.isPaused = true; // Начинаем с паузы
                 this.simulationSpeed = 1;
                 this.mutationRate = CONFIG.MUTATION_RATE;
                 
@@ -1371,6 +1374,23 @@
                 document.getElementById('mutation-slider').addEventListener('input', (e) => {
                     this.mutationRate = parseFloat(e.target.value);
                 });
+                
+                // Запускаем анимацию сразу
+                this.animationFrame = null;
+                this.startAnimation();
+            }
+            
+            startAnimation() {
+                const animate = () => {
+                    if (this.isRunning && !this.isPaused) {
+                        this.update();
+                    }
+                    this.draw(); // Рисуем всегда, даже на паузе
+                    this.updateUI();
+                    
+                    this.animationFrame = requestAnimationFrame(animate);
+                };
+                animate();
             }
             
             resize() {
@@ -1379,6 +1399,14 @@
                 this.canvas.height = wrapper.clientHeight;
                 CONFIG.ARENA_WIDTH = this.canvas.width;
                 CONFIG.ARENA_HEIGHT = this.canvas.height;
+                
+                // Перемещаем агентов при изменении размера
+                if (this.agents) {
+                    for (let agent of this.agents) {
+                        agent.x = Math.min(CONFIG.ARENA_WIDTH - agent.radius, Math.max(agent.radius, agent.x));
+                        agent.y = Math.min(CONFIG.ARENA_HEIGHT - agent.radius, Math.max(agent.radius, agent.y));
+                    }
+                }
             }
             
             initWalls() {
@@ -1538,11 +1566,10 @@
                 this.initResources();
                 this.bullets = [];
                 this.particles = [];
-                
-                this.updateUI();
             }
             
             draw() {
+                // Очистка canvas
                 this.ctx.fillStyle = 'rgba(10, 10, 20, 0.2)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 
@@ -1553,6 +1580,7 @@
                 for (let particle of this.particles) particle.draw(this.ctx);
                 for (let bullet of this.bullets) bullet.draw(this.ctx);
                 
+                // Сортируем для правильного отображения
                 this.agents.sort((a, b) => (a.hp <= 0 ? 1 : 0) - (b.hp <= 0 ? 1 : 0));
                 for (let agent of this.agents) agent.draw(this.ctx);
                 
@@ -1687,16 +1715,6 @@
                     listEl.appendChild(item);
                 }
             }
-            
-            loop() {
-                if (!this.isRunning) return;
-                
-                this.update();
-                this.draw();
-                this.updateUI();
-                
-                requestAnimationFrame(() => this.loop());
-            }
         }
 
         // ============================================
@@ -1705,17 +1723,23 @@
         let game;
         let fpsInterval;
         let frameCount = 0;
-        let lastTime = performance.now();
 
         function init() {
             game = new Game();
-            game.draw();
-            game.updateUI();
             
             fpsInterval = setInterval(() => {
                 document.getElementById('fps-counter').textContent = `FPS: ${frameCount}`;
                 frameCount = 0;
             }, 1000);
+            
+            // FPS counter
+            const originalRequestAnimationFrame = window.requestAnimationFrame;
+            window.requestAnimationFrame = function(callback) {
+                return originalRequestAnimationFrame(function(timestamp) {
+                    frameCount++;
+                    callback(timestamp);
+                });
+            };
             
             document.getElementById('speed-slider').addEventListener('input', (e) => {
                 if (game) game.simulationSpeed = parseInt(e.target.value);
@@ -1733,7 +1757,6 @@
                 game.isPaused = false;
                 btn.textContent = '⏹ ОСТАНОВИТЬ MAMBA';
                 btn.classList.add('active');
-                game.loop();
             }
         }
 
@@ -1744,7 +1767,7 @@
 
         function resetSimulation() {
             game.isRunning = false;
-            game.isPaused = false;
+            game.isPaused = true;
             game.generation = 1;
             game.bestFitness = 0;
             game.bestBrain = null;
@@ -1752,8 +1775,6 @@
             game.initResources();
             game.bullets = [];
             game.particles = [];
-            game.draw();
-            game.updateUI();
             
             document.getElementById('btn-train').textContent = '🚀 АКТИВИРОВАТЬ MAMBA';
             document.getElementById('btn-train').classList.remove('active');
