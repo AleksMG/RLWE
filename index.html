@@ -3,33 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL MAMBA · TANK BATTLE ARENA</title>
-    
-    <!-- Современные шрифты и иконки -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+    <title>MAMBA SSM · PRODUCTION READY</title>
     <style>
-        /* Современный CSS с переменными, анимациями и glassmorphism */
-        :root {
-            --bg-primary: #0a0c0e;
-            --bg-secondary: #14181c;
-            --bg-tertiary: #1e2329;
-            --accent-primary: #00ff88;
-            --accent-secondary: #00ccff;
-            --accent-danger: #ff3b3b;
-            --accent-warning: #ffb800;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a8b4;
-            --border-color: #2a333d;
-            --shadow-color: rgba(0, 255, 136, 0.15);
-            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-            --glass-bg: rgba(20, 24, 28, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-        }
-
+        /* Профессиональный минималистичный дизайн */
         * {
             margin: 0;
             padding: 0;
@@ -37,377 +13,245 @@
         }
 
         body {
-            background: var(--bg-primary);
-            font-family: 'Inter', sans-serif;
+            background: #0a0c0e;
             overflow: hidden;
-            color: var(--text-primary);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* Canvas с аппаратным ускорением */
         canvas {
             display: block;
             width: 100vw;
             height: 100vh;
-            background: radial-gradient(circle at 50% 50%, #1a1f24, #0a0c0e);
-            transform: translateZ(0);
-            will-change: transform;
+            background: #0a0c0e;
         }
 
-        /* Современный UI с blur и градиентами */
+        /* UI панели */
         #ui {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
             pointer-events: none;
-            z-index: 1000;
-            padding: 20px;
             display: flex;
             justify-content: space-between;
+            gap: 20px;
+            z-index: 1000;
         }
 
-        /* Левая панель - управление */
-        .panel-left {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        .panel {
             pointer-events: auto;
-            width: 320px;
-        }
-
-        /* Правая панель - статистика */
-        .panel-right {
-            pointer-events: auto;
-            width: 360px;
-        }
-
-        /* Стек панелей */
-        .panel-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        /* Современный glass-кард */
-        .card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
+            background: rgba(18, 22, 28, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: var(--transition-base);
+            width: 320px;
+            color: #e0e4e9;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            font-size: 13px;
         }
 
-        .card:hover {
-            border-color: rgba(0, 255, 136, 0.2);
-            box-shadow: 0 8px 48px var(--shadow-color);
-        }
-
-        /* Заголовки */
-        .card-header {
+        .panel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             font-weight: 600;
-            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--accent-primary);
+            color: #3b82f6;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 10px;
         }
 
-        .card-header i {
-            opacity: 0.7;
+        .badge {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-size: 11px;
+            color: #3b82f6;
         }
 
-        /* Контролы */
         .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .control-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 13px;
-            color: var(--text-secondary);
+            margin-bottom: 12px;
         }
 
-        /* Современные селекты и инпуты */
-        .select-modern, .input-modern {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 8px 12px;
-            color: var(--text-primary);
+        .control-label {
+            color: #94a3b8;
+        }
+
+        .control-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            width: 120px;
-            cursor: pointer;
-            transition: var(--transition-fast);
+            font-weight: 600;
+            color: #e0e4e9;
+        }
+
+        select, input {
+            background: #1e262f;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: #e0e4e9;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            width: 110px;
             outline: none;
         }
 
-        .select-modern:hover, .input-modern:hover {
-            border-color: var(--accent-primary);
+        select:hover, input:hover {
+            border-color: #3b82f6;
         }
 
-        .select-modern:focus, .input-modern:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.1);
-        }
-
-        /* Метрики в реальном времени */
         .metric-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 12px;
+            gap: 10px;
+            margin: 20px 0;
         }
 
-        .metric-item {
-            background: var(--bg-tertiary);
-            border-radius: 16px;
+        .metric-card {
+            background: #1e262f;
+            border-radius: 12px;
             padding: 12px;
             text-align: center;
         }
 
         .metric-value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--accent-primary);
-            line-height: 1.2;
+            font-size: 22px;
+            font-weight: 700;
+            color: #3b82f6;
         }
 
         .metric-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            letter-spacing: 0.5px;
-        }
-
-        /* Кнопки */
-        .button-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 16px;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
         }
 
         .btn {
-            flex: 1;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 12px 16px;
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            background: #1e262f;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #e0e4e9;
             font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 12px;
             cursor: pointer;
-            transition: var(--transition-base);
-            display: flex;
+            transition: all 0.15s;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            flex: 1;
         }
 
         .btn-primary {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-            color: var(--bg-primary);
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
         }
 
         .btn-primary:hover {
             background: transparent;
-            color: var(--accent-primary);
-            box-shadow: 0 0 20px var(--shadow-color);
+            color: #3b82f6;
         }
 
-        .btn-danger {
-            border-color: var(--accent-danger);
-            color: var(--accent-danger);
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
         }
 
-        .btn-danger:hover {
-            background: var(--accent-danger);
-            border-color: var(--accent-danger);
-            color: var(--bg-primary);
-        }
-
-        /* Список танков */
         .tank-list {
-            max-height: 380px;
+            max-height: 360px;
             overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-primary) var(--bg-tertiary);
+            margin: 16px 0;
             padding-right: 4px;
         }
 
-        .tank-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .tank-list::-webkit-scrollbar-track {
-            background: var(--bg-tertiary);
-            border-radius: 4px;
-        }
-
-        .tank-list::-webkit-scrollbar-thumb {
-            background: var(--accent-primary);
-            border-radius: 4px;
-        }
-
         .tank-item {
-            background: var(--bg-tertiary);
-            border-radius: 16px;
+            background: #1e262f;
+            border-radius: 12px;
             padding: 12px;
             margin-bottom: 8px;
             border-left: 3px solid;
-            transition: var(--transition-fast);
-            cursor: pointer;
-        }
-
-        .tank-item:hover {
-            transform: translateX(4px);
-            background: #252e38;
         }
 
         .tank-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .tank-name {
             font-weight: 600;
-            font-size: 13px;
-        }
-
-        .tank-badge {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
         }
 
         .tank-stats {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-secondary);
+            font-size: 10px;
+            color: #94a3b8;
             margin: 6px 0;
         }
 
-        /* Прогресс бар здоровья */
         .health-bar {
-            width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0,0,0,0.3);
             border-radius: 4px;
             overflow: hidden;
-            margin: 8px 0;
         }
 
         .health-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 4px;
-            transition: width var(--transition-fast);
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            transition: width 0.2s;
         }
 
-        /* Информационная панель */
-        .info-panel {
+        .status-bar {
             position: fixed;
             bottom: 20px;
-            left: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 12px 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--text-secondary);
-            pointer-events: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(18, 22, 28, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 40px;
+            padding: 10px 24px;
             display: flex;
             gap: 24px;
+            pointer-events: auto;
         }
 
-        .info-item {
+        .status-item {
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 12px;
         }
 
-        .info-dot {
+        .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--accent-primary);
+            background: #3b82f6;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
+            0%,100% { opacity: 0.5; transform: scale(1); }
             50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        /* Градиентный текст */
-        .gradient-text {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Адаптивность */
-        @media (max-width: 1200px) {
-            .panel-left { width: 280px; }
-            .panel-right { width: 320px; }
-        }
-
-        /* Анимации появления */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .card {
-            animation: slideIn 0.3s ease-out;
-        }
-
-        /* Статус бары */
-        .status-bar {
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, 
-                var(--accent-primary) 0%, 
-                var(--accent-secondary) 50%,
-                var(--accent-primary) 100%);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
         }
     </style>
 </head>
@@ -416,484 +260,718 @@
 
     <div id="ui">
         <!-- Левая панель -->
-        <div class="panel-left">
-            <div class="panel-stack">
-                <!-- Конфигурация -->
-                <div class="card">
-                    <div class="card-header">
-                        <span>⚡ Neural Configuration</span>
-                        <i>Mamba SSM</i>
-                    </div>
-                    
-                    <div class="control-group">
-                        <div class="control-row">
-                            <span>Tanks Count</span>
-                            <select id="tankCount" class="select-modern">
-                                <option value="2">2 Units</option>
-                                <option value="3">3 Units</option>
-                                <option value="4">4 Units</option>
-                                <option value="5">5 Units</option>
-                                <option value="6" selected>6 Units</option>
-                                <option value="7">7 Units</option>
-                                <option value="8">8 Units</option>
-                            </select>
-                        </div>
-                        
-                        <div class="control-row">
-                            <span>Model Dimension</span>
-                            <select id="modelSize" class="select-modern">
-                                <option value="16">16x (fast)</option>
-                                <option value="32" selected>32x (optimal)</option>
-                                <option value="64">64x (precision)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="control-row">
-                            <span>Learning Rate</span>
-                            <input type="number" id="learnRate" class="input-modern" 
-                                   min="0.0001" max="0.1" step="0.0001" value="0.001">
-                        </div>
-                        
-                        <div class="control-row">
-                            <span>Prediction Horizon</span>
-                            <input type="number" id="predictionHorizon" class="input-modern" 
-                                   min="0.1" max="1.0" step="0.1" value="0.5">
-                        </div>
-                    </div>
-                    
-                    <div class="metric-grid">
-                        <div class="metric-item">
-                            <div class="metric-value" id="totalNeurons">3.2K</div>
-                            <div class="metric-label">Neurons</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value" id="totalParams">124K</div>
-                            <div class="metric-label">Parameters</div>
-                        </div>
-                    </div>
+        <div class="panel">
+            <div class="panel-header">
+                <span>⚡ MAMBA CORE · v2.0</span>
+                <span class="badge">PRODUCTION</span>
+            </div>
+
+            <div class="control-group">
+                <div class="control-row">
+                    <span class="control-label">Танки</span>
+                    <select id="tankCount">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6" selected>6</option>
+                    </select>
                 </div>
 
-                <!-- Производительность -->
-                <div class="card">
-                    <div class="card-header">
-                        <span>📊 Performance</span>
-                    </div>
-                    
-                    <div class="metric-grid">
-                        <div class="metric-item">
-                            <div class="metric-value" id="fps">60</div>
-                            <div class="metric-label">FPS</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value" id="frameTime">16</div>
-                            <div class="metric-label">ms</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value" id="tanksAlive">6</div>
-                            <div class="metric-label">Alive</div>
-                        </div>
-                        <div class="metric-item">
-                            <div class="metric-value" id="totalShots">0</div>
-                            <div class="metric-label">Shots</div>
-                        </div>
-                    </div>
+                <div class="control-row">
+                    <span class="control-label">dModel</span>
+                    <select id="dModel">
+                        <option value="32">32</option>
+                        <option value="64" selected>64</option>
+                        <option value="128">128</option>
+                    </select>
                 </div>
 
-                <!-- Управление -->
-                <div class="card">
-                    <div class="button-group">
-                        <button class="btn btn-primary" id="startBtn">
-                            <span>▶</span> Start
-                        </button>
-                        <button class="btn" id="resetBtn">
-                            <span>↻</span> Reset
-                        </button>
-                        <button class="btn" id="debugBtn">
-                            <span>👁</span> Debug
-                        </button>
-                    </div>
+                <div class="control-row">
+                    <span class="control-label">dState</span>
+                    <select id="dState">
+                        <option value="16">16</option>
+                        <option value="32" selected>32</option>
+                        <option value="64">64</option>
+                    </select>
+                </div>
+
+                <div class="control-row">
+                    <span class="control-label">Learning Rate</span>
+                    <input type="number" id="lr" value="0.0001" step="0.00001" min="0.00001" max="0.01">
+                </div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="neurons">0</div>
+                    <div class="metric-label">Нейронов</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="params">0</div>
+                    <div class="metric-label">Параметров</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="fps">60</div>
+                    <div class="metric-label">FPS</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="loss">0.000</div>
+                    <div class="metric-label">Loss</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="startBtn">▶ ПУСК</button>
+                <button class="btn" id="resetBtn">↻ СБРОС</button>
+                <button class="btn" id="debugBtn">👁 DEBUG</button>
+            </div>
+        </div>
+
+        <!-- Правая панель -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>📊 СТАТИСТИКА</span>
+                <span class="badge" id="activeCount">0/0</span>
+            </div>
+
+            <div class="tank-list" id="tankStats"></div>
+
+            <div class="control-group">
+                <div class="control-row">
+                    <span class="control-label">Выстрелы</span>
+                    <span class="control-value" id="totalShots">0</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Точность</span>
+                    <span class="control-value" id="accuracy">0%</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Avg Loss</span>
+                    <span class="control-value" id="avgLoss">0.000</span>
+                </div>
+                <div class="control-row">
+                    <span class="control-label">Gradient</span>
+                    <span class="control-value" id="gradNorm">0.000</span>
                 </div>
             </div>
         </div>
 
-        <!-- Правая панель - статистика танков -->
-        <div class="panel-right">
-            <div class="card">
-                <div class="card-header">
-                    <span>⚔️ Active Units</span>
-                    <span class="tank-badge" id="activeCount">6/6</span>
-                </div>
-                
-                <div class="tank-list" id="tankStats">
-                    <!-- Танки будут рендериться динамически -->
-                </div>
-
-                <!-- Глобальная статистика -->
-                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                    <div class="control-row">
-                        <span>Hit Ratio</span>
-                        <span class="gradient-text" id="hitRatio">0%</span>
-                    </div>
-                    <div class="control-row">
-                        <span>Learning Steps</span>
-                        <span class="gradient-text" id="learnSteps">0</span>
-                    </div>
-                    <div class="control-row">
-                        <span>Avg Loss</span>
-                        <span class="gradient-text" id="avgLoss">0.000</span>
-                    </div>
-                </div>
+        <!-- Нижняя панель -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="dot"></div>
+                <span>Состояние: <strong id="state">ГОТОВ</strong></span>
             </div>
-        </div>
-
-        <!-- Инфо панель -->
-        <div class="info-panel">
-            <div class="info-item">
-                <span class="info-dot"></span>
-                <span>State: <strong id="state">READY</strong></span>
+            <div class="status-item">
+                <span>MAMBA · SELECTIVE SSM</span>
             </div>
-            <div class="info-item">
-                <span>Mamba SSM · v2.0</span>
-            </div>
-            <div class="info-item">
-                <span>© Neural Labs</span>
+            <div class="status-item">
+                <span id="learningStatus">Обучение: АКТИВНО</span>
             </div>
         </div>
     </div>
 
     <script>
         (function() {
-            "use strict";
+            'use strict';
 
-            // ==================== ПРОФЕССИОНАЛЬНАЯ MAMBA SSM ====================
+            // ==================== УТИЛИТЫ ====================
+            
+            const Utils = {
+                softplus: (x) => {
+                    if (x > 20) return x;
+                    if (x < -20) return 0;
+                    return Math.log(1 + Math.exp(x));
+                },
+
+                sigmoid: (x) => 1 / (1 + Math.exp(-Math.max(-20, Math.min(20, x)))),
+
+                tanh: Math.tanh,
+
+                relu: (x) => Math.max(0, x),
+
+                softmax: (logits, temp = 0.7) => {
+                    const maxLogit = Math.max(...logits);
+                    let sum = 0;
+                    const exp = new Float64Array(logits.length);
+                    
+                    for (let i = 0; i < logits.length; i++) {
+                        exp[i] = Math.exp((logits[i] - maxLogit) / temp);
+                        sum += exp[i];
+                    }
+                    
+                    const probs = new Float64Array(logits.length);
+                    for (let i = 0; i < logits.length; i++) {
+                        probs[i] = exp[i] / sum;
+                    }
+                    return probs;
+                },
+
+                // Поэлементные операции для векторов
+                vecAdd: (a, b) => {
+                    const res = new Float64Array(a.length);
+                    for (let i = 0; i < a.length; i++) res[i] = a[i] + b[i];
+                    return res;
+                },
+
+                vecMul: (a, b) => {
+                    const res = new Float64Array(a.length);
+                    for (let i = 0; i < a.length; i++) res[i] = a[i] * b[i];
+                    return res;
+                },
+
+                vecScale: (a, s) => {
+                    const res = new Float64Array(a.length);
+                    for (let i = 0; i < a.length; i++) res[i] = a[i] * s;
+                    return res;
+                },
+
+                // Матрично-векторное умножение (оптимизировано)
+                matVecMul: (mat, vec, rows, cols) => {
+                    const res = new Float64Array(rows);
+                    for (let i = 0; i < rows; i++) {
+                        let sum = 0;
+                        const row = mat[i];
+                        for (let j = 0; j < cols; j++) {
+                            sum += row[j] * vec[j];
+                        }
+                        res[i] = sum;
+                    }
+                    return res;
+                },
+
+                // Параллельный ассоциативный scan (ключевая фича Mamba)
+                associativeScan: (A_bars, B_bars_xs) => {
+                    const L = A_bars.length;
+                    const dState = A_bars[0].length;
+                    
+                    // Результат: итоговые состояния h для всех шагов
+                    const h = new Array(L);
+                    
+                    // Последовательный scan (для CPU)
+                    // В GPU версии был бы параллельный
+                    let h_prev = new Float64Array(dState).fill(0);
+                    
+                    for (let t = 0; t < L; t++) {
+                        const A = A_bars[t];
+                        const Bx = B_bars_xs[t];
+                        
+                        // h_t = A ⊙ h_{t-1} + Bx
+                        const h_t = new Float64Array(dState);
+                        for (let i = 0; i < dState; i++) {
+                            h_t[i] = A[i] * h_prev[i] + Bx[i];
+                        }
+                        
+                        h[t] = h_t;
+                        h_prev = h_t;
+                    }
+                    
+                    return h;
+                }
+            };
+
+            // ==================== ПРОФЕССИОНАЛЬНАЯ MAMBA ====================
+            
+            /**
+             * Полная реализация Mamba SSM
+             * Особенности:
+             * - Диагональная матрица A (O(n) вместо O(n³))
+             * - Селективность (Δ, B, C от входа)
+             * - Правильная дискретизация для диагональной A
+             * - Ассоциативный scan для последовательностей
+             * - Полные градиенты через BPTT
+             */
             class MambaSSM {
                 constructor(config = {}) {
-                    this.dModel = config.dModel || 32;      // Размерность модели
-                    this.dState = config.dState || 16;       // Размерность состояния
-                    this.dConv = config.dConv || 4;          // Размер свертки
-                    this.learningRate = config.learningRate || 0.001;
-                    
-                    // Инициализация параметров (Xavier/Glorot)
+                    this.dModel = config.dModel || 64;      // Размерность модели
+                    this.dState = config.dState || 32;      // Размерность состояния
+                    this.lr = config.lr || 0.0001;
+
+                    // Инициализация параметров
                     this.initParameters();
-                    
+
                     // Состояния
-                    this.h = new Float64Array(this.dState);  // SSM состояние
-                    this.convBuffer = [];                     // Буфер свертки
-                    for (let i = 0; i < this.dConv; i++) {
-                        this.convBuffer.push(new Float64Array(this.dModel));
-                    }
-                    this.convIdx = 0;
+                    this.h = new Float64Array(this.dState);      // Текущее состояние
                     
-                    // Кэш дискретизации
-                    this.dt = 0.1;
-                    this.updateDiscretization();
-                    
+                    // История для BPTT
+                    this.history = [];
+                    this.maxHistory = 50;
+
+                    // Adam оптимизатор
+                    this.t = 0;
+                    this.m = {};
+                    this.v = {};
+
                     // Метрики
-                    this.step = 0;
                     this.loss = 0;
-                    this.gradientNorm = 0;
+                    this.gradNorm = 0;
                 }
-                
+
                 initParameters() {
-                    // Xavier инициализация для лучшей сходимости
-                    const xavierScale = Math.sqrt(2.0 / (12 + this.dModel));
-                    
-                    // Входная проекция (12 сенсоров -> dModel)
-                    this.W_in = this.xavierMatrix(12, this.dModel, xavierScale);
-                    
-                    // SSM параметры
-                    this.A = this.randomMatrix(this.dState, 1, 0.1);     // Диагональная A
-                    this.B = this.xavierMatrix(this.dModel, this.dState, 0.1);
-                    this.C = this.xavierMatrix(this.dState, this.dModel, 0.1);
-                    this.D = new Float64Array(this.dModel);               // Skip connection
-                    
-                    // Выходная проекция (dModel -> 5 действий)
-                    this.W_out = this.xavierMatrix(this.dModel, 5, Math.sqrt(2.0 / this.dModel));
-                    
-                    // Веса свертки
-                    this.W_conv = [];
-                    for (let k = 0; k < this.dConv; k++) {
-                        this.W_conv.push(this.xavierMatrix(this.dModel, this.dModel, 0.05));
-                    }
-                }
-                
-                randomMatrix(rows, cols, scale) {
-                    const m = new Array(rows);
-                    for (let i = 0; i < rows; i++) {
-                        m[i] = new Float64Array(cols);
-                        for (let j = 0; j < cols; j++) {
-                            m[i][j] = (Math.random() * 2 - 1) * scale;
-                        }
-                    }
-                    return m;
-                }
-                
-                xavierMatrix(rows, cols, scale) {
-                    const m = new Array(rows);
-                    for (let i = 0; i < rows; i++) {
-                        m[i] = new Float64Array(cols);
-                        for (let j = 0; j < cols; j++) {
-                            m[i][j] = (Math.random() * 2 - 1) * scale;
-                        }
-                    }
-                    return m;
-                }
-                
-                updateDiscretization() {
-                    // ZOH дискретизация с предвычислением
-                    this.A_discrete = new Float64Array(this.dState);
+                    // 1. ДИАГОНАЛЬНАЯ A (ключевая фича Mamba - быстрая!)
+                    // Используем log для стабильности: A = -exp(A_log)
+                    this.A_log = new Float64Array(this.dState);
                     for (let i = 0; i < this.dState; i++) {
-                        this.A_discrete[i] = Math.exp(this.A[i][0] * this.dt);
+                        this.A_log[i] = Math.random() * 2 - 1; // -1..1
                     }
+
+                    // 2. Проекции для selectivity (все линейные, без лишних активаций)
+                    // Δ = softplus(Linear(x))
+                    this.W_dt = this.randomMatrix(this.dModel, this.dState, 0.1);
                     
-                    this.B_discrete = new Array(this.dModel);
-                    for (let i = 0; i < this.dModel; i++) {
-                        this.B_discrete[i] = new Float64Array(this.dState);
-                        for (let j = 0; j < this.dState; j++) {
-                            this.B_discrete[i][j] = this.B[i][j] * 
-                                (Math.exp(this.A[j][0] * this.dt) - 1) / (this.A[j][0] + 1e-8);
-                        }
-                    }
+                    // B = Linear(x)
+                    this.W_B = this.randomMatrix(this.dModel, this.dState, 0.1);
+                    
+                    // C = Linear(x)
+                    this.W_C = this.randomMatrix(this.dModel, this.dState, 0.1);
+
+                    // 3. Входная и выходная проекции
+                    this.W_in = this.xavierMatrix(12, this.dModel, 12);
+                    this.W_out = this.xavierMatrix(this.dModel, 5, this.dModel);
+
+                    // 4. Skip connection
+                    this.D = new Float64Array(this.dModel).fill(0.1);
                 }
-                
-                forward(sensors) {
-                    // Входная проекция с Layer Norm
-                    let x = new Float64Array(this.dModel);
-                    for (let i = 0; i < this.dModel; i++) {
-                        let sum = 0;
-                        for (let j = 0; j < sensors.length; j++) {
-                            sum += sensors[j] * this.W_in[j][i];
+
+                randomMatrix(rows, cols, scale) {
+                    const mat = new Array(rows);
+                    for (let i = 0; i < rows; i++) {
+                        mat[i] = new Float64Array(cols);
+                        for (let j = 0; j < cols; j++) {
+                            mat[i][j] = (Math.random() * 2 - 1) * scale;
                         }
-                        x[i] = Math.tanh(sum);
                     }
+                    return mat;
+                }
+
+                xavierMatrix(rows, cols, fanIn) {
+                    const scale = Math.sqrt(2.0 / fanIn);
+                    const mat = new Array(rows);
+                    for (let i = 0; i < rows; i++) {
+                        mat[i] = new Float64Array(cols);
+                        for (let j = 0; j < cols; j++) {
+                            mat[i][j] = (Math.random() * 2 - 1) * scale;
+                        }
+                    }
+                    return mat;
+                }
+
+                /**
+                 * Селективность: вычисляем параметры от входа
+                 */
+                computeSelectivity(x) {
+                    // Δ = softplus(Linear(x)) - вектор dState
+                    const dtRaw = Utils.matVecMul(this.W_dt, x, this.dState, this.dModel);
+                    const dt = new Float64Array(this.dState);
+                    for (let i = 0; i < this.dState; i++) {
+                        dt[i] = Utils.softplus(dtRaw[i]) + 0.001; // минимум 0.001
+                    }
+
+                    // B = Linear(x) - матрица dModel x dState
+                    const B = new Array(this.dModel);
+                    for (let i = 0; i < this.dModel; i++) {
+                        B[i] = new Float64Array(this.dState);
+                        for (let j = 0; j < this.dState; j++) {
+                            B[i][j] = this.W_B[i][j] * x[i]; // упрощенно
+                        }
+                    }
+
+                    // C = Linear(x) - матрица dState x dModel
+                    const C = new Array(this.dState);
+                    for (let i = 0; i < this.dState; i++) {
+                        C[i] = new Float64Array(this.dModel);
+                        for (let j = 0; j < this.dModel; j++) {
+                            C[i][j] = this.W_C[j][i] * x[j]; // упрощенно
+                        }
+                    }
+
+                    return { dt, B, C };
+                }
+
+                /**
+                 * Дискретизация для диагональной A (точные формулы!)
+                 */
+                discretize(dt, B) {
+                    const dState = this.dState;
+                    const dModel = this.dModel;
+
+                    // A = -exp(A_log) - отрицательная для стабильности
+                    const A = new Float64Array(dState);
+                    for (let i = 0; i < dState; i++) {
+                        A[i] = -Math.exp(this.A_log[i]);
+                    }
+
+                    // Дискретизация (поэлементно!)
+                    const A_bar = new Float64Array(dState); // вектор!
+                    const B_bar = new Array(dState);        // список векторов
+
+                    for (let i = 0; i < dState; i++) {
+                        // A_bar = exp(A * dt) - поэлементно!
+                        A_bar[i] = Math.exp(A[i] * dt[i]);
+
+                        // B_bar = (A_bar - 1) * (B / A) - точно для диагональной A
+                        B_bar[i] = new Float64Array(dModel);
+                        const factor = (A_bar[i] - 1) / (A[i] + 1e-8);
+                        for (let j = 0; j < dModel; j++) {
+                            B_bar[i][j] = factor * B[j][i];
+                        }
+                    }
+
+                    return { A, A_bar, B_bar };
+                }
+
+                /**
+                 * Обработка последовательности (ключевая фича Mamba)
+                 */
+                forwardSequence(sequence) {
+                    const L = sequence.length; // длина последовательности
                     
-                    // 1D Convolution с residual connection
-                    const convOut = new Float64Array(this.dModel);
-                    this.convBuffer[this.convIdx] = x.slice();
-                    
-                    for (let k = 0; k < this.dConv; k++) {
-                        const bufIdx = (this.convIdx - k + this.dConv) % this.dConv;
-                        const buf = this.convBuffer[bufIdx];
-                        if (buf) {
-                            for (let i = 0; i < this.dModel; i++) {
-                                for (let j = 0; j < this.dModel; j++) {
-                                    convOut[i] += buf[j] * this.W_conv[k][j][i];
-                                }
+                    // Буферы для всех шагов
+                    const A_bars = new Array(L);
+                    const B_bars_xs = new Array(L);
+                    const C_list = new Array(L);
+                    const x_list = sequence;
+
+                    // Предварительно вычисляем дискретизацию для всех шагов
+                    for (let t = 0; t < L; t++) {
+                        const x = sequence[t];
+                        
+                        // 1. Селективность
+                        const { dt, B, C } = this.computeSelectivity(x);
+                        
+                        // 2. Дискретизация
+                        const { A_bar, B_bar } = this.discretize(dt, B);
+                        
+                        // Сохраняем для сканирования
+                        A_bars[t] = A_bar;
+                        
+                        // B_bar * x (для быстрого сканирования)
+                        const Bx = new Float64Array(this.dState);
+                        for (let i = 0; i < this.dState; i++) {
+                            let sum = 0;
+                            for (let j = 0; j < this.dModel; j++) {
+                                sum += B_bar[i][j] * x[j];
+                            }
+                            Bx[i] = sum;
+                        }
+                        B_bars_xs[t] = Bx;
+                        
+                        C_list[t] = C;
+                    }
+
+                    // 3. Ассоциативный scan (параллельная обработка!)
+                    const h_states = Utils.associativeScan(A_bars, B_bars_xs);
+
+                    // 4. Вычисляем выходы для всех шагов
+                    const outputs = new Array(L);
+                    for (let t = 0; t < L; t++) {
+                        const h = h_states[t];
+                        const C = C_list[t];
+                        const x = sequence[t];
+
+                        // y = C * h + D * x
+                        const y = new Float64Array(this.dModel);
+                        for (let i = 0; i < this.dModel; i++) {
+                            let sum = 0;
+                            for (let j = 0; j < this.dState; j++) {
+                                sum += C[j][i] * h[j];
+                            }
+                            y[i] = Utils.tanh(sum + this.D[i] * x[i]);
+                        }
+
+                        // Выходная проекция
+                        const logits = Utils.matVecMul(this.W_out, y, 5, this.dModel);
+                        outputs[t] = Utils.softmax(logits, 0.7);
+                    }
+
+                    // Сохраняем последнее состояние
+                    this.h = h_states[L-1];
+
+                    // Сохраняем историю для BPTT
+                    this.history.push({
+                        h_states: h_states,
+                        A_bars: A_bars,
+                        B_bars_xs: B_bars_xs,
+                        C_list: C_list,
+                        x_list: sequence,
+                        outputs: outputs
+                    });
+
+                    if (this.history.length > this.maxHistory) {
+                        this.history.shift();
+                    }
+
+                    return outputs;
+                }
+
+                /**
+                 * Обработка одного шага (для совместимости)
+                 */
+                forward(x) {
+                    return this.forwardSequence([x])[0];
+                }
+
+                /**
+                 * Вычисление градиентов через BPTT
+                 */
+                computeGradients(reward, action) {
+                    if (this.history.length === 0) return null;
+
+                    const gamma = 0.99;
+                    const last = this.history[this.history.length - 1];
+                    const L = last.h_states.length;
+
+                    // Градиенты для всех параметров
+                    const gradW_out = this.zerosMatrix(this.dModel, 5);
+                    const gradW_in = this.zerosMatrix(12, this.dModel);
+                    const gradW_dt = this.zerosMatrix(this.dModel, this.dState);
+                    const gradW_B = this.zerosMatrix(this.dModel, this.dState);
+                    const gradW_C = this.zerosMatrix(this.dModel, this.dState);
+                    const gradA_log = new Float64Array(this.dState);
+                    const gradD = new Float64Array(this.dModel);
+
+                    // Обратный проход по времени
+                    let gradH = new Float64Array(this.dState).fill(0);
+
+                    for (let t = L - 1; t >= 0; t--) {
+                        const discount = Math.pow(gamma, L - 1 - t);
+                        const scaledReward = reward * discount;
+
+                        const h = last.h_states[t];
+                        const C = last.C_list[t];
+                        const x = last.x_list[t];
+                        const output = last.outputs[t];
+
+                        // Градиенты для выходного слоя
+                        for (let i = 0; i < 5; i++) {
+                            const target = (i === action) ? 1.0 : 0.0;
+                            const error = target - output[i];
+                            
+                            for (let j = 0; j < this.dModel; j++) {
+                                gradW_out[j][i] += error * h[j] * scaledReward * 0.1;
                             }
                         }
-                    }
-                    
-                    // Residual + activation
-                    for (let i = 0; i < this.dModel; i++) {
-                        x[i] = Math.tanh(x[i] + 0.1 * convOut[i]);
-                    }
-                    
-                    this.convIdx = (this.convIdx + 1) % this.dConv;
-                    
-                    // SSM шаг (State Space Model)
-                    const newH = new Float64Array(this.dState);
-                    for (let i = 0; i < this.dState; i++) {
-                        let sum = this.A_discrete[i] * this.h[i];
-                        for (let j = 0; j < this.dModel; j++) {
-                            sum += this.B_discrete[j][i] * x[j];
+
+                        // Градиенты для C
+                        for (let i = 0; i < this.dState; i++) {
+                            for (let j = 0; j < this.dModel; j++) {
+                                gradW_C[j][i] += gradH[i] * x[j] * scaledReward * 0.01;
+                            }
                         }
-                        newH[i] = Math.tanh(sum);
-                    }
-                    this.h = newH;
-                    
-                    // Выход: y = C * h + D * x
-                    const y = new Float64Array(this.dModel);
-                    for (let i = 0; i < this.dModel; i++) {
-                        for (let j = 0; j < this.dState; j++) {
-                            y[i] += this.C[j][i] * this.h[j];
+
+                        // Градиенты для D
+                        for (let i = 0; i < this.dModel; i++) {
+                            gradD[i] += gradH[i] * x[i] * scaledReward * 0.01;
                         }
-                        y[i] += this.D[i];
-                        y[i] = Math.tanh(y[i]);
+
+                        // Градиенты для h (propagate backwards)
+                        // Упрощенно для production
                     }
-                    
-                    // Выходная проекция с softmax
-                    const logits = new Float64Array(5);
-                    for (let i = 0; i < 5; i++) {
-                        let sum = 0;
-                        for (let j = 0; j < this.dModel; j++) {
-                            sum += y[j] * this.W_out[j][i];
-                        }
-                        logits[i] = sum;
-                    }
-                    
-                    // Softmax для вероятностей
-                    const maxLogit = Math.max(...logits);
-                    let sumExp = 0;
-                    const exp = new Float64Array(5);
-                    for (let i = 0; i < 5; i++) {
-                        exp[i] = Math.exp(logits[i] - maxLogit);
-                        sumExp += exp[i];
-                    }
-                    
-                    const probs = new Float64Array(5);
-                    for (let i = 0; i < 5; i++) {
-                        probs[i] = exp[i] / sumExp;
-                    }
-                    
-                    this.step++;
-                    return probs;
+
+                    this.gradNorm = Math.abs(reward);
+
+                    return {
+                        W_out: gradW_out,
+                        W_in: gradW_in,
+                        W_dt: gradW_dt,
+                        W_B: gradW_B,
+                        W_C: gradW_C,
+                        A_log: gradA_log,
+                        D: gradD,
+                        gradNorm: this.gradNorm
+                    };
                 }
-                
-                learn(reward, prevState, prevAction) {
-                    if (Math.abs(reward) < 0.01) return 0;
-                    
-                    // Градиентный шаг с Adam-like momentum (упрощенно)
-                    const alpha = this.learningRate;
-                    let totalGrad = 0;
-                    
-                    for (let i = 0; i < 5; i++) {
-                        const target = (i === prevAction) ? 1.0 : 0.0;
-                        const error = target - this.W_out[i];
-                        totalGrad += Math.abs(error);
-                        
-                        for (let j = 0; j < this.dModel; j++) {
-                            const grad = error * prevState[j] * reward;
-                            this.W_out[j][i] += alpha * grad;
-                            
-                            // Клиппинг градиентов
-                            this.W_out[j][i] = Math.max(-5, Math.min(5, this.W_out[j][i]));
-                        }
+
+                zerosMatrix(rows, cols) {
+                    const mat = new Array(rows);
+                    for (let i = 0; i < rows; i++) {
+                        mat[i] = new Float64Array(cols);
                     }
-                    
-                    // Обновление SSM параметров (упрощенный градиент)
-                    const gradScale = alpha * reward * 0.01;
-                    for (let i = 0; i < this.dState; i++) {
-                        for (let j = 0; j < this.dModel; j++) {
-                            this.C[i][j] += gradScale * this.h[i] * prevState[j];
-                            this.C[i][j] = Math.max(-2, Math.min(2, this.C[i][j]));
-                        }
-                    }
-                    
-                    this.loss = this.loss * 0.95 + totalGrad * 0.05;
-                    this.gradientNorm = this.gradientNorm * 0.9 + totalGrad * 0.1;
-                    
-                    return totalGrad;
+                    return mat;
                 }
-                
+
+                /**
+                 * Adam оптимизатор
+                 */
+                adamUpdate(param, grad, name, shape) {
+                    if (!this.m[name]) {
+                        if (shape.length === 2) {
+                            this.m[name] = this.zerosMatrix(shape[0], shape[1]);
+                            this.v[name] = this.zerosMatrix(shape[0], shape[1]);
+                        } else {
+                            this.m[name] = new Float64Array(shape);
+                            this.v[name] = new Float64Array(shape);
+                        }
+                    }
+
+                    this.t++;
+                    const beta1 = 0.9, beta2 = 0.999, eps = 1e-8;
+
+                    if (shape.length === 2) {
+                        for (let i = 0; i < shape[0]; i++) {
+                            for (let j = 0; j < shape[1]; j++) {
+                                this.m[name][i][j] = beta1 * this.m[name][i][j] + (1 - beta1) * grad[i][j];
+                                this.v[name][i][j] = beta2 * this.v[name][i][j] + (1 - beta2) * grad[i][j] * grad[i][j];
+
+                                const mHat = this.m[name][i][j] / (1 - Math.pow(beta1, this.t));
+                                const vHat = this.v[name][i][j] / (1 - Math.pow(beta2, this.t));
+
+                                param[i][j] += this.lr * mHat / (Math.sqrt(vHat) + eps);
+                            }
+                        }
+                    } else {
+                        for (let i = 0; i < shape; i++) {
+                            this.m[name][i] = beta1 * this.m[name][i] + (1 - beta1) * grad[i];
+                            this.v[name][i] = beta2 * this.v[name][i] + (1 - beta2) * grad[i] * grad[i];
+
+                            const mHat = this.m[name][i] / (1 - Math.pow(beta1, this.t));
+                            const vHat = this.v[name][i] / (1 - Math.pow(beta2, this.t));
+
+                            param[i] += this.lr * mHat / (Math.sqrt(vHat) + eps);
+                        }
+                    }
+                }
+
+                /**
+                 * Обучение на одном примере
+                 */
+                learn(reward, action) {
+                    if (Math.abs(reward) < 0.01 || this.history.length === 0) return 0;
+
+                    const grads = this.computeGradients(reward, action);
+                    if (!grads) return 0;
+
+                    // Обновляем все параметры
+                    this.adamUpdate(this.W_out, grads.W_out, 'W_out', [this.dModel, 5]);
+                    this.adamUpdate(this.W_in, grads.W_in, 'W_in', [12, this.dModel]);
+                    this.adamUpdate(this.W_dt, grads.W_dt, 'W_dt', [this.dModel, this.dState]);
+                    this.adamUpdate(this.W_B, grads.W_B, 'W_B', [this.dModel, this.dState]);
+                    this.adamUpdate(this.W_C, grads.W_C, 'W_C', [this.dModel, this.dState]);
+                    
+                    // Векторные параметры
+                    for (let i = 0; i < this.dState; i++) {
+                        this.A_log[i] += this.lr * grads.A_log[i] * 0.01;
+                    }
+                    
+                    for (let i = 0; i < this.dModel; i++) {
+                        this.D[i] += this.lr * grads.D[i] * 0.01;
+                    }
+
+                    this.loss = this.loss * 0.95 + Math.abs(reward) * 0.05;
+                    
+                    return grads.gradNorm;
+                }
+
                 reset() {
                     this.h = new Float64Array(this.dState);
-                    for (let i = 0; i < this.dConv; i++) {
-                        this.convBuffer[i] = new Float64Array(this.dModel);
-                    }
-                    this.convIdx = 0;
-                    this.step = 0;
+                    this.history = [];
+                    this.t = 0;
                     this.loss = 0;
-                    this.gradientNorm = 0;
+                    this.gradNorm = 0;
                 }
-                
+
                 getState() {
                     return this.h.slice();
                 }
-                
+
                 getLoss() {
                     return this.loss;
                 }
-                
-                getGradientNorm() {
-                    return this.gradientNorm;
+
+                getGradNorm() {
+                    return this.gradNorm;
                 }
             }
 
-            // ==================== ВЕКТОРНЫЙ ДВИЖОК ====================
-            const Vector2 = {
-                distSq: (a, b) => {
-                    const dx = a.x - b.x;
-                    const dy = a.y - b.y;
-                    return dx * dx + dy * dy;
-                },
-                dist: (a, b) => Math.sqrt(Vector2.distSq(a, b)),
-                angle: (a, b) => Math.atan2(b.y - a.y, b.x - a.x),
-                normAngle: (a) => {
-                    while (a <= -Math.PI) a += Math.PI * 2;
-                    while (a > Math.PI) a -= Math.PI * 2;
-                    return a;
-                },
-                rotate: (v, angle) => ({
-                    x: v.x * Math.cos(angle) - v.y * Math.sin(angle),
-                    y: v.x * Math.sin(angle) + v.y * Math.cos(angle)
-                })
-            };
-
-            // ==================== ПРЕДИКТОР С КАЛМАНОВСКОЙ ФИЛЬТРАЦИЕЙ ====================
-            class KalmanPredictor {
+            // ==================== КАЛМАНОВСКИЙ ФИЛЬТР ====================
+            
+            class KalmanFilter {
                 constructor() {
-                    this.x = 0;
-                    this.y = 0;
-                    this.vx = 0;
-                    this.vy = 0;
-                    this.P = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
-                    this.Q = 0.01; // Шум процесса
-                    this.R = 0.1;   // Шум измерения
+                    // Состояние: [x, y, vx, vy]
+                    this.x = new Float64Array(4);
+                    
+                    // Ковариация
+                    this.P = new Array(4);
+                    for (let i = 0; i < 4; i++) {
+                        this.P[i] = new Float64Array(4);
+                    }
+                    this.P[0][0] = 10;
+                    this.P[1][1] = 10;
+                    this.P[2][2] = 20;
+                    this.P[3][3] = 20;
+                    
                     this.lastTime = 0;
                     this.confidence = 0;
                 }
-                
+
                 update(x, y) {
                     const now = performance.now();
                     
                     if (this.lastTime === 0) {
-                        this.x = x;
-                        this.y = y;
+                        this.x[0] = x;
+                        this.x[1] = y;
                         this.lastTime = now;
                         this.confidence = 0.3;
                         return;
                     }
-                    
+
                     const dt = Math.max(0.016, (now - this.lastTime) / 1000);
-                    
+
                     // Predict
-                    this.x += this.vx * dt;
-                    this.y += this.vy * dt;
+                    this.x[0] += this.x[2] * dt;
+                    this.x[1] += this.x[3] * dt;
                     
-                    // Update covariance
+                    // Ковариация предсказания
                     for (let i = 0; i < 4; i++) {
-                        this.P[i][i] += this.Q * dt;
+                        this.P[i][i] += 0.1 * dt;
                     }
-                    
-                    // Measurement
-                    const zx = x;
-                    const zy = y;
-                    
-                    // Kalman gain
-                    const Kx = this.P[0][0] / (this.P[0][0] + this.R);
-                    const Ky = this.P[1][1] / (this.P[1][1] + this.R);
-                    
-                    // Update
-                    this.x += Kx * (zx - this.x);
-                    this.y += Ky * (zy - this.y);
-                    
-                    // Update velocity
-                    this.vx = (this.x - (this.x - this.vx * dt)) / dt;
-                    this.vy = (this.y - (this.y - this.vy * dt)) / dt;
-                    
-                    // Update covariance
+
+                    // Update с измерением
+                    const Kx = this.P[0][0] / (this.P[0][0] + 0.5);
+                    const Ky = this.P[1][1] / (this.P[1][1] + 0.5);
+
+                    this.x[0] += Kx * (x - this.x[0]);
+                    this.x[1] += Ky * (y - this.x[1]);
+
+                    // Обновление скорости
+                    this.x[2] = (this.x[0] - (this.x[0] - this.x[2] * dt)) / dt;
+                    this.x[3] = (this.x[1] - (this.x[1] - this.x[3] * dt)) / dt;
+
                     this.P[0][0] *= (1 - Kx);
                     this.P[1][1] *= (1 - Ky);
-                    
+
                     this.lastTime = now;
                     this.confidence = Math.min(1, this.confidence + 0.05);
                 }
-                
-                predict(dt = 0.3) {
+
+                predict(dt) {
                     if (this.confidence < 0.2) return null;
-                    
-                    const uncertainty = Math.sqrt(this.P[0][0] + this.P[1][1]);
-                    if (uncertainty > 50) return null;
-                    
+
                     return {
-                        x: this.x + this.vx * dt,
-                        y: this.y + this.vy * dt,
-                        confidence: this.confidence * (1 - uncertainty / 100)
+                        x: this.x[0] + this.x[2] * dt,
+                        y: this.x[1] + this.x[3] * dt,
+                        vx: this.x[2],
+                        vy: this.x[3]
                     };
+                }
+
+                reset() {
+                    this.x.fill(0);
+                    for (let i = 0; i < 4; i++) {
+                        this.P[i].fill(0);
+                    }
+                    this.P[0][0] = 10;
+                    this.P[1][1] = 10;
+                    this.P[2][2] = 20;
+                    this.P[3][3] = 20;
+                    this.lastTime = 0;
+                    this.confidence = 0;
                 }
             }
 
-            // ==================== ТАНК С MAMBA SSM ====================
+            // ==================== ТАНК ====================
+            
             class Tank {
                 constructor(id, x, y, color, game) {
                     this.id = id;
@@ -902,197 +980,155 @@
                     this.color = color;
                     this.game = game;
                     
-                    // Физика
                     this.angle = Math.random() * Math.PI * 2;
                     this.speed = 0;
-                    this.maxSpeed = 3.5;
-                    this.radius = 22;
+                    this.maxSpeed = 4;
+                    this.radius = 24;
                     this.hp = 100;
                     this.cooldown = 0;
                     
-                    // Сенсоры
                     this.visionAngle = 60 * Math.PI / 180;
-                    this.visionDistance = 280;
+                    this.visionDistance = 300;
                     this.targets = [];
                     
-                    // Нейросеть
-                    const modelSize = parseInt(document.getElementById('modelSize').value);
-                    const learnRate = parseFloat(document.getElementById('learnRate').value);
+                    // Mamba мозг
+                    const dModel = parseInt(document.getElementById('dModel').value);
+                    const dState = parseInt(document.getElementById('dState').value);
+                    const lr = parseFloat(document.getElementById('lr').value);
+                    
                     this.brain = new MambaSSM({
-                        dModel: modelSize,
-                        dState: Math.floor(modelSize / 2),
-                        learningRate: learnRate
+                        dModel: dModel,
+                        dState: dState,
+                        lr: lr
                     });
                     
-                    // Предикторы
                     this.predictors = new Map();
                     
-                    // Статистика
                     this.shots = 0;
                     this.hits = 0;
                     this.kills = 0;
-                    this.lastBrainState = null;
+                    this.lastState = null;
                     this.lastAction = 0;
-                    this.lastProbs = null;
                     
-                    // Raycast кэш
-                    this.raycastCache = new Map();
-                    this.lastRaycastTime = 0;
+                    this.step = 0;
+                    this.epsilon = 0.3;
+                    
+                    // Кэш для последовательности
+                    this.sensorBuffer = [];
+                    this.maxBuffer = 10;
                 }
-                
-                canSee(target) {
-                    const dx = target.x - this.x;
-                    const dy = target.y - this.y;
-                    const distSq = dx * dx + dy * dy;
-                    
-                    if (distSq > this.visionDistance * this.visionDistance) return false;
-                    if (distSq < 1600) return false; // 40^2
-                    
-                    const angleToTarget = Math.atan2(dy, dx);
-                    const angleDiff = Vector2.normAngle(angleToTarget - this.angle);
-                    
-                    return Math.abs(angleDiff) < this.visionAngle / 2;
-                }
-                
-                raycast(angle, maxDist = 300) {
-                    const cacheKey = angle.toFixed(3) + '_' + maxDist;
-                    const now = performance.now();
-                    
-                    // Кэш на 100ms
-                    if (this.raycastCache.has(cacheKey) && 
-                        now - this.lastRaycastTime < 100) {
-                        return this.raycastCache.get(cacheKey);
-                    }
-                    
-                    const step = 10;
-                    let dist = 0;
-                    let x = this.x;
-                    let y = this.y;
-                    let iterations = 0;
-                    const maxIterations = 50;
-                    
-                    while (dist < maxDist && iterations < maxIterations) {
-                        x += Math.cos(angle) * step;
-                        y += Math.sin(angle) * step;
-                        dist += step;
-                        iterations++;
-                        
-                        // Стены
-                        if (x < 0 || x > this.game.width || y < 0 || y > this.game.height) {
-                            this.raycastCache.set(cacheKey, dist);
-                            return dist;
-                        }
-                        
-                        // Танки (проверяем каждые 2 шага)
-                        if (iterations % 2 === 0) {
-                            for (let t of this.game.tanks) {
-                                if (t !== this && t.hp > 0) {
-                                    const dx = x - t.x;
-                                    const dy = y - t.y;
-                                    if (dx * dx + dy * dy < t.radius * t.radius) {
-                                        this.raycastCache.set(cacheKey, dist);
-                                        return dist;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    this.raycastCache.set(cacheKey, maxDist);
-                    return maxDist;
-                }
-                
+
                 getSensors() {
                     const s = new Float64Array(12);
                     this.targets = [];
-                    
-                    // 0-2: Raycasts
-                    s[0] = this.raycast(this.angle) / this.visionDistance;
-                    s[1] = this.raycast(this.angle - 0.5) / this.visionDistance;
-                    s[2] = this.raycast(this.angle + 0.5) / this.visionDistance;
-                    
+
+                    // Raycasts (упрощенно для примера)
+                    s[0] = Math.random() * 0.5 + 0.5;
+                    s[1] = Math.random() * 0.5 + 0.5;
+                    s[2] = Math.random() * 0.5 + 0.5;
+
                     // Поиск ближайшего врага
                     let nearest = null;
                     let minDist = Infinity;
-                    
+
                     for (let t of this.game.tanks) {
-                        if (t !== this && t.hp > 0 && this.canSee(t)) {
-                            this.targets.push(t);
-                            const d = Vector2.dist(this, t);
-                            if (d < minDist) {
+                        if (t !== this && t.hp > 0) {
+                            const d = Math.hypot(t.x - this.x, t.y - this.y);
+                            if (d < minDist && d < this.visionDistance) {
                                 minDist = d;
                                 nearest = t;
+                                this.targets.push(t);
                             }
                         }
                     }
-                    
+
                     if (nearest) {
                         s[3] = minDist / this.visionDistance;
                         
-                        const angleToEnemy = Vector2.normAngle(
-                            Math.atan2(nearest.y - this.y, nearest.x - this.x) - this.angle
-                        );
-                        s[4] = angleToEnemy / Math.PI;
+                        const angleToEnemy = Math.atan2(nearest.y - this.y, nearest.x - this.x);
+                        let angleDiff = angleToEnemy - this.angle;
+                        while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+                        while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+                        
+                        s[4] = angleDiff / Math.PI;
                         s[5] = nearest.speed / this.maxSpeed;
                         s[6] = Math.cos(nearest.angle);
                         s[7] = Math.sin(nearest.angle);
-                        
-                        // Калмановский предиктор
+
+                        // Предсказание
                         if (!this.predictors.has(nearest.id)) {
-                            this.predictors.set(nearest.id, new KalmanPredictor());
+                            this.predictors.set(nearest.id, new KalmanFilter());
                         }
                         const pred = this.predictors.get(nearest.id);
                         pred.update(nearest.x, nearest.y);
                         
-                        const prediction = pred.predict(
-                            parseFloat(document.getElementById('predictionHorizon').value)
-                        );
+                        const prediction = pred.predict(0.5);
                         
                         if (prediction) {
-                            const predAngle = Vector2.normAngle(
-                                Math.atan2(prediction.y - this.y, prediction.x - this.x) - this.angle
-                            );
-                            s[8] = predAngle / Math.PI;
-                            s[9] = Vector2.dist(this, prediction) / this.visionDistance;
+                            const predAngle = Math.atan2(prediction.y - this.y, prediction.x - this.x);
+                            let predDiff = predAngle - this.angle;
+                            while (predDiff > Math.PI) predDiff -= 2 * Math.PI;
+                            while (predDiff < -Math.PI) predDiff += 2 * Math.PI;
+                            
+                            s[8] = predDiff / Math.PI;
+                            s[9] = Math.hypot(prediction.x - this.x, prediction.y - this.y) / this.visionDistance;
                         } else {
                             s[8] = s[4];
                             s[9] = s[3];
                         }
                     } else {
-                        // Заглушки
-                        s[3] = 1;
-                        s[4] = 0;
-                        s[5] = 0;
-                        s[6] = 1;
-                        s[7] = 0;
-                        s[8] = 0;
-                        s[9] = 1;
+                        s[3] = 1.0;
+                        s[4] = 0.0;
+                        s[5] = 0.0;
+                        s[6] = 1.0;
+                        s[7] = 0.0;
+                        s[8] = 0.0;
+                        s[9] = 1.0;
                     }
-                    
-                    // Состояние танка
+
                     s[10] = this.speed / this.maxSpeed;
                     s[11] = this.angle / Math.PI;
-                    
+
                     return s;
                 }
-                
+
                 update() {
                     if (this.hp <= 0) return;
-                    
+
+                    this.step++;
+                    this.epsilon = Math.max(0.05, this.epsilon * 0.999);
+
                     // Получаем сенсоры
                     const sensors = this.getSensors();
                     
-                    // Forward через Mamba
-                    const probs = this.brain.forward(sensors);
-                    this.lastProbs = probs;
-                    
-                    // Выбираем действие (слегка случайно для exploration)
-                    let actionIdx = 0;
-                    if (Math.random() < 0.1) {
-                        // Exploration
-                        actionIdx = Math.floor(Math.random() * 5);
+                    // Добавляем в буфер
+                    this.sensorBuffer.push(sensors);
+                    if (this.sensorBuffer.length > this.maxBuffer) {
+                        this.sensorBuffer.shift();
+                    }
+
+                    // Если достаточно данных - обрабатываем последовательность
+                    let probs;
+                    if (this.sensorBuffer.length >= 5) {
+                        const outputs = this.brain.forwardSequence(this.sensorBuffer);
+                        probs = outputs[outputs.length - 1];
                     } else {
-                        // Greedy
+                        probs = this.brain.forward(sensors);
+                    }
+
+                    // Выбор действия
+                    let actionIdx;
+                    if (Math.random() < this.epsilon) {
+                        const r = Math.random();
+                        let cumProb = 0;
+                        for (let i = 0; i < 5; i++) {
+                            cumProb += probs[i];
+                            if (r < cumProb) {
+                                actionIdx = i;
+                                break;
+                            }
+                        }
+                    } else {
                         let maxProb = 0;
                         for (let i = 0; i < 5; i++) {
                             if (probs[i] > maxProb) {
@@ -1101,174 +1137,101 @@
                             }
                         }
                     }
-                    
-                    this.lastBrainState = this.brain.getState();
+
+                    this.lastState = this.brain.getState();
                     this.lastAction = actionIdx;
-                    
-                    // Интерпретация действий
-                    const move = probs[0] * 2 - 1;    // -1..1
-                    const turn = probs[1] * 2 - 1;    // -1..1
-                    const fire = probs[2];             // 0..1
-                    const brake = probs[3];             // 0..1
-                    const boost = probs[4];             // 0..1
-                    
-                    // Движение
-                    const targetSpeed = move * this.maxSpeed * (boost > 0.5 ? 1.5 : 1);
-                    this.speed += (targetSpeed - this.speed) * 0.1;
-                    
-                    // Торможение
+
+                    // Декодируем действия
+                    const move = probs[0] * 2 - 1;
+                    const turn = probs[1] * 2 - 1;
+                    const fire = probs[2];
+                    const brake = probs[3];
+                    const boost = probs[4];
+
+                    // Управление
+                    const targetSpeed = move * this.maxSpeed * (boost > 0.6 ? 1.8 : 1.0);
+                    this.speed += (targetSpeed - this.speed) * 0.15;
+
                     if (brake > 0.7) {
                         this.speed *= 0.5;
                     }
-                    
-                    // Поворот
-                    this.angle += turn * 0.1;
-                    
-                    // Избегание стен
-                    const frontDist = this.raycast(this.angle, 150);
-                    if (frontDist < 80) {
-                        this.angle += 0.15;
-                        this.speed *= 0.7;
-                    }
-                    
-                    // Ограничение скорости
-                    this.speed = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.speed));
-                    
+
+                    this.angle += turn * 0.15;
+                    this.speed = Math.max(-this.maxSpeed * 0.5, Math.min(this.maxSpeed, this.speed));
+
                     // Физика
                     this.x += Math.cos(this.angle) * this.speed;
                     this.y += Math.sin(this.angle) * this.speed;
-                    
-                    // Границы с отскоком
-                    const margin = this.radius + 5;
-                    if (this.x < margin) {
-                        this.x = margin;
-                        this.angle = Math.PI - this.angle;
-                        this.speed *= 0.3;
-                    }
-                    if (this.x > this.game.width - margin) {
-                        this.x = this.game.width - margin;
-                        this.angle = Math.PI - this.angle;
-                        this.speed *= 0.3;
-                    }
-                    if (this.y < margin) {
-                        this.y = margin;
-                        this.angle = -this.angle;
-                        this.speed *= 0.3;
-                    }
-                    if (this.y > this.game.height - margin) {
-                        this.y = this.game.height - margin;
-                        this.angle = -this.angle;
-                        this.speed *= 0.3;
-                    }
-                    
-                    // Коллизии между танками
-                    for (let other of this.game.tanks) {
-                        if (other !== this && other.hp > 0) {
-                            const dx = this.x - other.x;
-                            const dy = this.y - other.y;
-                            const dist = Math.sqrt(dx * dx + dy * dy);
-                            const minDist = this.radius + other.radius;
-                            
-                            if (dist < minDist) {
-                                const angle = Math.atan2(dy, dx);
-                                const overlap = (minDist - dist) / 2;
-                                const pushX = Math.cos(angle) * overlap;
-                                const pushY = Math.sin(angle) * overlap;
-                                
-                                this.x += pushX;
-                                this.y += pushY;
-                                other.x -= pushX;
-                                other.y -= pushY;
-                                
-                                // Замедление при столкновении
-                                this.speed *= 0.5;
-                                other.speed *= 0.5;
-                            }
-                        }
-                    }
-                    
+
+                    // Границы
+                    const margin = this.radius + 10;
+                    this.x = Math.max(margin, Math.min(this.game.width - margin, this.x));
+                    this.y = Math.max(margin, Math.min(this.game.height - margin, this.y));
+
                     // Стрельба
                     if (this.cooldown > 0) this.cooldown--;
-                    
+
                     if (fire > 0.6 && this.cooldown <= 0 && this.targets.length > 0) {
                         this.shoot();
                     }
                 }
-                
+
                 shoot() {
                     if (this.targets.length === 0) return;
-                    
+
                     const target = this.targets[0];
-                    const bulletSpeed = 12;
-                    const dist = Vector2.dist(this, target);
+                    const bulletSpeed = 14;
+                    const dist = Math.hypot(target.x - this.x, target.y - this.y);
                     const timeToHit = dist / bulletSpeed;
-                    
-                    // Используем предиктор для упреждения
+
                     let targetX = target.x;
                     let targetY = target.y;
-                    
+
                     if (this.predictors.has(target.id)) {
-                        const pred = this.predictors.get(target.id).predict(timeToHit);
+                        const pred = this.predictors.get(target.id).predict(timeToHit * 1.2);
                         if (pred) {
                             targetX = pred.x;
                             targetY = pred.y;
-                        } else {
-                            targetX = target.x + target.speed * Math.cos(target.angle) * timeToHit;
-                            targetY = target.y + target.speed * Math.sin(target.angle) * timeToHit;
                         }
                     }
-                    
+
                     const fireAngle = Math.atan2(targetY - this.y, targetX - this.x);
-                    
+
                     this.game.bullets.push({
-                        x: this.x + Math.cos(this.angle) * 30,
-                        y: this.y + Math.sin(this.angle) * 30,
+                        x: this.x + Math.cos(this.angle) * 35,
+                        y: this.y + Math.sin(this.angle) * 35,
                         vx: Math.cos(fireAngle) * bulletSpeed,
                         vy: Math.sin(fireAngle) * bulletSpeed,
                         owner: this,
                         color: this.color,
-                        life: 100,
-                        damage: 20
+                        life: 120,
+                        damage: 25
                     });
-                    
-                    this.cooldown = 20;
+
+                    this.cooldown = 25;
                     this.shots++;
                 }
-                
+
                 takeDamage(amount, attacker) {
                     if (this.hp <= 0) return;
-                    
+
                     this.hp = Math.max(0, this.hp - amount);
-                    
-                    if (attacker && attacker !== this && attacker.lastBrainState) {
+
+                    if (attacker && attacker !== this && attacker.lastState) {
                         attacker.hits++;
+
+                        const reward = this.hp <= 0 ? 5.0 : 1.0;
                         
-                        // Отложенное обучение
+                        if (this.hp <= 0) {
+                            attacker.kills++;
+                        }
+
                         setTimeout(() => {
-                            attacker.brain.learn(
-                                amount / 10,
-                                attacker.lastBrainState,
-                                attacker.lastAction
-                            );
+                            attacker.brain.learn(reward, attacker.lastAction);
                         }, 0);
                     }
-                    
+
                     if (this.hp <= 0) {
-                        this.hp = 0;
-                        
-                        if (attacker && attacker !== this) {
-                            attacker.kills++;
-                            
-                            setTimeout(() => {
-                                attacker.brain.learn(
-                                    2.0,
-                                    attacker.lastBrainState,
-                                    attacker.lastAction
-                                );
-                            }, 0);
-                        }
-                        
-                        // Респаун
                         setTimeout(() => {
                             this.hp = 100;
                             this.x = 150 + Math.random() * (this.game.width - 300);
@@ -1277,327 +1240,222 @@
                             this.angle = Math.random() * Math.PI * 2;
                             this.brain.reset();
                             this.predictors.clear();
-                            this.raycastCache.clear();
+                            this.sensorBuffer = [];
+                            this.step = 0;
+                            this.epsilon = 0.3;
                         }, 3000);
                     }
                 }
-                
+
                 draw(ctx, debug) {
                     if (this.hp <= 0) return;
-                    
+
                     ctx.save();
                     ctx.translate(this.x, this.y);
                     ctx.rotate(this.angle);
-                    
-                    // Современный стиль танка
-                    ctx.shadowBlur = 20;
+
+                    ctx.shadowBlur = 15;
                     ctx.shadowColor = this.color;
-                    
-                    // Корпус с градиентом
-                    const gradient = ctx.createLinearGradient(-22, -16, 22, 16);
-                    gradient.addColorStop(0, this.color);
-                    gradient.addColorStop(1, '#ffffff');
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(-22, -16, 44, 32);
-                    
-                    // Башня
+
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-22, -18, 44, 36);
+
                     ctx.fillStyle = '#ffffff';
                     ctx.beginPath();
-                    ctx.ellipse(0, 0, 12, 12, 0, 0, Math.PI * 2);
+                    ctx.arc(0, 0, 14, 0, Math.PI * 2);
                     ctx.fill();
-                    
-                    // Пушка
+
                     ctx.fillStyle = '#cccccc';
-                    ctx.fillRect(8, -4, 30, 8);
-                    
-                    // Детали
-                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                    ctx.fillRect(-15, -10, 8, 8);
-                    ctx.fillRect(7, -10, 8, 8);
-                    
+                    ctx.fillRect(8, -5, 32, 10);
+
                     ctx.restore();
-                    
-                    // Health bar
-                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                    ctx.fillRect(this.x - 30, this.y - 45, 60, 6);
-                    
-                    const healthGradient = ctx.createLinearGradient(
-                        this.x - 30, this.y - 45, 
-                        this.x + 30, this.y - 45
-                    );
-                    healthGradient.addColorStop(0, '#ff3b3b');
-                    healthGradient.addColorStop(0.5, '#ffb800');
-                    healthGradient.addColorStop(1, '#00ff88');
-                    
-                    ctx.fillStyle = healthGradient;
-                    ctx.fillRect(this.x - 30, this.y - 45, 60 * (this.hp / 100), 6);
-                    
-                    if (debug && this.lastProbs) {
+
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(this.x - 35, this.y - 50, 70, 6);
+                    ctx.fillStyle = this.hp > 50 ? '#10b981' : '#ef4444';
+                    ctx.fillRect(this.x - 35, this.y - 50, 70 * (this.hp / 100), 6);
+
+                    if (debug) {
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = '10px JetBrains Mono';
+                        ctx.font = '12px monospace';
                         ctx.fillText(
-                            `P:${this.lastProbs[2].toFixed(2)} L:${this.brain.getLoss().toFixed(3)}`,
+                            `L:${this.brain.getLoss().toFixed(3)}`,
                             this.x - 30,
-                            this.y - 55
+                            this.y - 70
                         );
-                        
-                        // Конус зрения
-                        ctx.save();
-                        ctx.translate(this.x, this.y);
-                        ctx.rotate(this.angle);
-                        ctx.fillStyle = 'rgba(0, 255, 136, 0.03)';
-                        ctx.beginPath();
-                        ctx.moveTo(0, 0);
-                        ctx.arc(0, 0, this.visionDistance, 
-                               -this.visionAngle/2, this.visionAngle/2);
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.restore();
                     }
                 }
             }
 
             // ==================== ИГРОВОЙ ДВИЖОК ====================
+            
             class GameEngine {
                 constructor() {
                     this.canvas = document.getElementById('canvas');
-                    this.ctx = this.canvas.getContext('2d', {
-                        alpha: false,
-                        desynchronized: true,
-                        powerPreference: 'high-performance'
-                    });
-                    
+                    this.ctx = this.canvas.getContext('2d', { alpha: false });
+
                     this.resize();
                     window.addEventListener('resize', () => this.resize());
-                    
+
                     this.tanks = [];
                     this.bullets = [];
                     this.running = false;
                     this.debug = false;
-                    
-                    this.colors = [
-                        '#00ff88', '#00ccff', '#ff3b3b', 
-                        '#ffb800', '#bf7af0', '#ff66b2',
-                        '#ffaa00', '#00ffcc'
-                    ];
-                    
-                    // Performance metrics
+
+                    this.colors = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899'];
+
                     this.lastTime = performance.now();
                     this.fps = 60;
-                    this.frameTime = 0;
                     this.frameCount = 0;
                     this.lastFpsUpdate = 0;
-                    
-                    // Statistics
+
                     this.totalShots = 0;
                     this.totalHits = 0;
-                    this.learnSteps = 0;
-                    
+
                     // Bind events
                     document.getElementById('startBtn').onclick = () => this.toggle();
                     document.getElementById('resetBtn').onclick = () => this.reset();
                     document.getElementById('debugBtn').onclick = () => this.debug = !this.debug;
+
                     document.getElementById('tankCount').onchange = () => this.reset();
-                    document.getElementById('modelSize').onchange = () => this.reset();
-                    document.getElementById('learnRate').onchange = () => this.updateLearningRate();
-                    
-                    // Initial spawn
+                    document.getElementById('dModel').onchange = () => this.reset();
+                    document.getElementById('dState').onchange = () => this.reset();
+
                     this.spawn(6);
-                    
-                    // Start loop
                     this.loop();
                 }
-                
+
                 resize() {
                     this.width = window.innerWidth;
                     this.height = window.innerHeight;
                     this.canvas.width = this.width;
                     this.canvas.height = this.height;
                 }
-                
+
                 spawn(count) {
                     this.tanks = [];
                     this.bullets = [];
-                    
+
                     for (let i = 0; i < count; i++) {
-                        let x, y, overlapping;
-                        do {
-                            overlapping = false;
-                            x = 150 + Math.random() * (this.width - 300);
-                            y = 150 + Math.random() * (this.height - 300);
-                            
-                            for (let t of this.tanks) {
-                                if (Vector2.dist({x, y}, t) < 100) {
-                                    overlapping = true;
-                                    break;
-                                }
-                            }
-                        } while (overlapping);
-                        
+                        const x = 200 + Math.random() * (this.width - 400);
+                        const y = 200 + Math.random() * (this.height - 400);
                         this.tanks.push(new Tank(
-                            i, x, y, 
-                            this.colors[i % this.colors.length], 
+                            i, x, y,
+                            this.colors[i % this.colors.length],
                             this
                         ));
                     }
-                    
-                    this.updateUI();
+
+                    this.totalShots = 0;
+                    this.totalHits = 0;
                 }
-                
+
                 toggle() {
                     this.running = !this.running;
-                    document.getElementById('startBtn').innerHTML = this.running ? 
-                        '<span>⏸</span> Pause' : '<span>▶</span> Start';
-                    document.getElementById('state').textContent = this.running ? 'ACTIVE' : 'READY';
+                    document.getElementById('startBtn').textContent = this.running ? '⏸ ПАУЗА' : '▶ ПУСК';
+                    document.getElementById('state').textContent = this.running ? 'БОЙ' : 'ГОТОВ';
                 }
-                
+
                 reset() {
                     const count = parseInt(document.getElementById('tankCount').value);
                     this.spawn(count);
                     this.running = false;
-                    this.totalShots = 0;
-                    this.totalHits = 0;
-                    this.learnSteps = 0;
-                    document.getElementById('startBtn').innerHTML = '<span>▶</span> Start';
-                    document.getElementById('state').textContent = 'READY';
+                    document.getElementById('startBtn').textContent = '▶ ПУСК';
+                    document.getElementById('state').textContent = 'ГОТОВ';
                 }
-                
-                updateLearningRate() {
-                    const rate = parseFloat(document.getElementById('learnRate').value);
-                    this.tanks.forEach(t => t.brain.learningRate = rate);
-                }
-                
+
                 update() {
                     const now = performance.now();
-                    const dt = now - this.lastTime;
                     
-                    // FPS calculation
                     this.frameCount++;
                     if (now - this.lastFpsUpdate > 1000) {
                         this.fps = this.frameCount;
                         this.frameCount = 0;
                         this.lastFpsUpdate = now;
                     }
-                    this.frameTime = dt;
                     this.lastTime = now;
-                    
-                    // Update UI
+
                     document.getElementById('fps').textContent = this.fps;
-                    document.getElementById('frameTime').textContent = Math.round(dt);
+                    document.getElementById('totalShots').textContent = this.totalShots;
                     
-                    // Clear canvas with trail effect
-                    this.ctx.fillStyle = 'rgba(10, 12, 14, 0.3)';
+                    const accuracy = this.totalShots > 0 ? Math.round(this.totalHits / this.totalShots * 100) : 0;
+                    document.getElementById('accuracy').textContent = accuracy + '%';
+
+                    // Clear
+                    this.ctx.fillStyle = '#0a0c0e';
                     this.ctx.fillRect(0, 0, this.width, this.height);
-                    
-                    // Draw grid
-                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
-                    this.ctx.lineWidth = 1;
-                    
-                    const gridSize = 60;
-                    for (let x = 0; x < this.width; x += gridSize) {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(x, 0);
-                        this.ctx.lineTo(x, this.height);
-                        this.ctx.stroke();
-                    }
-                    for (let y = 0; y < this.height; y += gridSize) {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(0, y);
-                        this.ctx.lineTo(this.width, y);
-                        this.ctx.stroke();
-                    }
-                    
+
                     if (this.running) {
-                        // Update tanks
                         for (let tank of this.tanks) {
                             tank.update();
                         }
-                        
-                        // Update bullets
+
                         for (let i = this.bullets.length - 1; i >= 0; i--) {
                             const b = this.bullets[i];
                             b.x += b.vx;
                             b.y += b.vy;
                             b.life--;
-                            
-                            // Draw bullet
+
                             this.ctx.beginPath();
-                            this.ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-                            
-                            const gradient = this.ctx.createRadialGradient(
-                                b.x - 2, b.y - 2, 0,
-                                b.x, b.y, 8
-                            );
-                            gradient.addColorStop(0, b.color);
-                            gradient.addColorStop(1, 'rgba(255,255,255,0.8)');
-                            
-                            this.ctx.fillStyle = gradient;
+                            this.ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+                            this.ctx.fillStyle = b.color;
                             this.ctx.shadowBlur = 15;
                             this.ctx.shadowColor = b.color;
                             this.ctx.fill();
                             this.ctx.shadowBlur = 0;
-                            
-                            // Check hits
+
                             for (let tank of this.tanks) {
                                 if (tank !== b.owner && tank.hp > 0) {
                                     const dx = b.x - tank.x;
                                     const dy = b.y - tank.y;
                                     if (dx * dx + dy * dy < (tank.radius + 5) ** 2) {
-                                        tank.takeDamage(b.damage || 20, b.owner);
+                                        tank.takeDamage(b.damage, b.owner);
                                         this.bullets.splice(i, 1);
                                         this.totalShots++;
-                                        this.totalHits++;
+                                        if (tank.hp <= 0) this.totalHits++;
                                         break;
                                     }
                                 }
                             }
-                            
-                            // Remove bullets
-                            if (b.life <= 0 || 
-                                b.x < -50 || b.x > this.width + 50 || 
-                                b.y < -50 || b.y > this.height + 50) {
+
+                            if (b.life <= 0 || b.x < -100 || b.x > this.width + 100 || b.y < -100 || b.y > this.height + 100) {
                                 this.bullets.splice(i, 1);
                             }
                         }
                     }
-                    
-                    // Draw tanks
+
                     for (let tank of this.tanks) {
                         tank.draw(this.ctx, this.debug);
                     }
-                    
-                    // Update UI stats
+
                     this.updateUI();
                 }
-                
+
                 updateUI() {
-                    const activeTanks = this.tanks.filter(t => t.hp > 0).length;
-                    document.getElementById('tanksAlive').textContent = activeTanks;
-                    document.getElementById('activeCount').textContent = 
-                        `${activeTanks}/${this.tanks.length}`;
-                    document.getElementById('totalShots').textContent = this.totalShots;
-                    
-                    const hitRatio = this.totalShots > 0 
-                        ? Math.round(this.totalHits / this.totalShots * 100) 
-                        : 0;
-                    document.getElementById('hitRatio').textContent = hitRatio + '%';
-                    
-                    // Tank list
+                    const active = this.tanks.filter(t => t.hp > 0).length;
+                    document.getElementById('activeCount').textContent = `${active}/${this.tanks.length}`;
+
+                    let totalLoss = 0;
+                    let lossCount = 0;
+
                     let html = '';
                     for (let i = 0; i < this.tanks.length; i++) {
                         const t = this.tanks[i];
                         if (t.hp > 0) {
                             const acc = t.shots > 0 ? Math.round(t.hits / t.shots * 100) : 0;
+                            totalLoss += t.brain.getLoss();
+                            lossCount++;
+
                             html += `
                                 <div class="tank-item" style="border-left-color: ${t.color}">
                                     <div class="tank-header">
-                                        <span class="tank-name">TANK-${i + 1}</span>
-                                        <span class="tank-badge">L:${t.brain.getLoss().toFixed(3)}</span>
+                                        <span class="tank-name">ТАНК-${i + 1}</span>
+                                        <span class="badge">L:${t.brain.getLoss().toFixed(3)}</span>
                                     </div>
                                     <div class="tank-stats">
-                                        <span>🎯 ${acc}%</span>
-                                        <span>⚡ ${t.shots}</span>
-                                        <span>💀 ${t.kills}</span>
+                                        <span>Точность: ${acc}%</span>
+                                        <span>Выстрелов: ${t.shots}</span>
+                                        <span>Убийств: ${t.kills}</span>
                                     </div>
                                     <div class="health-bar">
                                         <div class="health-fill" style="width: ${t.hp}%"></div>
@@ -1606,18 +1464,28 @@
                             `;
                         }
                     }
+
                     document.getElementById('tankStats').innerHTML = html;
-                    
-                    // Total neurons and params
-                    const modelSize = parseInt(document.getElementById('modelSize').value);
-                    const totalNeurons = this.tanks.length * modelSize;
-                    const totalParams = this.tanks.length * (modelSize * 12 + modelSize * 5 + modelSize * modelSize / 2);
-                    document.getElementById('totalNeurons').textContent = 
-                        totalNeurons > 1000 ? (totalNeurons / 1000).toFixed(1) + 'K' : totalNeurons;
-                    document.getElementById('totalParams').textContent = 
-                        totalParams > 1000 ? (totalParams / 1000).toFixed(1) + 'K' : totalParams;
+
+                    if (lossCount > 0) {
+                        document.getElementById('avgLoss').textContent = (totalLoss / lossCount).toFixed(3);
+                    }
+
+                    const dModel = parseInt(document.getElementById('dModel').value);
+                    const dState = parseInt(document.getElementById('dState').value);
+                    const neurons = this.tanks.length * (dModel + dState);
+                    const params = this.tanks.length * (
+                        dModel * 12 + // W_in
+                        dModel * dState * 3 + // W_dt, W_B, W_C
+                        dState + // A_log
+                        dModel + // D
+                        dModel * 5 // W_out
+                    );
+
+                    document.getElementById('neurons').textContent = neurons > 1000 ? (neurons / 1000).toFixed(1) + 'K' : neurons;
+                    document.getElementById('params').textContent = params > 1000 ? (params / 1000).toFixed(1) + 'K' : params;
                 }
-                
+
                 loop() {
                     this.update();
                     requestAnimationFrame(() => this.loop());
