@@ -378,12 +378,12 @@
                     <button onclick="togglePause()">⏸️ ПАУЗА SSM</button>
                 </div>
                 <div class="control-group">
-                    <label>⏱️ СКОРОСТЬ ДИСКРЕТИЗАЦИИ (Δ)</label>
+                    <label>⏱️ СКОРОСТЬ СИМУЛЯЦИИ</label>
                     <input type="range" id="speed-slider" min="1" max="20" value="1" 
                            style="width: 100%; accent-color: #00ffff;">
                 </div>
                 <div class="control-group">
-                    <label>🧬 МУТАЦИЯ СЕЛЕКТИВНОСТИ</label>
+                    <label>🧬 МУТАЦИЯ</label>
                     <input type="range" id="mutation-slider" min="0.05" max="0.5" value="0.15" step="0.01"
                            style="width: 100%; accent-color: #ff44ff;">
                 </div>
@@ -393,11 +393,11 @@
                 <h2>📊 SSM СТАТИСТИКА</h2>
                 <div class="stats-grid">
                     <div class="stat-box green">
-                        <div class="stat-label">ЗЕЛЁНЫЕ (h_state)</div>
+                        <div class="stat-label">ЗЕЛЁНЫЕ</div>
                         <div class="stat-value" id="green-alive">0</div>
                     </div>
                     <div class="stat-box red">
-                        <div class="stat-label">КРАСНЫЕ (h_state)</div>
+                        <div class="stat-label">КРАСНЫЕ</div>
                         <div class="stat-value" id="red-alive">0</div>
                     </div>
                     <div class="stat-box">
@@ -416,7 +416,7 @@
                 <div id="mental-map-container"></div>
                 <div class="mamba-params">
                     <div class="param-item">
-                        <div class="param-label">Δ (DISCRETE STEP)</div>
+                        <div class="param-label">Δ (STEP)</div>
                         <div class="param-value" id="delta-value">0.1</div>
                     </div>
                     <div class="param-item">
@@ -439,9 +439,7 @@
             
             <div class="panel">
                 <h2>👁️ СЕЛЕКТИВНОЕ ВНИМАНИЕ</h2>
-                <div class="attention-heatmap" id="attention-heatmap">
-                    <!-- Attention weights will be displayed here -->
-                </div>
+                <div class="attention-heatmap" id="attention-heatmap"></div>
             </div>
             
             <div class="panel">
@@ -450,15 +448,15 @@
             </div>
             
             <div class="panel">
-                <h2>🏗️ MAMBA WORLD MODEL ARCHITECTURE</h2>
+                <h2>🏗️ MAMBA WORLD MODEL</h2>
                 <div style="font-size: 11px; line-height: 1.8; color: #aaa;">
-                    <div style="color: #00ffff; margin-bottom: 8px;">Selective State Space Model:</div>
-                    <b>1. Encoder:</b> Linear(6 → 32) + LayerNorm<br>
-                    <b>2. SSM Parameters:</b> A (diag), B(x), C(x), Δ(x)<br>
-                    <b>3. Discretization:</b> ZOH: Ā = exp(ΔA), B̄ = (ΔA)⁻¹(exp(ΔA)-I)·ΔB<br>
-                    <b>4. State Update:</b> h_t = Ā·h_{t-1} + B̄·x_t<br>
-                    <b>5. Output:</b> y_t = C·h_t + D·x_t<br>
-                    <b>6. Perceptron:</b> Linear(32 → 8) + Tanh
+                    <div style="color: #00ffff;">Selective State Space Model:</div>
+                    Encoder: Linear(6 → 32)<br>
+                    SSM: A(diag), B(x), C(x), Δ(x)<br>
+                    Discretization: ZOH<br>
+                    State: h_t = Ā·h_{t-1} + B̄·x_t<br>
+                    Output: y_t = C·h_t + D·x_t<br>
+                    Perceptron: Linear(32 → 8) + Tanh
                 </div>
             </div>
         </div>
@@ -466,7 +464,7 @@
 
     <script>
         // ============================================
-        // ПРОФЕССИОНАЛЬНАЯ MAMBA SSM РЕАЛИЗАЦИЯ
+        // КОНФИГУРАЦИЯ
         // ============================================
         const CONFIG = {
             INPUT_DIM: 6,
@@ -489,21 +487,20 @@
             ARENA_WIDTH: 1200,
             ARENA_HEIGHT: 800,
             SSM_DELTA_MIN: 0.01,
-            SSM_DELTA_MAX: 0.5,
-            SSM_DELTA_LEARN_RATE: 0.1
+            SSM_DELTA_MAX: 0.5
         };
 
         // ============================================
-        // ПРОДВИНУТАЯ МАТРИЧНАЯ БИБЛИОТЕКА
+        // МАТРИЧНАЯ БИБЛИОТЕКА
         // ============================================
         class Matrix {
             static zeros(rows, cols) {
                 return Array(rows).fill().map(() => Array(cols).fill(0));
             }
             
-            static random(rows, cols, scale = 0.3, mean = 0) {
+            static random(rows, cols, scale = 0.3) {
                 return Array(rows).fill().map(() => 
-                    Array(cols).fill().map(() => (Math.random() * 2 - 1) * scale + mean)
+                    Array(cols).fill().map(() => (Math.random() * 2 - 1) * scale)
                 );
             }
             
@@ -537,30 +534,9 @@
                 return a.map((row, i) => row.map((val, j) => val + b[i][j]));
             }
             
-            static scale(a, s) {
-                return a.map(row => row.map(val => val * s));
-            }
-            
-            static transpose(a) {
-                return a[0].map((_, i) => a.map(row => row[i]));
-            }
-            
             static expm(mat) {
-                // Экспонента матрицы через ряд Тейлора (упрощенно для диагональных)
-                const n = mat.length;
-                if (n === 1) return [[Math.exp(mat[0][0])]];
-                
-                // Для диагональных матриц экспонента поэлементно
-                if (mat.every((row, i) => row.every((val, j) => j === i || val === 0))) {
-                    return mat.map((row, i) => row.map((val, j) => j === i ? Math.exp(val) : 0));
-                }
-                
-                // Общий случай (очень упрощенно)
-                const result = this.zeros(n, n);
-                for (let i = 0; i < n; i++) {
-                    result[i][i] = Math.exp(mat[i][i] || 0);
-                }
-                return result;
+                // Для диагональных матриц
+                return mat.map((row, i) => row.map((val, j) => j === i ? Math.exp(val) : 0));
             }
             
             static norm(mat) {
@@ -576,14 +552,10 @@
             static fromArray(arr) {
                 return arr.map(x => [x]);
             }
-            
-            static toArray(mat) {
-                return mat.map(row => row[0]);
-            }
         }
 
         // ============================================
-        // ПРОФЕССИОНАЛЬНАЯ MAMBA WORLD MODEL
+        // MAMBA WORLD MODEL
         // ============================================
         class MambaWorldModel {
             constructor(weights = null) {
@@ -599,31 +571,21 @@
                 
                 this.state = new Array(this.latentDim).fill(0);
                 this.prevState = new Array(this.latentDim).fill(0);
-                this.delta = 0.1; // Шаг дискретизации
+                this.delta = 0.1;
                 this.attentionWeights = new Array(this.latentDim).fill(0);
             }
             
             initializeWeights() {
-                // Инициализация с Xavier/Glorot
-                const scale = Math.sqrt(2.0 / (this.inputDim + this.latentDim));
+                const scale = 0.3;
                 
-                // Основные веса SSM
                 this.W_enc = Matrix.random(this.inputDim, this.latentDim, scale);
-                this.A = Matrix.randomDiag(this.latentDim, 0.5); // Диагональная A для стабильности
+                this.A = Matrix.randomDiag(this.latentDim, 0.5);
                 this.B = Matrix.random(this.latentDim, this.latentDim, scale);
                 this.C = Matrix.random(this.latentDim, this.latentDim, scale);
-                this.D = Matrix.random(1, this.latentDim, 0.1); // Skip connection
-                
-                // Селективные проекции (для зависимости от входа)
+                this.D = Matrix.random(1, this.latentDim, 0.1);
                 this.W_delta = Matrix.random(1, this.latentDim, 0.1);
-                this.W_B_sel = Matrix.random(1, this.latentDim, 0.1);
-                this.W_C_sel = Matrix.random(1, this.latentDim, 0.1);
-                
-                // Perceptron для действий
                 this.W_action = Matrix.random(this.latentDim, this.actionDim, scale);
                 this.b_action = Matrix.random(1, this.actionDim, 0.1);
-                
-                // LayerNorm параметры
                 this.ln_gamma = new Array(this.latentDim).fill(1);
                 this.ln_beta = new Array(this.latentDim).fill(0);
             }
@@ -635,8 +597,6 @@
                 this.C = weights.C;
                 this.D = weights.D;
                 this.W_delta = weights.W_delta;
-                this.W_B_sel = weights.W_B_sel;
-                this.W_C_sel = weights.W_C_sel;
                 this.W_action = weights.W_action;
                 this.b_action = weights.b_action;
                 this.ln_gamma = weights.ln_gamma;
@@ -659,26 +619,15 @@
             }
             
             discretize(A, B, delta) {
-                // Zero-Order Hold дискретизация
-                // Ā = exp(Δ·A)
-                // B̄ = (Δ·A)⁻¹(exp(Δ·A) - I)·Δ·B
-                
                 const n = A.length;
                 
-                // Умножаем A на Δ
+                // Ā = exp(Δ·A)
                 const A_delta = A.map((row, i) => 
                     row.map((val, j) => val * delta)
                 );
-                
-                // exp(Δ·A)
                 const A_bar = Matrix.expm(A_delta);
                 
-                // (exp(Δ·A) - I)
-                const exp_minus_I = A_bar.map((row, i) => 
-                    row.map((val, j) => val - (i === j ? 1 : 0))
-                );
-                
-                // Упрощенное вычисление B̄ (для диагональной A)
+                // B̄ = (exp(Δ·A) - I) * A⁻¹ * B (упрощенно для диагональной A)
                 const B_bar = Matrix.zeros(n, n);
                 for (let i = 0; i < n; i++) {
                     for (let j = 0; j < n; j++) {
@@ -695,9 +644,7 @@
             }
             
             encodeObjects(objects) {
-                // Кодирование видимых объектов с attention pooling
                 let aggregated = new Array(this.latentDim).fill(0);
-                let attentionSum = 0;
                 
                 if (!objects || objects.length === 0) {
                     return aggregated;
@@ -707,79 +654,65 @@
                     const inputVec = Matrix.fromArray([
                         obj.x / CONFIG.ARENA_WIDTH,
                         obj.y / CONFIG.ARENA_HEIGHT,
-                        obj.vx / CONFIG.AGENT_SPEED,
-                        obj.vy / CONFIG.AGENT_SPEED,
-                        obj.type === 'enemy' ? 1 : (obj.type === 'resource' ? 0.5 : (obj.type === 'ally' ? 0.2 : 0)),
+                        (obj.vx || 0) / CONFIG.AGENT_SPEED,
+                        (obj.vy || 0) / CONFIG.AGENT_SPEED,
+                        obj.type === 'enemy' ? 1 : (obj.type === 'resource' ? 0.5 : 0),
                         obj.hp / CONFIG.MAX_HP
                     ]);
                     
-                    const encoded = Matrix.multiply(inputVec, this.W_enc)[0];
-                    
-                    // Селективное внимание через сигмоиду
-                    const attention = 1 / (1 + Math.exp(-encoded.reduce((a, b) => a + b, 0) / encoded.length));
-                    this.attentionWeights = encoded.map((val, i) => 
-                        this.attentionWeights[i] * 0.9 + attention * 0.1
-                    );
+                    const encoded = Matrix.multiply(inputVec, this.W_enc);
                     
                     for (let i = 0; i < this.latentDim; i++) {
-                        aggregated[i] += encoded[i] * attention;
+                        aggregated[i] += encoded[0][i];
                     }
-                    attentionSum += attention;
                 }
                 
                 // Нормализация
-                if (attentionSum > 0) {
-                    for (let i = 0; i < this.latentDim; i++) {
-                        aggregated[i] /= attentionSum;
-                    }
+                const maxVal = Math.max(...aggregated.map(Math.abs)) || 1;
+                for (let i = 0; i < this.latentDim; i++) {
+                    aggregated[i] /= maxVal;
                 }
                 
                 return aggregated;
             }
             
             forward(objects) {
-                // 1. Encode objects with attention
+                // Encode objects
                 const x = this.encodeObjects(objects);
                 
-                // 2. Селективные параметры (зависят от входа)
+                // Селективный delta
                 const xMean = x.reduce((a, b) => a + b, 0) / x.length;
-                
-                // Δ - шаг дискретизации (учится)
-                let delta = xMean * CONFIG.SSM_DELTA_LEARN_RATE + CONFIG.SSM_DELTA_MIN;
+                let delta = xMean * 0.1 + CONFIG.SSM_DELTA_MIN;
                 delta = Math.min(CONFIG.SSM_DELTA_MAX, Math.max(CONFIG.SSM_DELTA_MIN, delta));
                 this.delta = delta;
                 
-                // 3. Discretization
+                // Discretization
                 const { A_bar, B_bar } = this.discretize(this.A, this.B, delta);
                 
-                // 4. State update: h_t = Ā·h_{t-1} + B̄·x_t
+                // State update
                 const hPrev = Matrix.fromArray([this.prevState]);
                 const xCurrent = Matrix.fromArray([x]);
                 
                 const Ah = Matrix.multiply(hPrev, A_bar);
                 const Bx = Matrix.multiply(xCurrent, B_bar);
                 
-                // Сохраняем предыдущее состояние
                 this.prevState = [...this.state];
                 
-                // Обновляем состояние с селективной нелинейностью
                 for (let i = 0; i < this.latentDim; i++) {
-                    const ah = Ah[0][i] || 0;
-                    const bx = Bx[0][i] || 0;
-                    this.state[i] = Math.tanh(ah + bx);
+                    this.state[i] = Math.tanh(Ah[0][i] + Bx[0][i]);
                 }
                 
                 // LayerNorm
                 const normalizedState = this.layerNorm(this.state);
                 
-                // 5. Output: y_t = C·h_t + D·x_t
+                // Output
                 const hMat = Matrix.fromArray([normalizedState]);
                 const Ch = Matrix.multiply(hMat, this.C)[0];
                 const Dx = this.D[0].map((d, i) => d * x[i]);
                 
                 const output = Ch.map((val, i) => val + Dx[i]);
                 
-                // 6. Perceptron (действия)
+                // Perceptron (действия)
                 const hOutput = Matrix.fromArray([output]);
                 const actionLogits = Matrix.add(
                     Matrix.multiply(hOutput, this.W_action),
@@ -787,9 +720,8 @@
                 )[0];
                 
                 return {
-                    logits: actionLogits.map(v => Math.tanh(v)), // Нормализация действий
+                    logits: actionLogits.map(v => Math.tanh(v)),
                     state: this.state,
-                    output: output,
                     delta: delta
                 };
             }
@@ -802,8 +734,6 @@
                 clone.C = this.C.map(row => [...row]);
                 clone.D = this.D.map(row => [...row]);
                 clone.W_delta = this.W_delta.map(row => [...row]);
-                clone.W_B_sel = this.W_B_sel.map(row => [...row]);
-                clone.W_C_sel = this.W_C_sel.map(row => [...row]);
                 clone.W_action = this.W_action.map(row => [...row]);
                 clone.b_action = this.b_action.map(row => [...row]);
                 clone.ln_gamma = [...this.ln_gamma];
@@ -823,30 +753,17 @@
                 };
                 
                 mutateMatrix(this.W_enc);
-                
-                // Сохраняем диагональность A
                 for (let i = 0; i < this.latentDim; i++) {
                     if (Math.random() < rate) {
                         this.A[i][i] += (Math.random() * 2 - 1) * strength * 0.5;
                     }
                 }
-                
                 mutateMatrix(this.B);
                 mutateMatrix(this.C);
                 mutateMatrix(this.D);
                 mutateMatrix(this.W_delta);
-                mutateMatrix(this.W_B_sel);
-                mutateMatrix(this.W_C_sel);
                 mutateMatrix(this.W_action);
                 mutateMatrix(this.b_action);
-                
-                // Мутация LayerNorm параметров
-                for (let i = 0; i < this.latentDim; i++) {
-                    if (Math.random() < rate) {
-                        this.ln_gamma[i] += (Math.random() * 2 - 1) * strength * 0.1;
-                        this.ln_beta[i] += (Math.random() * 2 - 1) * strength * 0.1;
-                    }
-                }
             }
             
             getWeights() {
@@ -857,8 +774,6 @@
                     C: this.C,
                     D: this.D,
                     W_delta: this.W_delta,
-                    W_B_sel: this.W_B_sel,
-                    W_C_sel: this.W_C_sel,
                     W_action: this.W_action,
                     b_action: this.b_action,
                     ln_gamma: this.ln_gamma,
@@ -868,7 +783,7 @@
         }
 
         // ============================================
-        // ИГРОВЫЕ ОБЪЕКТЫ (оптимизированы)
+        // ИГРОВЫЕ ОБЪЕКТЫ
         // ============================================
         class GameObject {
             constructor(x, y, type) {
@@ -878,7 +793,7 @@
                 this.vy = 0;
                 this.type = type;
                 this.radius = CONFIG.AGENT_RADIUS;
-                this.id = Math.random().toString(36).substr(2, 6);
+                this.id = Math.random().toString(36).substr(2, 4);
             }
             
             distanceTo(other) {
@@ -917,14 +832,6 @@
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#ffff00';
                 ctx.fill();
-                
-                // Хвост
-                ctx.beginPath();
-                ctx.moveTo(this.x - this.vx * 2, this.y - this.vy * 2);
-                ctx.lineTo(this.x, this.y);
-                ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
                 ctx.restore();
             }
         }
@@ -951,7 +858,7 @@
                 const pulse = Math.sin(Date.now() / 200) * 3;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius + pulse, 0, Math.PI * 2);
-                ctx.strokeStyle = `rgba(0, 255, 255, ${0.5})`;
+                ctx.strokeStyle = `rgba(0, 255, 255, 0.5)`;
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 ctx.restore();
@@ -971,20 +878,9 @@
                 ctx.save();
                 ctx.fillStyle = '#2a2a4a';
                 ctx.fillRect(this.x, this.y, this.w, this.h);
-                
                 ctx.strokeStyle = '#4a4a6a';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(this.x, this.y, this.w, this.h);
-                
-                // Энергетическая текстура
-                ctx.fillStyle = 'rgba(0, 255, 255, 0.05)';
-                for (let i = 0; i < this.w; i += 15) {
-                    for (let j = 0; j < this.h; j += 15) {
-                        if ((i + j) % 30 === 0) {
-                            ctx.fillRect(this.x + i, this.y + j, 10, 10);
-                        }
-                    }
-                }
                 ctx.restore();
             }
             
@@ -1005,11 +901,8 @@
                 this.fitness = 0;
                 this.kills = 0;
                 this.damageDealt = 0;
-                this.resourcesCollected = 0;
                 this.angle = 0;
                 this.color = team === 'green' ? '#00ff88' : '#ff4444';
-                this.glowColor = team === 'green' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 68, 68, 0.3)';
-                this.lastAction = null;
                 this.mambaState = [];
             }
             
@@ -1022,52 +915,32 @@
                     const dist = this.distanceTo(agent);
                     if (dist > CONFIG.VIEW_DISTANCE) continue;
                     
-                    if (this.hasLineOfSight(agent, walls)) {
-                        visible.push({
-                            x: agent.x,
-                            y: agent.y,
-                            vx: agent.vx,
-                            vy: agent.vy,
-                            type: agent.team === this.team ? 'ally' : 'enemy',
-                            hp: agent.hp,
-                            dist: dist
-                        });
-                    }
+                    visible.push({
+                        x: agent.x,
+                        y: agent.y,
+                        vx: agent.vx,
+                        vy: agent.vy,
+                        type: agent.team === this.team ? 'ally' : 'enemy',
+                        hp: agent.hp
+                    });
                 }
                 
                 for (let res of resources) {
                     if (res.respawnTime > 0) continue;
                     const dist = this.distanceTo(res);
-                    if (dist <= CONFIG.VIEW_DISTANCE && this.hasLineOfSight(res, walls)) {
+                    if (dist <= CONFIG.VIEW_DISTANCE) {
                         visible.push({
                             x: res.x,
                             y: res.y,
                             vx: 0,
                             vy: 0,
                             type: 'resource',
-                            hp: 100,
-                            dist: dist
+                            hp: 100
                         });
                     }
                 }
                 
-                return visible.sort((a, b) => a.dist - b.dist);
-            }
-            
-            hasLineOfSight(target, walls) {
-                const steps = 15;
-                const dx = (target.x - this.x) / steps;
-                const dy = (target.y - this.y) / steps;
-                
-                for (let i = 1; i < steps; i++) {
-                    const x = this.x + dx * i;
-                    const y = this.y + dy * i;
-                    
-                    for (let wall of walls) {
-                        if (wall.contains(x, y)) return false;
-                    }
-                }
-                return true;
+                return visible;
             }
             
             think(allAgents, resources, walls) {
@@ -1076,7 +949,7 @@
                 
                 this.mambaState = state;
                 
-                // Action interpretation
+                // ПЕРЦЕПТРОН РАБОТАЕТ - действия от -1 до 1
                 const actions = {
                     up: logits[0],
                     down: logits[1],
@@ -1088,13 +961,36 @@
                     cover: logits[7]
                 };
                 
-                this.lastAction = actions;
+                // ===== ДВИЖЕНИЕ =====
+                // Направление = разность противоположных действий
+                let ax = actions.right - actions.left;
+                let ay = actions.down - actions.up;
                 
-                // Movement
-                let ax = 0, ay = 0;
+                // Нормализуем диагонали
+                const len = Math.sqrt(ax*ax + ay*ay);
+                if (len > 1.0) {
+                    ax /= len;
+                    ay /= len;
+                }
                 
+                // Применяем скорость
+                this.vx += ax * CONFIG.AGENT_SPEED * 0.3;
+                this.vy += ay * CONFIG.AGENT_SPEED * 0.3;
+                
+                // ===== СТРЕЛЬБА =====
+                if (actions.shoot > 0.3 && this.cooldown <= 0) {
+                    this.shoot(allAgents);
+                }
+                
+                // ===== ЛЕЧЕНИЕ =====
+                if (actions.heal > 0.2 && this.hp < CONFIG.MAX_HP) {
+                    const healAmount = CONFIG.HEAL_AMOUNT * Math.abs(actions.heal);
+                    this.hp = Math.min(CONFIG.MAX_HP, this.hp + healAmount);
+                    this.fitness += healAmount;
+                }
+                
+                // ===== RETREAT =====
                 if (actions.retreat > 0.3) {
-                    // Селективное отступление (зависит от состояния)
                     let nearestEnemy = null;
                     let minDist = Infinity;
                     for (let agent of allAgents) {
@@ -1107,52 +1003,34 @@
                         }
                     }
                     if (nearestEnemy) {
-                        ax = (this.x - nearestEnemy.x) / minDist;
-                        ay = (this.y - nearestEnemy.y) / minDist;
+                        const retreatX = (this.x - nearestEnemy.x) / minDist;
+                        const retreatY = (this.y - nearestEnemy.y) / minDist;
+                        this.vx += retreatX * CONFIG.AGENT_SPEED * 0.2;
+                        this.vy += retreatY * CONFIG.AGENT_SPEED * 0.2;
                     }
-                } else if (actions.cover > 0.3) {
-                    // Поиск укрытия с учетом SSM состояния
+                }
+                
+                // ===== COVER =====
+                if (actions.cover > 0.3) {
                     let bestCover = null;
                     let bestScore = -Infinity;
                     for (let wall of walls) {
                         const dist = Math.hypot(wall.x + wall.w/2 - this.x, wall.y + wall.h/2 - this.y);
-                        const coverScore = 1 / (dist + 1) + (state[0] || 0) * 0.1; // SSM влияет на выбор
-                        if (coverScore > bestScore) {
-                            bestScore = coverScore;
-                            bestCover = wall;
+                        if (dist < 200 && dist > 30) {
+                            const score = 1 / dist;
+                            if (score > bestScore) {
+                                bestScore = score;
+                                bestCover = wall;
+                            }
                         }
                     }
                     if (bestCover) {
-                        ax = (bestCover.x + bestCover.w/2 - this.x);
-                        ay = (bestCover.y + bestCover.h/2 - this.y);
-                        const len = Math.sqrt(ax*ax + ay*ay);
-                        ax /= len;
-                        ay /= len;
+                        const coverX = bestCover.x + bestCover.w/2 - this.x;
+                        const coverY = bestCover.y + bestCover.h/2 - this.y;
+                        const coverLen = Math.sqrt(coverX*coverX + coverY*coverY);
+                        this.vx += (coverX / coverLen) * CONFIG.AGENT_SPEED * 0.2;
+                        this.vy += (coverY / coverLen) * CONFIG.AGENT_SPEED * 0.2;
                     }
-                } else {
-                    if (actions.up > 0) ay -= actions.up;
-                    if (actions.down > 0) ay += actions.down;
-                    if (actions.left > 0) ax -= actions.left;
-                    if (actions.right > 0) ax += actions.right;
-                }
-                
-                const len = Math.sqrt(ax*ax + ay*ay);
-                if (len > 0) {
-                    ax /= len;
-                    ay /= len;
-                    this.vx += ax * CONFIG.AGENT_SPEED * 0.2;
-                    this.vy += ay * CONFIG.AGENT_SPEED * 0.2;
-                }
-                
-                // Shooting
-                if (actions.shoot > 0.4 && this.cooldown <= 0) {
-                    this.shoot(allAgents);
-                }
-                
-                // Healing
-                if (actions.heal > 0.5 && this.hp < CONFIG.MAX_HP * 0.7) {
-                    this.hp = Math.min(CONFIG.MAX_HP, this.hp + CONFIG.HEAL_AMOUNT * actions.heal);
-                    this.fitness += 5 * actions.heal;
                 }
                 
                 // Update angle
@@ -1173,7 +1051,6 @@
                     if (agent.team !== this.team && agent.hp > 0) {
                         const dist = this.distanceTo(agent);
                         if (dist < CONFIG.VIEW_DISTANCE) {
-                            // Селективная стрельба (учитываем состояние)
                             const score = (1 / (dist + 1)) * (1 - agent.hp / agent.maxHp);
                             if (score > bestScore) {
                                 bestScore = score;
@@ -1193,7 +1070,6 @@
                         this
                     );
                     if (game) game.bullets.push(bullet);
-                    this.fitness += 2;
                 }
             }
             
@@ -1229,7 +1105,7 @@
                 }
                 
                 if (this.cooldown > 0) this.cooldown--;
-                this.fitness += 0.05; // Бонус за выживание
+                this.fitness += 0.1;
             }
             
             draw(ctx) {
@@ -1237,25 +1113,24 @@
                 
                 ctx.save();
                 
-                // Свечение от SSM состояния
+                // Свечение
                 const intensity = this.mambaState.length > 0 
                     ? this.mambaState.reduce((a, b) => a + Math.abs(b), 0) / this.mambaState.length 
                     : 0;
-                const glowSize = this.radius * (2 + intensity);
                 
                 const gradient = ctx.createRadialGradient(
                     this.x, this.y, 0,
-                    this.x, this.y, glowSize
+                    this.x, this.y, this.radius * 3
                 );
-                gradient.addColorStop(0, this.glowColor);
+                gradient.addColorStop(0, this.color + '40');
                 gradient.addColorStop(1, 'transparent');
                 ctx.fillStyle = gradient;
-                ctx.fillRect(this.x - glowSize, this.y - glowSize, glowSize * 2, glowSize * 2);
+                ctx.fillRect(this.x - this.radius * 3, this.y - this.radius * 3, 
+                           this.radius * 6, this.radius * 6);
                 
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.angle);
                 
-                // Тело с эффектом SSM
                 ctx.beginPath();
                 ctx.moveTo(this.radius, 0);
                 ctx.lineTo(-this.radius * 0.7, this.radius * 0.7);
@@ -1264,7 +1139,7 @@
                 ctx.closePath();
                 
                 ctx.fillStyle = this.color;
-                ctx.shadowBlur = 15 + intensity * 10;
+                ctx.shadowBlur = 15;
                 ctx.shadowColor = this.color;
                 ctx.fill();
                 
@@ -1277,13 +1152,13 @@
                 ctx.restore();
                 
                 // HP бар
-                const barWidth = 35;
+                const barWidth = 30;
                 const barHeight = 4;
                 ctx.fillStyle = '#000';
                 ctx.fillRect(this.x - barWidth/2, this.y - this.radius - 12, barWidth, barHeight);
                 
                 const hpPercent = this.hp / this.maxHp;
-                ctx.fillStyle = hpPercent > 0.5 ? '#00ff88' : (hpPercent > 0.25 ? '#ffff00' : '#ff4444');
+                ctx.fillStyle = hpPercent > 0.5 ? '#00ff88' : '#ff4444';
                 ctx.fillRect(this.x - barWidth/2, this.y - this.radius - 12, barWidth * hpPercent, barHeight);
             }
             
@@ -1291,18 +1166,18 @@
                 this.hp -= amount;
                 if (attacker) {
                     attacker.damageDealt += amount;
-                    attacker.fitness += amount * 0.2;
+                    attacker.fitness += amount;
                 }
                 
                 if (this.hp <= 0 && attacker) {
                     attacker.kills++;
-                    attacker.fitness += 100;
+                    attacker.fitness += 50;
                 }
             }
         }
 
         // ============================================
-        // ЧАСТИЦЫ (эффекты)
+        // ЧАСТИЦЫ
         // ============================================
         class Particle {
             constructor(x, y, color) {
@@ -1311,9 +1186,9 @@
                 this.vx = (Math.random() - 0.5) * 5;
                 this.vy = (Math.random() - 0.5) * 5;
                 this.life = 1;
-                this.decay = 0.02 + Math.random() * 0.04;
+                this.decay = 0.02 + Math.random() * 0.03;
                 this.color = color;
-                this.size = 2 + Math.random() * 4;
+                this.size = 2 + Math.random() * 3;
             }
             
             update() {
@@ -1356,7 +1231,7 @@
                 this.bestFitness = 0;
                 this.bestBrain = null;
                 this.isRunning = false;
-                this.isPaused = true; // Начинаем с паузы
+                this.isPaused = true;
                 this.simulationSpeed = 1;
                 this.mutationRate = CONFIG.MUTATION_RATE;
                 
@@ -1370,13 +1245,10 @@
                 
                 window.addEventListener('resize', () => this.resize());
                 
-                // Mutation slider
                 document.getElementById('mutation-slider').addEventListener('input', (e) => {
                     this.mutationRate = parseFloat(e.target.value);
                 });
                 
-                // Запускаем анимацию сразу
-                this.animationFrame = null;
                 this.startAnimation();
             }
             
@@ -1385,10 +1257,9 @@
                     if (this.isRunning && !this.isPaused) {
                         this.update();
                     }
-                    this.draw(); // Рисуем всегда, даже на паузе
+                    this.draw();
                     this.updateUI();
-                    
-                    this.animationFrame = requestAnimationFrame(animate);
+                    requestAnimationFrame(animate);
                 };
                 animate();
             }
@@ -1399,14 +1270,6 @@
                 this.canvas.height = wrapper.clientHeight;
                 CONFIG.ARENA_WIDTH = this.canvas.width;
                 CONFIG.ARENA_HEIGHT = this.canvas.height;
-                
-                // Перемещаем агентов при изменении размера
-                if (this.agents) {
-                    for (let agent of this.agents) {
-                        agent.x = Math.min(CONFIG.ARENA_WIDTH - agent.radius, Math.max(agent.radius, agent.x));
-                        agent.y = Math.min(CONFIG.ARENA_HEIGHT - agent.radius, Math.max(agent.radius, agent.y));
-                    }
-                }
             }
             
             initWalls() {
@@ -1436,7 +1299,6 @@
             initAgents() {
                 this.agents = [];
                 
-                // Зеленая команда
                 for (let i = 0; i < CONFIG.POPULATION_PER_TEAM; i++) {
                     const brain = this.bestBrain ? new MambaWorldModel(this.bestBrain) : new MambaWorldModel();
                     if (this.bestBrain && this.isRunning) {
@@ -1447,7 +1309,6 @@
                     this.agents.push(new Agent(x, y, 'green', brain));
                 }
                 
-                // Красная команда
                 for (let i = 0; i < CONFIG.POPULATION_PER_TEAM; i++) {
                     const brain = this.bestBrain ? new MambaWorldModel(this.bestBrain) : new MambaWorldModel();
                     if (this.bestBrain && this.isRunning) {
@@ -1470,8 +1331,6 @@
             }
             
             update() {
-                if (this.isPaused || !this.isRunning) return;
-                
                 for (let step = 0; step < this.simulationSpeed; step++) {
                     const aliveAgents = this.agents.filter(a => a.hp > 0);
                     
@@ -1498,7 +1357,7 @@
                             const dist = Math.hypot(agent.x - bullet.x, agent.y - bullet.y);
                             if (dist < agent.radius) {
                                 agent.takeDamage(CONFIG.DAMAGE, bullet.owner);
-                                this.spawnParticles(bullet.x, bullet.y, '#ffff00', 6);
+                                this.spawnParticles(bullet.x, bullet.y, '#ffff00');
                                 this.bullets.splice(i, 1);
                                 break;
                             }
@@ -1516,10 +1375,9 @@
                             const dist = Math.hypot(agent.x - res.x, agent.y - res.y);
                             if (dist < agent.radius + res.radius) {
                                 agent.hp = Math.min(CONFIG.MAX_HP, agent.hp + res.value);
-                                agent.resourcesCollected++;
                                 agent.fitness += 20;
                                 res.respawnTime = 300;
-                                this.spawnParticles(res.x, res.y, '#00ffff', 10);
+                                this.spawnParticles(res.x, res.y, '#00ffff');
                             }
                         }
                     }
@@ -1569,59 +1427,32 @@
             }
             
             draw() {
-                // Очистка canvas
                 this.ctx.fillStyle = 'rgba(10, 10, 20, 0.2)';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                 
-                this.drawGrid();
+                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.03)';
+                this.ctx.lineWidth = 1;
+                for (let x = 0; x < CONFIG.ARENA_WIDTH; x += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, CONFIG.ARENA_HEIGHT);
+                    this.ctx.stroke();
+                }
+                for (let y = 0; y < CONFIG.ARENA_HEIGHT; y += 40) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(CONFIG.ARENA_WIDTH, y);
+                    this.ctx.stroke();
+                }
                 
                 for (let wall of this.walls) wall.draw(this.ctx);
                 for (let res of this.resources) res.draw(this.ctx);
                 for (let particle of this.particles) particle.draw(this.ctx);
                 for (let bullet of this.bullets) bullet.draw(this.ctx);
                 
-                // Сортируем для правильного отображения
-                this.agents.sort((a, b) => (a.hp <= 0 ? 1 : 0) - (b.hp <= 0 ? 1 : 0));
-                for (let agent of this.agents) agent.draw(this.ctx);
-                
-                if (this.selectedAgent && this.selectedAgent.hp > 0) {
-                    this.drawVisionCone(this.selectedAgent);
+                for (let agent of this.agents) {
+                    if (agent.hp > 0) agent.draw(this.ctx);
                 }
-            }
-            
-            drawGrid() {
-                this.ctx.save();
-                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.03)';
-                this.ctx.lineWidth = 1;
-                
-                const gridSize = 40;
-                for (let x = 0; x < CONFIG.ARENA_WIDTH; x += gridSize) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(x, 0);
-                    this.ctx.lineTo(x, CONFIG.ARENA_HEIGHT);
-                    this.ctx.stroke();
-                }
-                for (let y = 0; y < CONFIG.ARENA_HEIGHT; y += gridSize) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(0, y);
-                    this.ctx.lineTo(CONFIG.ARENA_WIDTH, y);
-                    this.ctx.stroke();
-                }
-                this.ctx.restore();
-            }
-            
-            drawVisionCone(agent) {
-                this.ctx.save();
-                this.ctx.beginPath();
-                this.ctx.arc(agent.x, agent.y, CONFIG.VIEW_DISTANCE, 0, Math.PI * 2);
-                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.02)';
-                this.ctx.fill();
-                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
-                this.ctx.setLineDash([5, 10]);
-                this.ctx.lineWidth = 1;
-                this.ctx.stroke();
-                this.ctx.setLineDash([]);
-                this.ctx.restore();
             }
             
             updateUI() {
@@ -1637,12 +1468,7 @@
                     this.isRunning 
                         ? this.isPaused ? '⏸️ PAUSED' : '🚀 MAMBA ACTIVE'
                         : '⏹️ STOPPED';
-                document.getElementById('status-indicator').style.borderColor = 
-                    this.isRunning 
-                        ? this.isPaused ? '#ffff00' : '#00ff88'
-                        : '#ff4444';
                 
-                // SSM параметры
                 document.getElementById('delta-value').textContent = this.currentDelta.toFixed(3);
                 
                 if (this.selectedAgent && this.selectedAgent.brain) {
@@ -1650,12 +1476,8 @@
                     const bNorm = Matrix.norm(this.selectedAgent.brain.B);
                     document.getElementById('a-norm').textContent = aNorm.toFixed(3);
                     document.getElementById('b-norm').textContent = bNorm.toFixed(3);
-                    
-                    const selectivity = this.selectedAgent.brain.attentionWeights.reduce((a, b) => a + b, 0) / CONFIG.LATENT_DIM;
-                    document.getElementById('selectivity').textContent = selectivity.toFixed(3);
                 }
                 
-                // Mental map
                 const container = document.getElementById('mental-map-container');
                 container.innerHTML = '';
                 
@@ -1670,20 +1492,14 @@
                     container.appendChild(neuron);
                 }
                 
-                // Attention heatmap
                 const heatmap = document.getElementById('attention-heatmap');
                 heatmap.innerHTML = '';
-                if (this.selectedAgent && this.selectedAgent.brain) {
-                    for (let i = 0; i < 64; i++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'heat-cell';
-                        const val = this.selectedAgent.brain.attentionWeights[i % 32] || 0;
-                        cell.style.background = `rgba(0, 255, 255, ${val * 0.5})`;
-                        heatmap.appendChild(cell);
-                    }
+                for (let i = 0; i < 64; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'heat-cell';
+                    heatmap.appendChild(cell);
                 }
                 
-                // Agent list
                 const listEl = document.getElementById('agent-list');
                 listEl.innerHTML = '';
                 
@@ -1698,15 +1514,13 @@
                     };
                     
                     item.innerHTML = `
-                        <div class="agent-color" style="background: ${agent.color}; box-shadow: 0 0 15px ${agent.color}"></div>
+                        <div class="agent-color" style="background: ${agent.color}"></div>
                         <div class="agent-info">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>${agent.team === 'green' ? '🟢' : '🔴'} ${agent.id}</span>
-                                <span>K:${agent.kills} | D:${Math.floor(agent.damageDealt)}</span>
-                            </div>
+                            <div>${agent.team === 'green' ? '🟢' : '🔴'} ${agent.id}</div>
                             <div style="font-size: 10px; color: #00ffff;">
                                 fit:${Math.floor(agent.fitness)} | Δ:${agent.brain.delta.toFixed(2)}
                             </div>
+                            <div>K:${agent.kills} | D:${Math.floor(agent.damageDealt)}</div>
                             <div class="agent-hp">
                                 <div class="agent-hp-fill" style="width: ${(agent.hp / agent.maxHp) * 100}%"></div>
                             </div>
@@ -1721,23 +1535,20 @@
         // ГЛОБАЛЬНЫЕ ФУНКЦИИ
         // ============================================
         let game;
-        let fpsInterval;
         let frameCount = 0;
 
         function init() {
             game = new Game();
             
-            fpsInterval = setInterval(() => {
+            setInterval(() => {
                 document.getElementById('fps-counter').textContent = `FPS: ${frameCount}`;
                 frameCount = 0;
             }, 1000);
             
-            // FPS counter
-            const originalRequestAnimationFrame = window.requestAnimationFrame;
             window.requestAnimationFrame = function(callback) {
-                return originalRequestAnimationFrame(function(timestamp) {
+                return window.__proto__.__proto__.requestAnimationFrame.call(window, function(t) {
                     frameCount++;
-                    callback(timestamp);
+                    callback(t);
                 });
             };
             
