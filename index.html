@@ -1,19 +1,4 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+сравн<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -233,7 +218,7 @@
 
         <div class="panel">
             <div class="panel-header">GREEN TANK - BETA UNIT</div>
-            <div class="health-bar"><div class="health-fill" id="hp-green" style="width:100%"></div></div>
+            <div class="health-bar"><div class="healtle="width:100%"></div></div>
             <div class="dopamine-bar"><div class="dopamine-fill" id="dopa-green" style="width:0%"></div></div>
             <div class="stat-row"><span class="stat-label">INTEGRITY:</span><span class="val bad" id="d-hp-green">100%</span></div>
             <div class="stat-row"><span class="stat-label">ELIMINATIONS:</span><span class="val good" id="d-kills-green">0</span></div>
@@ -1591,10 +1576,6 @@ class Tank {
         this.currentGoal = null;
         this.currentStrategy = null;
         this.frameCount = 0;
-        
-        // Damage tracking for proper hit registration
-        this.lastReceivedDamage = 0;
-        this.lastDealtDamage = 0;
     }
 
     getSensors(enemy, worldW, worldH) {
@@ -1693,50 +1674,6 @@ class Tank {
         ];
     }
 
-    // ========================================================================
-    // PROFESSIONAL FIX: takeDamage method - properly handles damage application
-    // ========================================================================
-    takeDamage(amount, attacker) {
-        if (!this.alive) return;
-        
-        // Apply damage with bounds checking
-        const actualDamage = Math.max(0, Math.min(amount, this.hp));
-        this.hp = Math.max(0, this.hp - actualDamage);
-        this.stats.damage += actualDamage;
-        this.lastReceivedDamage = actualDamage;
-        
-        // Update attacker statistics if valid
-        if (attacker && attacker !== this && actualDamage > 0) {
-            attacker.stats.hits++;
-            attacker.stats.damage += actualDamage;
-            attacker.lastDealtDamage = actualDamage;
-        }
-        
-        // Handle destruction
-        if (this.hp <= 0) {
-            this.alive = false;
-            if (attacker && attacker !== this) {
-                attacker.stats.kills++;
-            }
-            // Play explosion audio and particles
-            if (game.audio) {
-                game.audio.playExplosion();
-            }
-            if (game.particles && game.particles.enabled) {
-                game.particles.emitExplosion(this.pos.x, this.pos.y, this.color, 30);
-            }
-            // Log the elimination
-            const attackerName = attacker?.id === 0 ? 'ALPHA' : attacker?.id === 1 ? 'BETA' : 'UNKNOWN';
-            const targetName = this.id === 0 ? 'ALPHA' : this.id === 1 ? 'BETA' : 'UNKNOWN';
-            log(`${attackerName} eliminated ${targetName}!`, 'kill');
-        } else {
-            // Play hit sound for non-lethal damage
-            if (game.audio) {
-                game.audio.playHit();
-            }
-        }
-    }
-
     update(enemy, worldW, worldH, time) {
         if (!this.alive) return;
         
@@ -1774,16 +1711,9 @@ class Tank {
         // 6. Actuate based on Brain Outputs
         this.actuate(outputs, epsilon);
         
-        // ====================================================================
-        // PROFESSIONAL FIX: Decrement shoot cooldown every frame
-        // ====================================================================
-        if (this.shootCD > 0) {
-            this.shootCD--;
-        }
-        
         // 7. Record shot if fired
         if (this.lastShot) {
-            const hit = this.lastDealtDamage > 0;
+            const hit = this.checkHit(enemy);
             this.worldModel.recordShot({
                 ...this.lastShot,
                 hit,
@@ -1799,7 +1729,6 @@ class Tank {
                 });
             }
             this.lastShot = null;
-            this.lastDealtDamage = 0; // Reset for next shot tracking
         }
         
         // 8. Physics
@@ -1881,9 +1810,12 @@ class Tank {
         };
     }
 
-    // ========================================================================
-    // PROFESSIONAL FIX: checkHit removed - hit detection now handled in projectile collision
-    // ========================================================================
+    checkHit(enemy) {
+        if (!enemy || !enemy.alive) return false;
+        const hit = this.stats.hits > (this.lastStats?.hits || 0);
+        this.lastStats = { ...this.stats };
+        return hit;
+    }
 
     applyPhysics(worldW, worldH) {
         // Friction
@@ -2132,8 +2064,6 @@ class Tank {
         this.brain.reset();
         this.worldModel = new WorldModel(); // Reset world model
         this.strategies = new Strategies(this.worldModel);
-        this.lastReceivedDamage = 0;
-        this.lastDealtDamage = 0;
     }
 
     getSerializable() {
@@ -2194,49 +2124,40 @@ function initGame() {
     }
 }
 
-// ============================================================================
-// PROFESSIONAL FIX: Enhanced collision resolution with safety checks
-// ============================================================================
 function resolveCollision(tankA, tankB) {
     const dx = tankB.pos.x - tankA.pos.x;
     const dy = tankB.pos.y - tankA.pos.y;
-    const distSq = dx * dx + dy * dy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
     const minDist = tankA.radius + tankB.radius;
-    const minDistSq = minDist * minDist;
 
-    // Early exit if no collision
-    if (distSq >= minDistSq) return;
-    
-    // Safety check: prevent division by zero
-    const dist = Math.sqrt(distSq);
-    if (dist < 0.001) return;
+    if (dist < minDist && dist > 0.001) {
+        const overlap = minDist - dist;
+        const nx = dx / dist;
+        const ny = dy / dist;
 
-    const overlap = minDist - dist;
-    const nx = dx / dist;
-    const ny = dy / dist;
+        const totalMass = tankA.mass + tankB.mass;
+        const ratioA = tankB.mass / totalMass;
+        const ratioB = tankA.mass / totalMass;
 
-    const totalMass = tankA.mass + tankB.mass;
-    const ratioA = tankB.mass / totalMass;
-    const ratioB = tankA.mass / totalMass;
+        tankA.pos.x -= nx * overlap * ratioA;
+        tankA.pos.y -= ny * overlap * ratioA;
+        tankB.pos.x += nx * overlap * ratioB;
+        tankB.pos.y += ny * overlap * ratioB;
 
-    tankA.pos.x -= nx * overlap * ratioA;
-    tankA.pos.y -= ny * overlap * ratioA;
-    tankB.pos.x += nx * overlap * ratioB;
-    tankB.pos.y += ny * overlap * ratioB;
+        const relVelX = tankB.vel.x - tankA.vel.x;
+        const relVelY = tankB.vel.y - tankA.vel.y;
+        const velAlongNormal = relVelX * nx + relVelY * ny;
 
-    const relVelX = tankB.vel.x - tankA.vel.x;
-    const relVelY = tankB.vel.y - tankA.vel.y;
-    const velAlongNormal = relVelX * nx + relVelY * ny;
+        if (velAlongNormal < 0) {
+            const restitution = 0.4;
+            const impulse = -(1 + restitution) * velAlongNormal * 
+                           (tankA.mass * tankB.mass) / totalMass;
 
-    if (velAlongNormal < 0) {
-        const restitution = 0.4;
-        const impulse = -(1 + restitution) * velAlongNormal * 
-                       (tankA.mass * tankB.mass) / totalMass;
-
-        tankA.vel.x -= nx * impulse / tankA.mass;
-        tankA.vel.y -= ny * impulse / tankA.mass;
-        tankB.vel.x += nx * impulse / tankB.mass;
-        tankB.vel.y += ny * impulse / tankB.mass;
+            tankA.vel.x -= nx * impulse / tankA.mass;
+            tankA.vel.y -= ny * impulse / tankA.mass;
+            tankB.vel.x += nx * impulse / tankB.mass;
+            tankB.vel.y += ny * impulse / tankB.mass;
+        }
     }
 }
 
@@ -2272,17 +2193,11 @@ function update(dt) {
 
             const dist = Vec2.dist(p.pos, tank.pos);
             if (dist < tank.radius + 5) {
-                // ====================================================================
-                // PROFESSIONAL FIX: Use proper takeDamage method instead of undefined call
-                // ====================================================================
                 tank.takeDamage(p.dmg, p.owner);
                 hit = true;
                 
-                // ====================================================================
-                // PROFESSIONAL FIX: Single explosion emission on hit (removed duplicate)
-                // ====================================================================
                 if (game.particles.enabled) {
-                    game.particles.emitExplosion(p.pos.x, p.pos.y, '#ffaa00', 15);
+                    game.particles.emitExplosion(p.pos.x, p.pos.y, '#ffaa00', 10);
                 }
                 break;
             }
@@ -2292,10 +2207,9 @@ function update(dt) {
             p.pos.x < 0 || p.pos.x > game.width ||
             p.pos.y < 0 || p.pos.y > game.height) {
             
-            // ====================================================================
-            // PROFESSIONAL FIX: Removed duplicate explosion emission here
-            // Explosion already handled at point of impact above
-            // ====================================================================
+            if (hit && game.particles.enabled) {
+                game.particles.emitExplosion(p.pos.x, p.pos.y, '#ffaa00', 5);
+            }
             game.projectiles.splice(i, 1);
         }
     }
@@ -2709,15 +2623,4 @@ window.game = game;
 window.SYS = SYS;
 </script>
 </body>
-</html>
-
-
-
-              <script>
-                                 if (this.shootCD > 0) { this.shootCD--; }
-   
-
-              </script>
-                        </body>
-                        </html>
-                    
+  </html>
