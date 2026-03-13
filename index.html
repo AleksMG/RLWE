@@ -299,7 +299,7 @@ const Vec2 = {
     dist: function(a, b) { return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2); },
     distSq: function(a, b) { return (a.x - b.x) ** 2 + (a.y - b.y) ** 2; },
     angle: function(v) { return Math.atan2(v.y, v.x); },
-    fromAngle: function(a) { return { x: Math.cos(a), y: Math.sin(a) }; },
+    fromAngle: function(a) { return { x: Math.cos(a), y: Math.sin(a); }; },
     angleDiff: function(a1, a2) {
         let diff = a2 - a1;
         while (diff > Math.PI) diff -= Math.PI * 2;
@@ -1365,12 +1365,13 @@ class Skills {    constructor() {
 }
 
 // ============================================================================
-// SECTION 9: AUDIO SYSTEM WITH STATE MANAGEMENT
+// SECTION 9: AUDIO SYSTEM WITH STATE MANAGEMENT - ИСПРАВЛЕННАЯ ВЕРСИЯ
 // ============================================================================
 
 class AudioSystem {
     constructor() {
-        this.ctx = null;        this.enabled = false;
+        this.ctx = null;
+        this.enabled = false;
         this.pendingSounds = [];
     }
 
@@ -1388,38 +1389,41 @@ class AudioSystem {
         this.enabled = true;
         this.init();
         
-        if (this.ctx && this.ctx.state === 'suspended') {
+        if (this.ctx) {
             try {
-                await this.ctx.resume();
+                if (this.ctx.state === 'suspended') {
+                    await this.ctx.resume();
+                }
             } catch (e) {
                 console.warn('Failed to resume audio context');
+                this.enabled = false;
             }
         }
     }
 
     async _playSound(type) {
-        if (!this.enabled || !this.ctx || this.ctx.state !== 'running') {
-            if (this.ctx && this.ctx.state === 'suspended') {
-                this.pendingSounds.push(type);
-                try {
-                    await this.ctx.resume();
-                } catch (e) {
-                    return;
-                }
-            } else {
-                return;
+        if (!this.enabled || !this.ctx) return;
+        
+        try {
+            if (this.ctx.state === 'suspended') {
+                await this.ctx.resume();
             }
-        }
-
-        switch (type) {
-            case 'shoot':
-                this._playShoot();
-                break;
-            case 'hit':
-                this._playHit();
-                break;
-            case 'explosion':
-                this._playExplosion();                break;
+            
+            if (this.ctx.state !== 'running') return;
+            
+            switch (type) {
+                case 'shoot':
+                    this._playShoot();
+                    break;
+                case 'hit':
+                    this._playHit();
+                    break;
+                case 'explosion':
+                    this._playExplosion();
+                    break;
+            }
+        } catch (e) {
+            console.warn('Audio play failed:', e);
         }
     }
 
@@ -2387,55 +2391,67 @@ function updateWorldModelVisualizations() {
     }
 }
 
+// ============================================================================
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ updateUI С ПРОВЕРКАМИ
+// ============================================================================
 function updateUI() {
     const [tankA, tankB] = game.tanks;
+    
+    // Безопасное обновление элементов
+    const safeSetStyle = (id, property, value) => {
+        const el = document.getElementById(id);
+        if (el) el.style[property] = value;
+    };
+    
+    const safeSetText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+    
+    safeSetStyle('hp-red', 'width', (tankA.hp / tankA.maxHp * 100) + '%');
+    safeSetStyle('hp-green', 'width', (tankB.hp / tankB.maxHp * 100) + '%');
 
-    document.getElementById('hp-red').style.width = (tankA.hp / tankA.maxHp * 100) + '%';
-    document.getElementById('hp-green').style.width = (tankB.hp / tankB.maxHp * 100) + '%';
+    safeSetStyle('dopa-red', 'width', (tankA.brain.dopamine.level * 100) + '%');
+    safeSetStyle('dopa-green', 'width', (tankB.brain.dopamine.level * 100) + '%');
 
-    document.getElementById('dopa-red').style.width = (tankA.brain.dopamine.level * 100) + '%';
-    document.getElementById('dopa-green').style.width = (tankB.brain.dopamine.level * 100) + '%';
-
-    document.getElementById('d-hp-red').textContent = Math.round(tankA.hp) + '%';
-    document.getElementById('d-hp-green').textContent = Math.round(tankB.hp) + '%';
-    document.getElementById('d-kills-red').textContent = tankA.stats.kills;
-    document.getElementById('d-kills-green').textContent = tankB.stats.kills;    document.getElementById('d-dmg-red').textContent = Math.round(tankA.stats.damage);
-    document.getElementById('d-dmg-green').textContent = Math.round(tankB.stats.damage);
+    safeSetText('d-hp-red', Math.round(tankA.hp) + '%');
+    safeSetText('d-hp-green', Math.round(tankB.hp) + '%');
+    safeSetText('d-kills-red', tankA.stats.kills);
+    safeSetText('d-kills-green', tankB.stats.kills);
+    safeSetText('d-dmg-red', Math.round(tankA.stats.damage));
+    safeSetText('d-dmg-green', Math.round(tankB.stats.damage));
 
     const accA = tankA.stats.shots > 0 ?
         Math.round(tankA.stats.hits / tankA.stats.shots * 100) : 0;
     const accB = tankB.stats.shots > 0 ?
         Math.round(tankB.stats.hits / tankB.stats.shots * 100) : 0;
-    document.getElementById('d-acc-red').textContent = accA + '%';
-    document.getElementById('d-acc-green').textContent = accB + '%';
+    safeSetText('d-acc-red', accA + '%');
+    safeSetText('d-acc-green', accB + '%');
 
-    document.getElementById('d-dopa-val-red').textContent = tankA.brain.dopamine.level.toFixed(3);
-    document.getElementById('d-dopa-val-green').textContent = tankB.brain.dopamine.level.toFixed(3);
-    document.getElementById('d-act-red').textContent = tankA.brain.spikeCount;
-    document.getElementById('d-act-green').textContent = tankB.brain.spikeCount;
+    safeSetText('d-dopa-val-red', tankA.brain.dopamine.level.toFixed(3));
+    safeSetText('d-dopa-val-green', tankB.brain.dopamine.level.toFixed(3));
+    safeSetText('d-act-red', tankA.brain.spikeCount);
+    safeSetText('d-act-green', tankB.brain.spikeCount);
 
-    document.getElementById('d-epoch').textContent = game.epoch;
-    document.getElementById('d-spikes').textContent =
-        Math.round((tankA.brain.spikeCount + tankB.brain.spikeCount) / 2);
-    document.getElementById('d-weight').textContent =
-        ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3);
-    document.getElementById('d-lr').textContent = tankA.brain.learningRate.toFixed(3);
+    safeSetText('d-epoch', game.epoch);
+    safeSetText('d-spikes', Math.round((tankA.brain.spikeCount + tankB.brain.spikeCount) / 2));
+    safeSetText('d-weight', ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3));
+    safeSetText('d-lr', tankA.brain.learningRate.toFixed(3));
     
     const epsilon = Math.max(0.05, 1.0 - game.epoch * 0.001);
-    document.getElementById('d-explore').textContent = epsilon.toFixed(3);
-    document.getElementById('d-epsilon').textContent = epsilon.toFixed(3);
+    safeSetText('d-explore', epsilon.toFixed(3));
+    safeSetText('d-epsilon', epsilon.toFixed(3));
     
     // World model stats
     const wmConfA = tankA.worldModel.getSuggestion();
     const wmConfB = tankB.worldModel.getSuggestion();
-    document.getElementById('wm-conf-red').textContent = wmConfA ? wmConfA.confidence.toFixed(2) : '0.00';
-    document.getElementById('wm-conf-green').textContent = wmConfB ? wmConfB.confidence.toFixed(2) : '0.00';
+    safeSetText('wm-conf-red', wmConfA ? wmConfA.confidence.toFixed(2) : '0.00');
+    safeSetText('wm-conf-green', wmConfB ? wmConfB.confidence.toFixed(2) : '0.00');
     
-    document.getElementById('wm-hyp-red').textContent = tankA.worldModel.hypotheses.enemyIntent || 'none';
-    document.getElementById('wm-hyp-green').textContent = tankB.worldModel.hypotheses.enemyIntent || 'none';
+    safeSetText('wm-hyp-red', tankA.worldModel.hypotheses.enemyIntent || 'none');
+    safeSetText('wm-hyp-green', tankB.worldModel.hypotheses.enemyIntent || 'none');
     
-    document.getElementById('wm-memory').textContent = 
-        tankA.worldModel.memory.shots.length + tankB.worldModel.memory.shots.length;
+    safeSetText('wm-memory', tankA.worldModel.memory.shots.length + tankB.worldModel.memory.shots.length);
 }
 
 const log = (msg, type = 'system') => {
@@ -2452,8 +2468,11 @@ const SYS = {    start() {
         if (game.running) return;
         game.running = true;
         game.lastTime = performance.now();
-        document.getElementById('btn-start').disabled = true;
-        document.getElementById('btn-start').textContent = 'SIMULATION ACTIVE';
+        const btn = document.getElementById('btn-start');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'SIMULATION ACTIVE';
+        }
         log('NEURAL COMBAT SYSTEM v7.2 INITIALIZED', 'system');
         log('WORLD MODEL ARCHITECTURE ACTIVE', 'system');
         requestAnimationFrame(loop);
@@ -2461,7 +2480,8 @@ const SYS = {    start() {
 
     reset() {
         initGame();
-        document.getElementById('log').innerHTML = '';
+        const logEl = document.getElementById('log');
+        if (logEl) logEl.innerHTML = '';
         if (window.logBuffer) {
             window.logBuffer.clear();
         }
@@ -2473,7 +2493,8 @@ const SYS = {    start() {
         const speeds = [0.5, 1.0, 2.0, 4.0, 8.0];
         const idx = speeds.indexOf(game.speed);
         game.speed = speeds[(idx + 1) % speeds.length];
-        document.getElementById('speed-val').textContent = game.speed.toFixed(1) + 'x';
+        const speedEl = document.getElementById('speed-val');
+        if (speedEl) speedEl.textContent = game.speed.toFixed(1) + 'x';
         log(`Time scale set to ${game.speed}x`, 'system');
     },
 
@@ -2482,20 +2503,23 @@ const SYS = {    start() {
         if (game.audio.enabled) {
             await game.audio.enable();
         }
-        document.getElementById('audio-val').textContent = game.audio.enabled ? 'ONLINE' : 'OFFLINE';
+        const audioEl = document.getElementById('audio-val');
+        if (audioEl) audioEl.textContent = game.audio.enabled ? 'ONLINE' : 'OFFLINE';
         log(`Audio system ${game.audio.enabled ? 'enabled' : 'disabled'}`, 'system');
     },
 
     toggleVision() {
         game.showVision = !game.showVision;
-        document.getElementById('vision-val').textContent = game.showVision ? 'ACTIVE' : 'DISABLED';
+        const visionEl = document.getElementById('vision-val');
+        if (visionEl) visionEl.textContent = game.showVision ? 'ACTIVE' : 'DISABLED';
         log(`Vision system ${game.showVision ? 'enabled' : 'disabled'}`, 'system');
     },
 
     toggleParticles() {
         game.particles.enabled = !game.particles.enabled;
         if (!game.particles.enabled) game.particles.clear();
-        document.getElementById('particles-val').textContent = game.particles.enabled ? 'ACTIVE' : 'DISABLED';
+        const particlesEl = document.getElementById('particles-val');
+        if (particlesEl) particlesEl.textContent = game.particles.enabled ? 'ACTIVE' : 'DISABLED';
         log(`Particle effects ${game.particles.enabled ? 'enabled' : 'disabled'}`, 'system');
     },
     emergencyBoost() {
@@ -2608,34 +2632,98 @@ function resize() {    const canvas = document.getElementById('sim');
 }
 
 // ============================================================================
-// SECTION 14: INITIALIZATION
+// SECTION 14: INITIALIZATION - ИСПРАВЛЕННАЯ ВЕРСИЯ
 // ============================================================================
+
+// Глобальная переменная для отслеживания готовности
+let appInitialized = false;
 
 window.addEventListener('resize', resize);
 
-window.onload = () => {
-    window.logBuffer = new LogBuffer(100);
+// Функция безопасной инициализации
+function safeInit() {
+    if (appInitialized) return;
     
-    resize();
-    initGame();
-    
-    game.learningCurve = new LearningCurve('reward-chart', 100);
-    
-    setTimeout(() => {
-        document.getElementById('loading').classList.add('hidden');
-    }, 1500);
+    try {
+        // Проверяем наличие всех необходимых элементов
+        const requiredElements = [
+            'sim', 'brain-red', 'brain-green', 'wm-viz-red', 
+            'wm-viz-green', 'reward-chart', 'log'
+        ];
+        
+        for (const id of requiredElements) {
+            if (!document.getElementById(id)) {
+                console.warn(`Element ${id} not found, retrying...`);
+                setTimeout(safeInit, 100);
+                return;
+            }
+        }
+        
+        // Все элементы найдены, инициализируем
+        window.logBuffer = new LogBuffer(100);
+        
+        resize();
+        initGame();
+        
+        game.learningCurve = new LearningCurve('reward-chart', 100);
+        
+        // Безопасное скрытие загрузочного экрана
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) {
+            loadingEl.classList.add('hidden');
+        }
+        
+        // Первоначальная отрисовка
+        const canvas = document.getElementById('sim');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            draw(ctx);
+            updateUI();
+        }
+        
+        log('SYSTEM READY - PRESS INITIALIZE', 'system');
+        log('NEURAL TANK COMBAT v7.2 WORLD MODEL', 'system');
+        log('INSTINCTS + STRATEGIES + SKILLS ACTIVE', 'system');
+        
+        appInitialized = true;
+        
+    } catch (error) {
+        console.error('Initialization error:', error);
+        setTimeout(safeInit, 500);
+    }
+}
 
-    const canvas = document.getElementById('sim');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        draw(ctx);
-        updateUI();
+// Безопасная инициализация аудио
+async function safeAudioInit() {
+    if (!game.audio) return;
+    
+    try {
+        // Не инициализируем аудио автоматически, ждем действия пользователя
+        game.audio.enabled = false;
+        const audioEl = document.getElementById('audio-val');
+        if (audioEl) audioEl.textContent = 'OFFLINE';
+    } catch (e) {
+        console.warn('Audio init failed:', e);
+    }
+}
+
+// Исправленный обработчик загрузки
+document.addEventListener('DOMContentLoaded', () => {
+    // Показываем загрузку
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+        loadingEl.classList.remove('hidden');
     }
     
-    log('SYSTEM READY - PRESS INITIALIZE', 'system');
-    log('NEURAL TANK COMBAT v7.2 WORLD MODEL', 'system');
-    log('INSTINCTS + STRATEGIES + SKILLS ACTIVE', 'system');
-};
+    // Запускаем инициализацию с задержкой
+    setTimeout(safeInit, 100);
+    safeAudioInit();
+});
+
+// Резервный план - если DOMContentLoaded уже произошел
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(safeInit, 100);
+}
 
 window.game = game;
 window.SYS = SYS;
