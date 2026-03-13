@@ -1,19 +1,4 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -233,7 +218,7 @@
 
         <div class="panel">
             <div class="panel-header">GREEN TANK - BETA UNIT</div>
-            <div class="health-bar"><div class="health-fill" id="hp-green" style="width:100%"></div></div>
+            <div class="health-bar"><div class="health-fill"tyle="width:100%"></div></div>
             <div class="dopamine-bar"><div class="dopamine-fill" id="dopa-green" style="width:0%"></div></div>
             <div class="stat-row"><span class="stat-label">INTEGRITY:</span><span class="val bad" id="d-hp-green">100%</span></div>
             <div class="stat-row"><span class="stat-label">ELIMINATIONS:</span><span class="val good" id="d-kills-green">0</span></div>
@@ -471,7 +456,7 @@ class LearningCurve {
             const x = (i / (this.rewards.length - 1)) * w;
             const y = h - ((this.rewards[i] - minReward) / range) * h * 0.9 - h * 0.05;
             
-            if (i === 0) {
+    i === 0) {
                 this.ctx.moveTo(x, y);
             } else {
                 this.ctx.lineTo(x, y);
