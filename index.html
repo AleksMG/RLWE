@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL TANK COMBAT v7.0 PROFESSIONAL - FULLY OPTIMIZED</title>
+    <title>NEURAL TANK COMBAT v7.1 - WORLD MODEL ARCHITECTURE</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
@@ -164,6 +164,23 @@
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(0,255,136,0.2);
         }
+        .world-model-viz {
+            width: 100%;
+            height: 60px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #00ff88;
+            margin-top: 5px;
+            position: relative;
+        }
+        .hypothesis-marker {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ffaa00;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #ffaa00;
+        }
     </style>
 </head>
 <body>
@@ -173,7 +190,7 @@
     </div>
 
     <div id="ui">
-        <h1>⚔️ NEURAL TANK COMBAT <span style="font-size:11px;opacity:0.7">v7.0 PROFESSIONAL</span></h1>
+        <h1>⚔️ NEURAL TANK COMBAT <span style="font-size:11px;opacity:0.7">v7.1 WORLD MODEL</span></h1>
         
         <div class="panel">
             <div class="panel-header">◈ SYSTEM CONTROL</div>
@@ -186,6 +203,7 @@
             <button onclick="SYS.emergencyBoost()">🔥 EMERGENCY DOPAMINE BOOST</button>
             <button onclick="SYS.saveModel()">💾 SAVE NEURAL MODEL</button>
             <button onclick="SYS.loadModel()">📂 LOAD NEURAL MODEL</button>
+            <button onclick="SYS.toggleWorldModel()">🌍 WORLD MODEL: <span id="worldmodel-val">ACTIVE</span></button>
         </div>
 
         <div class="panel">
@@ -198,7 +216,9 @@
             <div class="stat-row"><span class="stat-label">ACCURACY:</span><span class="val neutral" id="d-acc-red">0%</span></div>
             <div class="stat-row"><span class="stat-label">DOPAMINE LEVEL:</span><span class="val" id="d-dopa-val-red">0.000</span></div>
             <div class="stat-row"><span class="stat-label">NEURAL ACTIVITY:</span><span class="val warn" id="d-act-red">0</span></div>
+            <div class="stat-row"><span class="stat-label">WORLD MODEL:</span><span class="val neutral" id="wm-conf-red">0.00</span></div>
             <canvas id="brain-red"></canvas>
+            <div id="wm-viz-red" class="world-model-viz"></div>
         </div>
 
         <div class="panel">
@@ -211,7 +231,9 @@
             <div class="stat-row"><span class="stat-label">ACCURACY:</span><span class="val neutral" id="d-acc-green">0%</span></div>
             <div class="stat-row"><span class="stat-label">DOPAMINE LEVEL:</span><span class="val" id="d-dopa-val-green">0.000</span></div>
             <div class="stat-row"><span class="stat-label">NEURAL ACTIVITY:</span><span class="val warn" id="d-act-green">0</span></div>
+            <div class="stat-row"><span class="stat-label">WORLD MODEL:</span><span class="val neutral" id="wm-conf-green">0.00</span></div>
             <canvas id="brain-green"></canvas>
+            <div id="wm-viz-green" class="world-model-viz"></div>
         </div>
 
         <div class="panel">
@@ -222,6 +244,13 @@
             <div class="stat-row"><span class="stat-label">LEARNING RATE:</span><span class="val" id="d-lr">0.150</span></div>
             <div class="stat-row"><span class="stat-label">EXPLORATION:</span><span class="val" id="d-explore">0.500</span></div>
             <div class="stat-row"><span class="stat-label">EPSILON:</span><span class="val" id="d-epsilon">1.000</span></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">◈ WORLD MODEL STATS</div>
+            <div class="stat-row"><span class="stat-label">ALPHA HYPOTHESIS:</span><span class="val" id="wm-hyp-red">none</span></div>
+            <div class="stat-row"><span class="stat-label">BETA HYPOTHESIS:</span><span class="val" id="wm-hyp-green">none</span></div>
+            <div class="stat-row"><span class="stat-label">MEMORY SIZE:</span><span class="val" id="wm-memory">0</span></div>
         </div>
 
         <div class="panel">
@@ -240,7 +269,7 @@
 <script>
 /**
  * ============================================================================
- * NEURAL TANK COMBAT v7.0 - PROFESSIONAL EDITION
+ * NEURAL TANK COMBAT v7.1 - PROFESSIONAL EDITION WITH WORLD MODEL
  * Complete Neural Network-Based Tank Combat Simulation
  * 
  * Full implementation with:
@@ -249,13 +278,12 @@
  * - Dopamine-based reward system with eligibility traces
  * - 360-degree vision system with radius detection
  * - Spiking Neural Networks with STDP learning and temporal coding
- * - Particle effects system with caching
- * - Web Audio API integration with state management
- * - Real-time neural activity visualization
- * - Model saving/loading
- * - Learning curves visualization
+ * - WORLD MODEL for understanding and prediction
+ * - INSTINCT layer for goals
+ * - STRATEGY selection based on world model
+ * - SKILLS layer for execution
  * 
- * @version 7.0.0
+ * @version 7.1.0
  * @author Professional AI Engineer
  * ============================================================================
  */
@@ -1013,6 +1041,573 @@ class SpikingNeuralNetwork {
 }
 
 // ============================================================================
+// SECTION 8.1: WORLD MODEL - ПОНИМАНИЕ МИРА
+// ============================================================================
+
+class WorldModel {
+    constructor() {
+        this.memory = {
+            shots: [],        // выстрелы
+            hits: [],         // попадания
+            sightings: [],    // наблюдения
+            damage: []        // полученный урон
+        };
+        
+        this.stats = {
+            accuracyByDist: {},
+            leadBySpeed: {},
+            patternByEnemy: new Map()
+        };
+        
+        this.hypotheses = {
+            enemyPosition: null,
+            enemyIntent: null,
+            confidence: 0
+        };
+        
+        this.maxMemory = 200;
+        this.frameCount = 0;
+    }
+    
+    // Запись выстрела
+    recordShot(shot) {
+        this.memory.shots.push({
+            ...shot,
+            time: this.frameCount
+        });
+        
+        if (this.memory.shots.length > this.maxMemory) {
+            this.memory.shots.shift();
+        }
+        
+        // Обновляем статистику
+        this.updateStats(shot);
+    }
+    
+    // Запись попадания
+    recordHit(hit) {
+        this.memory.hits.push({
+            ...hit,
+            time: this.frameCount
+        });
+        
+        if (this.memory.hits.length > this.maxMemory) {
+            this.memory.hits.shift();
+        }
+        
+        // Если попали вслепую - строим гипотезу
+        if (!hit.enemyVisible) {
+            this.buildHypothesisFromHit(hit);
+        }
+    }
+    
+    // Запись наблюдения врага
+    recordSighting(sighting) {
+        this.memory.sightings.push({
+            ...sighting,
+            time: this.frameCount
+        });
+        
+        if (this.memory.sightings.length > this.maxMemory) {
+            this.memory.sightings.shift();
+        }
+        
+        // Обновляем гипотезу точными данными
+        this.hypotheses.enemyPosition = sighting.enemyPos;
+        this.hypotheses.enemyIntent = this.analyzeIntent(sighting);
+        this.hypotheses.confidence = 1.0;
+    }
+    
+    // Запись получения урона
+    recordDamage(damage) {
+        this.memory.damage.push({
+            ...damage,
+            time: this.frameCount
+        });
+        
+        if (this.memory.damage.length > this.maxMemory) {
+            this.memory.damage.shift();
+        }
+    }
+    
+    // Обновление статистики
+    updateStats(shot) {
+        if (!shot.context) return;
+        
+        const dist = Math.round(shot.context.enemyDist / 50) * 50;
+        if (!this.stats.accuracyByDist[dist]) {
+            this.stats.accuracyByDist[dist] = { hits: 0, total: 0 };
+        }
+        
+        this.stats.accuracyByDist[dist].total++;
+        if (shot.hit) {
+            this.stats.accuracyByDist[dist].hits++;
+        }
+    }
+    
+    // Построение гипотезы из слепого попадания
+    buildHypothesisFromHit(hit) {
+        // Враг где-то на линии выстрела
+        const ray = {
+            from: hit.from,
+            angle: hit.angle,
+            distance: hit.estimatedDistance || 300
+        };
+        
+        // Ищем подтверждения
+        const corroborating = this.findCorroboratingEvidence(ray);
+        
+        if (corroborating.length > 0) {
+            // Несколько свидетельств
+            const avgX = corroborating.reduce((s, e) => s + e.x, 0) / corroborating.length;
+            const avgY = corroborating.reduce((s, e) => s + e.y, 0) / corroborating.length;
+            
+            this.hypotheses.enemyPosition = { x: avgX, y: avgY };
+            this.hypotheses.confidence = Math.min(1, corroborating.length * 0.3);
+        } else {
+            // Только предположение
+            this.hypotheses.enemyPosition = {
+                x: ray.from.x + Math.cos(ray.angle) * ray.distance,
+                y: ray.from.y + Math.sin(ray.angle) * ray.distance
+            };
+            this.hypotheses.confidence = 0.3;
+        }
+    }
+    
+    // Поиск подтверждающих свидетельств
+    findCorroboratingEvidence(ray) {
+        const evidence = [];
+        const rayEnd = {
+            x: ray.from.x + Math.cos(ray.angle) * ray.distance,
+            y: ray.from.y + Math.sin(ray.angle) * ray.distance
+        };
+        
+        // Проверяем недавние наблюдения
+        for (const sight of this.memory.sightings.slice(-10)) {
+            const dist = Vec2.dist(sight.enemyPos, rayEnd);
+            if (dist < 100) {
+                evidence.push(sight.enemyPos);
+            }
+        }
+        
+        return evidence;
+    }
+    
+    // Анализ намерений врага
+    analyzeIntent(sighting) {
+        const recent = this.memory.sightings
+            .filter(s => Math.abs(s.time - sighting.time) < 50)
+            .slice(-5);
+        
+        if (recent.length < 2) return 'unknown';
+        
+        const last = recent[recent.length - 1];
+        const prev = recent[recent.length - 2];
+        
+        const dx = last.enemyPos.x - prev.enemyPos.x;
+        const dy = last.enemyPos.y - prev.enemyPos.y;
+        const speed = Math.hypot(dx, dy);
+        
+        if (speed < 0.5) return 'camping';
+        if (speed > 5) return 'fleeing';
+        
+        return 'patrolling';
+    }
+    
+    // Предсказание результата выстрела
+    predictShot(context) {
+        const { enemyDist, enemyVel } = context;
+        
+        // Ищем похожие ситуации
+        const similar = this.memory.shots.filter(shot => {
+            if (!shot.context) return false;
+            const distDiff = Math.abs(shot.context.enemyDist - enemyDist);
+            const velDiff = Math.abs(shot.context.enemyVel - enemyVel);
+            return distDiff < 50 && velDiff < 2;
+        });
+        
+        if (similar.length < 3) {
+            // Мало данных - используем статистику
+            const distKey = Math.round(enemyDist / 50) * 50;
+            const acc = this.stats.accuracyByDist[distKey] ? 
+                this.stats.accuracyByDist[distKey].hits / this.stats.accuracyByDist[distKey].total : 0.3;
+            return {
+                hitProb: acc,
+                lead: 5,
+                confidence: 0.3
+            };
+        }
+        
+        // Анализируем похожие ситуации
+        const hits = similar.filter(s => s.hit).length;
+        const avgLead = similar.reduce((s, shot) => s + (shot.lead || 0), 0) / similar.length;
+        
+        return {
+            hitProb: hits / similar.length,
+            lead: avgLead,
+            confidence: Math.min(1, similar.length / 20)
+        };
+    }
+    
+    // Предсказание позиции врага
+    predictPosition(timeDelta) {
+        if (!this.hypotheses.enemyPosition) return null;
+        
+        const recent = this.memory.sightings.slice(-3);
+        if (recent.length < 2) return this.hypotheses.enemyPosition;
+        
+        const last = recent[recent.length - 1];
+        const prev = recent[recent.length - 2];
+        
+        const dx = last.enemyPos.x - prev.enemyPos.x;
+        const dy = last.enemyPos.y - prev.enemyPos.y;
+        const dt = (last.time - prev.time) || 1;
+        
+        const vx = dx / dt;
+        const vy = dy / dt;
+        
+        return {
+            x: last.enemyPos.x + vx * timeDelta,
+            y: last.enemyPos.y + vy * timeDelta
+        };
+    }
+    
+    // Получить текущую гипотезу
+    getSuggestion() {
+        return {
+            target: this.hypotheses.enemyPosition,
+            confidence: this.hypotheses.confidence,
+            intent: this.hypotheses.enemyIntent,
+            predicted: this.predictPosition(10)
+        };
+    }
+    
+    // Обновить счетчик кадров
+    update(frame) {
+        this.frameCount = frame;
+    }
+}
+
+// ============================================================================
+// SECTION 8.2: ИНСТИНКТЫ (ЦЕЛИ)
+// ============================================================================
+
+class Instincts {
+    constructor() {
+        this.goals = {
+            KILL: { priority: 10, name: 'KILL' },
+            SURVIVE: { priority: 9, name: 'SURVIVE' },
+            EXPLORE: { priority: 5, name: 'EXPLORE' }
+        };
+    }
+
+    getGoal(sensors) {
+        // Приоритет: выживание > убийство > исследование
+        
+        // Если здоровье низкое и есть угроза - выживать
+        if (sensors.health < 30 && sensors.enemyVisible) {
+            return this.goals.SURVIVE;
+        }
+        
+        // Если видим врага и здоровье нормальное - убивать
+        if (sensors.enemyVisible && sensors.enemyDist < 400) {
+            return this.goals.KILL;
+        }
+        
+        // Иначе исследовать
+        return this.goals.EXPLORE;
+    }
+}
+
+// ============================================================================
+// SECTION 8.3: СТРАТЕГИИ
+// ============================================================================
+
+class Strategies {
+    constructor(worldModel) {
+        this.worldModel = worldModel;
+        this.strategies = {
+            PURSUE: {
+                name: 'PURSUE',
+                priority: 8,
+                execute: (tank, target) => this.executePursue(tank, target)
+            },
+            FLANK: {
+                name: 'FLANK',
+                priority: 7,
+                execute: (tank, target) => this.executeFlank(tank, target)
+            },
+            AMBUSH: {
+                name: 'AMBUSH',
+                priority: 9,
+                execute: (tank, target) => this.executeAmbush(tank, target)
+            },
+            RETREAT: {
+                name: 'RETREAT',
+                priority: 10,
+                execute: (tank, target) => this.executeRetreat(tank, target)
+            },
+            SCAN: {
+                name: 'SCAN',
+                priority: 5,
+                execute: (tank, target) => this.executeScan(tank, target)
+            },
+            INVESTIGATE: {
+                name: 'INVESTIGATE',
+                priority: 6,
+                execute: (tank, target) => this.executeInvestigate(tank, target)
+            }
+        };
+        
+        this.currentStrategy = null;
+        this.strategyStartTime = 0;
+        this.minStrategyTime = 180; // 3 секунды при 60fps
+    }
+
+    choose(goal, sensors, time) {
+        // Если текущая стратегия еще выполняется
+        if (this.currentStrategy && time - this.strategyStartTime < this.minStrategyTime) {
+            return this.currentStrategy;
+        }
+        
+        // Выбираем стратегию на основе цели и ситуации
+        let strategyName = null;
+        
+        if (goal.name === 'KILL') {
+            if (sensors.enemyVisible) {
+                if (sensors.enemyDist < 150) {
+                    strategyName = 'PURSUE';
+                } else {
+                    strategyName = 'FLANK';
+                }
+            } else {
+                const suggestion = this.worldModel.getSuggestion();
+                if (suggestion && suggestion.confidence > 0.5) {
+                    strategyName = 'AMBUSH';
+                } else {
+                    strategyName = 'INVESTIGATE';
+                }
+            }
+        } else if (goal.name === 'SURVIVE') {
+            strategyName = 'RETREAT';
+        } else {
+            strategyName = 'SCAN';
+        }
+        
+        this.currentStrategy = this.strategies[strategyName];
+        this.strategyStartTime = time;
+        
+        return this.currentStrategy;
+    }
+
+    executePursue(tank, target) {
+        const dx = target.x - tank.pos.x;
+        const dy = target.y - tank.pos.y;
+        const angle = Math.atan2(dy, dx);
+        
+        // Спрашиваем модель про упреждение
+        const prediction = this.worldModel.predictShot({
+            enemyDist: Math.hypot(dx, dy),
+            enemyVel: 3
+        });
+        
+        return {
+            move: {
+                forward: 0.9,
+                turn: angle - tank.angle
+            },
+            turret: {
+                angle: angle + (prediction.lead * 0.01)
+            },
+            shoot: prediction.hitProb > 0.4
+        };
+    }
+
+    executeFlank(tank, target) {
+        const dx = target.x - tank.pos.x;
+        const dy = target.y - tank.pos.y;
+        const angle = Math.atan2(dy, dx);
+        
+        // Заходим сбоку
+        const flankAngle = angle + Math.PI/2;
+        const flankPoint = {
+            x: target.x + Math.cos(flankAngle) * 100,
+            y: target.y + Math.sin(flankAngle) * 100
+        };
+        
+        const toFlank = Vec2.sub(flankPoint, tank.pos);
+        const flankDir = Vec2.angle(toFlank);
+        
+        return {
+            move: {
+                forward: 0.7,
+                turn: flankDir - tank.angle
+            },
+            turret: {
+                angle: angle
+            },
+            shoot: false
+        };
+    }
+
+    executeAmbush(tank, target) {
+        const dx = target.x - tank.pos.x;
+        const dy = target.y - tank.pos.y;
+        const dist = Math.hypot(dx, dy);
+        
+        if (dist < 100) {
+            // Уже на позиции - ждем
+            return {
+                move: {
+                    forward: 0,
+                    turn: 0
+                },
+                turret: {
+                    scan: true
+                },
+                shoot: false
+            };
+        } else {
+            // Идем на позицию
+            const angle = Math.atan2(dy, dx);
+            return {
+                move: {
+                    forward: 0.6,
+                    turn: angle - tank.angle
+                },
+                turret: {
+                    angle: angle
+                },
+                shoot: false
+            };
+        }
+    }
+
+    executeRetreat(tank, target) {
+        if (!target) return null;
+        
+        const dx = tank.pos.x - target.x;
+        const dy = tank.pos.y - target.y;
+        const angle = Math.atan2(dy, dx);
+        
+        return {
+            move: {
+                forward: 0.5,
+                turn: angle - tank.angle
+            },
+            turret: {
+                angle: Math.atan2(target.y - tank.pos.y, target.x - tank.pos.x)
+            },
+            shoot: true // прикрываем отход
+        };
+    }
+
+    executeScan(tank, target) {
+        // Спиральный поиск
+        const time = performance.now() / 1000;
+        const radius = 100;
+        const spiralX = tank.pos.x + Math.cos(time * 0.5) * radius;
+        const spiralY = tank.pos.y + Math.sin(time * 0.5) * radius;
+        
+        const dx = spiralX - tank.pos.x;
+        const dy = spiralY - tank.pos.y;
+        const angle = Math.atan2(dy, dx);
+        
+        return {
+            move: {
+                forward: 0.5,
+                turn: angle - tank.angle
+            },
+            turret: {
+                scan: true
+            },
+            shoot: false
+        };
+    }
+
+    executeInvestigate(tank, target) {
+        if (!target) return null;
+        
+        const dx = target.x - tank.pos.x;
+        const dy = target.y - tank.pos.y;
+        const dist = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+        
+        if (dist < 50) {
+            return {
+                move: {
+                    forward: 0,
+                    turn: 0.3
+                },
+                turret: {
+                    scan: true
+                },
+                shoot: false
+            };
+        } else {
+            return {
+                move: {
+                    forward: 0.7,
+                    turn: angle - tank.angle
+                },
+                turret: {
+                    angle: angle
+                },
+                shoot: false
+            };
+        }
+    }
+}
+
+// ============================================================================
+// SECTION 8.4: НАВЫКИ
+// ============================================================================
+
+class Skills {
+    constructor() {
+        this.calibration = {
+            turretOffset: (Math.random() - 0.5) * 0.03,
+            moveSpeed: 0.9 + Math.random() * 0.2,
+            turnSpeed: 0.1 + Math.random() * 0.05
+        };
+    }
+
+    aim(targetAngle, currentAngle) {
+        const error = targetAngle - currentAngle + this.calibration.turretOffset;
+        let turn = Math.tanh(error * 2) * 0.1;
+        const maxTurn = 0.15;
+        turn = Math.max(-maxTurn, Math.min(maxTurn, turn));
+        return turn;
+    }
+
+    move(targetPos, currentPos, currentAngle) {
+        const dx = targetPos.x - currentPos.x;
+        const dy = targetPos.y - currentPos.y;
+        const dist = Math.hypot(dx, dy);
+        
+        if (dist < 20) {
+            return { forward: 0, turn: 0 };
+        }
+        
+        const targetAngle = Math.atan2(dy, dx);
+        let turn = targetAngle - currentAngle;
+        
+        while (turn > Math.PI) turn -= Math.PI * 2;
+        while (turn < -Math.PI) turn += Math.PI * 2;
+        
+        turn = Math.tanh(turn * 3) * 0.1;
+        const forward = this.calibration.moveSpeed * (1 - Math.abs(turn) * 2);
+        
+        return { forward, turn };
+    }
+
+    shoot(shouldShoot, cooldown) {
+        if (!shouldShoot || cooldown > 0) return false;
+        return Math.random() < 0.8;
+    }
+}
+
+// ============================================================================
 // SECTION 9: AUDIO SYSTEM WITH STATE MANAGEMENT
 // ============================================================================
 
@@ -1149,7 +1744,7 @@ class AudioSystem {
 }
 
 // ============================================================================
-// SECTION 10: TANK CLASS WITH ENHANCED PHYSICS
+// SECTION 10: TANK CLASS WITH ENHANCED PHYSICS AND WORLD MODEL
 // ============================================================================
 
 class Tank {
@@ -1166,8 +1761,20 @@ class Tank {
         this.alive = true;
         this.radius = 28;
         this.mass = 10;
-        this.brain = new SpikingNeuralNetwork(20, 64, 9); // Increased input dimension
+        
+        // Original brain (kept for compatibility)
+        this.brain = new SpikingNeuralNetwork(26, 64, 9); // Increased input for world model
+        
+        // NEW: World model components
+        this.worldModel = new WorldModel();
+        this.instincts = new Instincts();
+        this.strategies = new Strategies(this.worldModel);
+        this.skills = new Skills();
+        
+        // Vision
         this.vision = new Vision360(this);
+        
+        // Stats
         this.stats = { kills: 0, damage: 0, shots: 0, hits: 0 };
         this.shootCD = 0;
         this.lastEnemyHp = 100;
@@ -1178,6 +1785,12 @@ class Tank {
         this.lastDist = 1000;
         this.lastAction = null;
         this.actionHistory = [];
+        
+        // World model state
+        this.lastShot = null;
+        this.currentGoal = null;
+        this.currentStrategy = null;
+        this.frameCount = 0;
     }
 
     getSensors(enemy, worldW, worldH) {
@@ -1205,7 +1818,10 @@ class Tank {
         this.lastPos = { ...this.pos };
         this.lastAngle = this.angle;
 
-        // Enhanced sensor array
+        // Get world model suggestion
+        const suggestion = this.worldModel.getSuggestion();
+
+        // Enhanced sensor array (26 inputs)
         return [
             vision.visible ? 1 : 0,
             vision.inPeripheral ? 1 : 0,
@@ -1213,7 +1829,7 @@ class Tank {
             vision.angleNorm || 0,
             vision.dx,
             vision.dy,
-            enemy.hp / 100,
+            enemy ? enemy.hp / 100 : 0,
             this.hp / 100,
             speed / 5,
             this.vel.x / 5,
@@ -1226,102 +1842,155 @@ class Tank {
             this.stuckFrames / 40,
             Math.tanh(this.barrelAngle * 2),
             Math.sin(Date.now() * 0.001) * 0.1,
-            Math.cos(Date.now() * 0.0013) * 0.1
+            Math.cos(Date.now() * 0.0013) * 0.1,
+            // World model inputs (6 new)
+            suggestion ? suggestion.confidence : 0,
+            suggestion && suggestion.target ? 1 : 0,
+            suggestion && suggestion.intent === 'camping' ? 1 : 0,
+            suggestion && suggestion.intent === 'fleeing' ? 1 : 0,
+            this.worldModel.memory.shots.length / 100,
+            this.worldModel.memory.hits.length / 50
         ];
     }
 
-    actuate(outputs, epsilon = 0.5) {
-        const [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown, shoot] = outputs;
+    update(enemy, worldW, worldH, time) {
+        if (!this.alive) return;
         
-        // Apply actions with exploration noise
-        const noise = epsilon * 0.2;
+        this.frameCount = time;
+        this.worldModel.update(time);
         
-        const forwardDir = { x: Math.cos(this.angle), y: Math.sin(this.angle) };
-
-        // Movement
-        if (fwd > 0.4 + noise) {
-            this.vel.x += forwardDir.x * 0.4;
-            this.vel.y += forwardDir.y * 0.4;
+        // 1. Get sensors
+        const sensors = {
+            enemyVisible: enemy?.visible || false,
+            enemyDist: enemy ? Vec2.dist(this.pos, enemy.pos) : 1000,
+            enemyPos: enemy?.pos,
+            health: this.hp,
+            enemyVel: enemy ? Vec2.len(enemy.vel) : 0
+        };
+        
+        // 2. Record sighting if enemy visible
+        if (enemy?.visible) {
+            this.worldModel.recordSighting({
+                enemyPos: { ...enemy.pos },
+                enemyVel: { ...enemy.vel },
+                enemyId: enemy.id
+            });
         }
-        if (back > 0.4 + noise) {
-            this.vel.x -= forwardDir.x * 0.2;
-            this.vel.y -= forwardDir.y * 0.2;
-        }
-
-        // Rotation
-        if (turnL > 0.4 + noise) this.angle -= 0.07;
-        if (turnR > 0.4 + noise) this.angle += 0.07;
-        if (turretL > 0.4 + noise) this.turretAngle -= 0.09;
-        if (turretR > 0.4 + noise) this.turretAngle += 0.09;
-        if (barrelUp > 0.4 + noise) this.barrelAngle = Math.min(0.5, this.barrelAngle + 0.05);
-        if (barrelDown > 0.4 + noise) this.barrelAngle = Math.max(-0.3, this.barrelAngle - 0.05);
-
-        // Shooting
-        if (shoot > 0.5 && this.shootCD <= 0) {
-            this.fire();
-            this.shootCD = 22;
-            this.lastAction = 8; // Shoot action index
+        
+        // 3. Instinct chooses goal
+        const goal = this.instincts.getGoal(sensors);
+        this.currentGoal = goal;
+        
+        // 4. Strategy chooses plan based on world model
+        const strategy = this.strategies.choose(goal, sensors, time);
+        this.currentStrategy = strategy;
+        
+        // 5. Get target from world model or enemy
+        let target = null;
+        if (enemy?.visible) {
+            target = enemy.pos;
         } else {
-            // Determine the dominant action
-            const actions = [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown];
-            let maxVal = -Infinity;
-            let maxIdx = -1;
-            for (let i = 0; i < actions.length; i++) {
-                if (actions[i] > maxVal) {
-                    maxVal = actions[i];
-                    maxIdx = i;
-                }
+            const suggestion = this.worldModel.getSuggestion();
+            if (suggestion && suggestion.confidence > 0.3) {
+                target = suggestion.target;
             }
-            this.lastAction = maxIdx;
         }
+        
+        // 6. Execute strategy to get plan
+        let plan = null;
+        if (strategy && target) {
+            plan = strategy.execute(this, target);
+        }
+        
+        // 7. Execute plan through skills
+        if (plan) {
+            this.executePlan(plan, enemy);
+        } else {
+            // Fallback to original brain
+            const inputs = this.getSensors(enemy, worldW, worldH);
+            const outputs = this.brain.process(inputs, 0, 0.5);
+            this.actuate(outputs);
+        }
+        
+        // 8. Record shot if fired
+        if (this.lastShot) {
+            const hit = this.checkHit(enemy);
+            this.worldModel.recordShot({
+                ...this.lastShot,
+                hit,
+                context: this.lastShot.context
+            });
+            if (hit) {
+                this.worldModel.recordHit({
+                    from: this.lastShot.from,
+                    angle: this.lastShot.angle,
+                    enemyVisible: enemy?.visible || false,
+                    enemyPos: enemy?.pos,
+                    estimatedDistance: this.lastShot.context?.enemyDist
+                });
+            }
+            this.lastShot = null;
+        }
+        
+        // 9. Physics
+        this.applyPhysics(worldW, worldH);
+    }
 
-        // Store action in history
-        this.actionHistory.push(this.lastAction);
-        if (this.actionHistory.length > 100) {
-            this.actionHistory.shift();
+    executePlan(plan, enemy) {
+        // Movement
+        if (plan.move) {
+            const moveCmd = this.skills.move(
+                plan.move.target || (enemy?.pos || this.pos),
+                this.pos,
+                this.angle
+            );
+            
+            if (plan.move.forward !== undefined) {
+                this.vel.x += Math.cos(this.angle) * plan.move.forward * 0.4;
+                this.vel.y += Math.sin(this.angle) * plan.move.forward * 0.4;
+            } else {
+                this.vel.x += Math.cos(this.angle) * moveCmd.forward * 0.4;
+                this.vel.y += Math.sin(this.angle) * moveCmd.forward * 0.4;
+            }
+            
+            if (plan.move.turn !== undefined) {
+                this.angle += plan.move.turn;
+            } else {
+                this.angle += moveCmd.turn;
+            }
         }
-
-        // Apply friction
-        this.vel.x *= 0.93;
-        this.vel.y *= 0.93;
-
-        // Limit speed
-        const speed = Vec2.len(this.vel);
-        if (speed > 5) {
-            this.vel.x = (this.vel.x / speed) * 5;
-            this.vel.y = (this.vel.y / speed) * 5;
+        
+        // Turret
+        if (plan.turret) {
+            if (plan.turret.angle !== undefined) {
+                const turn = this.skills.aim(
+                    plan.turret.angle,
+                    this.angle + this.turretAngle
+                );
+                this.turretAngle += turn;
+            }
+            if (plan.turret.scan) {
+                this.turretAngle += 0.02;
+            }
         }
-
-        // Update position
-        this.pos.x += this.vel.x;
-        this.pos.y += this.vel.y;
-
-        // Boundary collision with restitution
-        if (this.pos.x < this.radius) {
-            this.pos.x = this.radius;
-            this.vel.x *= -0.5;
+        
+        // Shooting
+        if (plan.shoot && this.shootCD <= 0) {
+            const shouldShoot = this.skills.shoot(true, this.shootCD);
+            if (shouldShoot) {
+                this.fire(enemy);
+                this.shootCD = 22;
+            }
         }
-        if (this.pos.x > game.width - this.radius) {
-            this.pos.x = game.width - this.radius;
-            this.vel.x *= -0.5;
-        }
-        if (this.pos.y < this.radius) {
-            this.pos.y = this.radius;
-            this.vel.y *= -0.5;
-        }
-        if (this.pos.y > game.height - this.radius) {
-            this.pos.y = game.height - this.radius;
-            this.vel.y *= -0.5;
-        }
-
-        // Update cooldowns
+        
         this.shootCD = Math.max(0, this.shootCD - 1);
     }
 
-    fire() {
+    fire(enemy) {
         this.stats.shots++;
+        
         const angle = this.angle + this.turretAngle + this.barrelAngle;
-
+        
         game.projectiles.push({
             pos: {
                 x: this.pos.x + Math.cos(angle) * 38,
@@ -1337,6 +2006,109 @@ class Tank {
         });
 
         game.audio.playShoot();
+        
+        // Record shot for world model
+        this.lastShot = {
+            from: { ...this.pos },
+            angle: angle,
+            lead: 5,
+            context: enemy ? {
+                enemyDist: Vec2.dist(this.pos, enemy.pos),
+                enemyVel: Vec2.len(enemy.vel),
+                enemyAngle: Math.atan2(
+                    enemy.pos.y - this.pos.y,
+                    enemy.pos.x - this.pos.x
+                )
+            } : null
+        };
+    }
+
+    checkHit(enemy) {
+        if (!enemy || !enemy.alive) return false;
+        const hit = this.stats.hits > (this.lastStats?.hits || 0);
+        this.lastStats = { ...this.stats };
+        return hit;
+    }
+
+    applyPhysics(worldW, worldH) {
+        // Friction
+        this.vel.x *= 0.93;
+        this.vel.y *= 0.93;
+
+        // Speed limit
+        const speed = Vec2.len(this.vel);
+        if (speed > 5) {
+            this.vel.x = (this.vel.x / speed) * 5;
+            this.vel.y = (this.vel.y / speed) * 5;
+        }
+
+        // Position
+        this.pos.x += this.vel.x;
+        this.pos.y += this.vel.y;
+
+        // Boundaries
+        if (this.pos.x < this.radius) {
+            this.pos.x = this.radius;
+            this.vel.x *= -0.5;
+        }
+        if (this.pos.x > worldW - this.radius) {
+            this.pos.x = worldW - this.radius;
+            this.vel.x *= -0.5;
+        }
+        if (this.pos.y < this.radius) {
+            this.pos.y = this.radius;
+            this.vel.y *= -0.5;
+        }
+        if (this.pos.y > worldH - this.radius) {
+            this.pos.y = worldH - this.radius;
+            this.vel.y *= -0.5;
+        }
+    }
+
+    actuate(outputs, epsilon = 0.5) {
+        // Original actuate method kept for compatibility
+        const [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown, shoot] = outputs;
+        
+        const noise = epsilon * 0.2;
+        const forwardDir = { x: Math.cos(this.angle), y: Math.sin(this.angle) };
+
+        if (fwd > 0.4 + noise) {
+            this.vel.x += forwardDir.x * 0.4;
+            this.vel.y += forwardDir.y * 0.4;
+        }
+        if (back > 0.4 + noise) {
+            this.vel.x -= forwardDir.x * 0.2;
+            this.vel.y -= forwardDir.y * 0.2;
+        }
+
+        if (turnL > 0.4 + noise) this.angle -= 0.07;
+        if (turnR > 0.4 + noise) this.angle += 0.07;
+        if (turretL > 0.4 + noise) this.turretAngle -= 0.09;
+        if (turretR > 0.4 + noise) this.turretAngle += 0.09;
+        if (barrelUp > 0.4 + noise) this.barrelAngle = Math.min(0.5, this.barrelAngle + 0.05);
+        if (barrelDown > 0.4 + noise) this.barrelAngle = Math.max(-0.3, this.barrelAngle - 0.05);
+
+        if (shoot > 0.5 && this.shootCD <= 0) {
+            this.fire();
+            this.shootCD = 22;
+            this.lastAction = 8;
+        } else {
+            const actions = [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown];
+            let maxVal = -Infinity;
+            let maxIdx = -1;
+            for (let i = 0; i < actions.length; i++) {
+                if (actions[i] > maxVal) {
+                    maxVal = actions[i];
+                    maxIdx = i;
+                }
+            }
+            this.lastAction = maxIdx;
+        }
+
+        this.actionHistory.push(this.lastAction);
+        if (this.actionHistory.length > 100) {
+            this.actionHistory.shift();
+        }
     }
 
     takeDamage(amount, attacker) {
@@ -1346,12 +2118,18 @@ class Tank {
             attacker.stats.damage += amount;
             attacker.stats.hits++;
             
-            // Dopamine spike for hitting
             if (attacker.brain) {
                 attacker.brain.dopamine.spike(0.12, attacker.lastAction);
             }
             
             game.audio.playHit();
+            
+            // Record damage in world model
+            attacker.worldModel.recordDamage({
+                from: attacker.pos,
+                amount: amount,
+                enemyPos: this.pos
+            });
         }
 
         if (this.hp <= 0) {
@@ -1369,28 +2147,24 @@ class Tank {
     calcReward(enemy) {
         let reward = 0;
         
-        // Current distance to enemy
         const currentDist = Vec2.dist(this.pos, enemy.pos);
         
-        // Reward for damaging enemy
         if (enemy.hp < this.lastEnemyHp) {
             const dmg = this.lastEnemyHp - enemy.hp;
-            reward += dmg * 0.03; // Increased reward for damage
+            reward += dmg * 0.03;
             if (this.brain) {
                 this.brain.dopamine.spike(0.1, this.lastAction);
             }
         }
         this.lastEnemyHp = enemy.hp;
 
-        // Reward for killing enemy
         if (!enemy.alive && this.alive) {
-            reward += 2.0; // Big reward for kill
+            reward += 2.0;
             if (this.brain) {
                 this.brain.dopamine.spike(0.5, this.lastAction);
             }
         }
 
-        // Reward for approaching enemy
         if (currentDist < this.lastDist) {
             const approachReward = (this.lastDist - currentDist) * 0.002;
             reward += approachReward;
@@ -1399,12 +2173,9 @@ class Tank {
             }
         }
         
-        // Reward for aiming at enemy
         const vision = this.vision.detect(enemy);
         if (vision.visible) {
-            reward += 0.01; // Base reward for visibility
-            
-            // Extra reward for good aim
+            reward += 0.01;
             if (Math.abs(vision.angle) < 0.3) {
                 reward += 0.02;
                 if (Math.random() < 0.1) {
@@ -1413,15 +2184,12 @@ class Tank {
             }
         }
 
-        // Small survival reward
         reward += 0.002;
 
-        // Penalty for being stuck
         if (this.stuckFrames > 60) {
             reward -= 0.01;
         }
 
-        // Penalty for shooting and missing (implied through lack of hit reward)
         if (this.stats.shots > 0 && this.stats.hits / this.stats.shots < 0.1) {
             reward -= 0.005;
         }
@@ -1446,13 +2214,39 @@ class Tank {
                 0, Math.PI * 2
             );
             ctx.stroke();
+            
+            // Draw world model hypothesis
+            const suggestion = this.worldModel.getSuggestion();
+            if (suggestion && suggestion.target && suggestion.confidence > 0.3) {
+                ctx.strokeStyle = `rgba(255,170,0,${suggestion.confidence})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(
+                    suggestion.target.x - cam.x,
+                    suggestion.target.y - cam.y,
+                    20,
+                    0, Math.PI * 2
+                );
+                ctx.stroke();
+                
+                if (suggestion.predicted) {
+                    ctx.strokeStyle = 'rgba(255,100,0,0.5)';
+                    ctx.beginPath();
+                    ctx.arc(
+                        suggestion.predicted.x - cam.x,
+                        suggestion.predicted.y - cam.y,
+                        15,
+                        0, Math.PI * 2
+                    );
+                    ctx.stroke();
+                }
+            }
         }
 
         ctx.save();
         ctx.translate(this.pos.x - cam.x, this.pos.y - cam.y);
         ctx.rotate(this.angle);
 
-        // Tank body with gradient
         const gradient = ctx.createLinearGradient(-25, -20, 25, 20);
         gradient.addColorStop(0, this.color);
         gradient.addColorStop(1, this.darkenColor(this.color, 40));
@@ -1466,14 +2260,12 @@ class Tank {
         ctx.fill();
         ctx.stroke();
 
-        // Tracks
         ctx.fillStyle = 'rgba(0,50,30,0.9)';
         ctx.fillRect(-27, -23, 54, 8);
         ctx.fillRect(-27, 15, 54, 8);
 
         ctx.restore();
 
-        // Turret
         ctx.save();
         ctx.translate(this.pos.x - cam.x, this.pos.y - cam.y);
         ctx.rotate(this.angle + this.turretAngle);
@@ -1485,7 +2277,6 @@ class Tank {
         ctx.fill();
         ctx.stroke();
 
-        // Barrel
         ctx.save();
         ctx.rotate(this.barrelAngle);
         ctx.fillStyle = '#0a3a2a';
@@ -1494,7 +2285,6 @@ class Tank {
 
         ctx.restore();
 
-        // Health bar
         if (this.hp < this.maxHp) {
             const barWidth = 50;
             const barHeight = 6;
@@ -1511,6 +2301,15 @@ class Tank {
             ctx.fillStyle = hpColor;
             ctx.fillRect(x, y, barWidth * hpPercent, barHeight);
         }
+        
+        // Draw current goal and strategy
+        ctx.font = '8px Courier New';
+        ctx.fillStyle = '#00ff88';
+        ctx.fillText(
+            `${this.currentGoal ? this.currentGoal.name : '???'} | ${this.currentStrategy ? this.currentStrategy.name : '???'}`,
+            this.pos.x - cam.x - 40,
+            this.pos.y - cam.y - 60
+        );
     }
 
     darkenColor(color, amount) {
@@ -1555,6 +2354,8 @@ class Tank {
         this.lastAction = null;
         this.actionHistory = [];
         this.brain.reset();
+        this.worldModel = new WorldModel(); // Reset world model
+        this.strategies = new Strategies(this.worldModel);
     }
 
     getSerializable() {
@@ -1590,6 +2391,7 @@ const game = {
     speed: 1,
     train: true,
     showVision: true,
+    showWorldModel: true,
     running: false,
     lastTime: performance.now(),
     frameCount: 0,
@@ -1606,6 +2408,7 @@ function initGame() {
     game.epoch = 0;
     game.particles.clear();
     game.lastTime = performance.now();
+    game.frameCount = 0;
     
     if (game.learningCurve) {
         game.learningCurve.rewards = [];
@@ -1624,7 +2427,6 @@ function resolveCollision(tankA, tankB) {
         const nx = dx / dist;
         const ny = dy / dist;
 
-        // Separate tanks based on mass
         const totalMass = tankA.mass + tankB.mass;
         const ratioA = tankB.mass / totalMass;
         const ratioB = tankA.mass / totalMass;
@@ -1634,7 +2436,6 @@ function resolveCollision(tankA, tankB) {
         tankB.pos.x += nx * overlap * ratioB;
         tankB.pos.y += ny * overlap * ratioB;
 
-        // Calculate collision response
         const relVelX = tankB.vel.x - tankA.vel.x;
         const relVelY = tankB.vel.y - tankA.vel.y;
         const velAlongNormal = relVelX * nx + relVelY * ny;
@@ -1655,6 +2456,7 @@ function resolveCollision(tankA, tankB) {
 function update(dt) {
     if (!game.running) return;
 
+    game.frameCount++;
     const [tankA, tankB] = game.tanks;
 
     // Collision detection and resolution
@@ -1662,23 +2464,9 @@ function update(dt) {
         resolveCollision(tankA, tankB);
     }
 
-    // Update tanks
-    for (const tank of game.tanks) {
-        const enemy = tank === tankA ? tankB : tankA;
-        if (!tank.alive) continue;
-
-        const inputs = tank.getSensors(enemy, game.width, game.height);
-        
-        // Decaying epsilon for exploration
-        const epsilon = Math.max(0.05, 1.0 - game.epoch * 0.001);
-        
-        const reward = game.train ? tank.calcReward(enemy) : 0;
-        const outputs = tank.brain.process(inputs, reward, epsilon);
-        tank.actuate(outputs, epsilon);
-        
-        // Update UI element for epsilon
-        document.getElementById('d-epsilon').textContent = epsilon.toFixed(3);
-    }
+    // Update tanks with world model
+    tankA.update(tankB, game.width, game.height, game.frameCount);
+    tankB.update(tankA, game.width, game.height, game.frameCount);
 
     // Update projectiles
     for (let i = game.projectiles.length - 1; i >= 0; i--) {
@@ -1687,7 +2475,6 @@ function update(dt) {
         p.pos.y += p.vel.y * dt * 0.06;
         p.life--;
 
-        // Trail particles
         if (game.particles.enabled && Math.random() < 0.3) {
             game.particles.emitTrail(p.pos.x, p.pos.y, Vec2.angle(p.vel), p.owner.color);
         }
@@ -1701,7 +2488,6 @@ function update(dt) {
                 tank.takeDamage(p.dmg, p.owner);
                 hit = true;
                 
-                // Impact particles
                 if (game.particles.enabled) {
                     game.particles.emitExplosion(p.pos.x, p.pos.y, '#ffaa00', 10);
                 }
@@ -1723,6 +2509,12 @@ function update(dt) {
     // Update particles
     game.particles.update(dt);
 
+    // Calculate rewards for training
+    if (game.train) {
+        tankA.calcReward(tankB);
+        tankB.calcReward(tankA);
+    }
+
     // Check for epoch completion
     if (!tankA.alive || !tankB.alive) {
         game.epoch++;
@@ -1734,12 +2526,10 @@ function update(dt) {
         log(`Alpha reward: ${tankA.roundReward.toFixed(2)}, Beta reward: ${tankB.roundReward.toFixed(2)}`, 'dopamine');
         log(`Average reward: ${avgReward.toFixed(2)}`, 'reward');
         
-        // Update learning curve
         if (game.learningCurve) {
             game.learningCurve.addReward(game.epoch, avgReward);
         }
 
-        // Schedule reset
         setTimeout(() => {
             if (!tankA.alive) tankA.reset(300, 400, 0);
             if (!tankB.alive) tankB.reset(900, 400, Math.PI);
@@ -1749,11 +2539,9 @@ function update(dt) {
 }
 
 function draw(ctx) {
-    // Clear with trail effect
     ctx.fillStyle = 'rgba(10,10,15,0.3)';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    // Draw grid
     ctx.strokeStyle = 'rgba(0,255,136,0.05)';
     ctx.lineWidth = 1;
     
@@ -1772,30 +2560,27 @@ function draw(ctx) {
         ctx.stroke();
     }
 
-    // Draw projectiles
     ctx.fillStyle = '#ffff00';
     ctx.shadowBlur = 10;
     ctx.shadowColor = '#ffff00';
     
     for (const p of game.projectiles) {
-        ctx.beginPath(); // Fixed: Added beginPath()
+        ctx.beginPath();
         ctx.arc(p.pos.x - cam.x, p.pos.y - cam.y, 4, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.shadowBlur = 0;
 
-    // Draw tanks
     for (const tank of game.tanks) {
         tank.draw(ctx, cam, game.showVision);
     }
 
-    // Draw particles
     if (game.particles.enabled) {
         game.particles.draw(ctx);
     }
 
-    // Update brain visualizations
     updateBrainVisualizations();
+    updateWorldModelVisualizations();
 }
 
 function calculateCamera(ctx) {
@@ -1832,18 +2617,54 @@ function updateBrainVisualizations() {
     }
 }
 
+function updateWorldModelVisualizations() {
+    const [tankA, tankB] = game.tanks;
+    
+    const wmVizA = document.getElementById('wm-viz-red');
+    const wmVizB = document.getElementById('wm-viz-green');
+    
+    if (wmVizA && tankA?.worldModel) {
+        const ctx = wmVizA.getContext('2d');
+        ctx.clearRect(0, 0, wmVizA.width, wmVizA.height);
+        
+        const suggestion = tankA.worldModel.getSuggestion();
+        if (suggestion && suggestion.target) {
+            const x = (suggestion.target.x / game.width) * wmVizA.width;
+            const y = (suggestion.target.y / game.height) * wmVizA.height;
+            
+            ctx.fillStyle = `rgba(255,170,0,${suggestion.confidence})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    if (wmVizB && tankB?.worldModel) {
+        const ctx = wmVizB.getContext('2d');
+        ctx.clearRect(0, 0, wmVizB.width, wmVizB.height);
+        
+        const suggestion = tankB.worldModel.getSuggestion();
+        if (suggestion && suggestion.target) {
+            const x = (suggestion.target.x / game.width) * wmVizB.width;
+            const y = (suggestion.target.y / game.height) * wmVizB.height;
+            
+            ctx.fillStyle = `rgba(255,170,0,${suggestion.confidence})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+}
+
 function updateUI() {
     const [tankA, tankB] = game.tanks;
 
-    // Health bars
     document.getElementById('hp-red').style.width = (tankA.hp / tankA.maxHp * 100) + '%';
     document.getElementById('hp-green').style.width = (tankB.hp / tankB.maxHp * 100) + '%';
 
-    // Dopamine bars
     document.getElementById('dopa-red').style.width = (tankA.brain.dopamine.level * 100) + '%';
     document.getElementById('dopa-green').style.width = (tankB.brain.dopamine.level * 100) + '%';
 
-    // Tank stats
     document.getElementById('d-hp-red').textContent = Math.round(tankA.hp) + '%';
     document.getElementById('d-hp-green').textContent = Math.round(tankB.hp) + '%';
     document.getElementById('d-kills-red').textContent = tankA.stats.kills;
@@ -1851,7 +2672,6 @@ function updateUI() {
     document.getElementById('d-dmg-red').textContent = Math.round(tankA.stats.damage);
     document.getElementById('d-dmg-green').textContent = Math.round(tankB.stats.damage);
 
-    // Accuracy
     const accA = tankA.stats.shots > 0 ?
         Math.round(tankA.stats.hits / tankA.stats.shots * 100) : 0;
     const accB = tankB.stats.shots > 0 ?
@@ -1859,13 +2679,11 @@ function updateUI() {
     document.getElementById('d-acc-red').textContent = accA + '%';
     document.getElementById('d-acc-green').textContent = accB + '%';
 
-    // Neural stats
     document.getElementById('d-dopa-val-red').textContent = tankA.brain.dopamine.level.toFixed(3);
     document.getElementById('d-dopa-val-green').textContent = tankB.brain.dopamine.level.toFixed(3);
     document.getElementById('d-act-red').textContent = tankA.brain.spikeCount;
     document.getElementById('d-act-green').textContent = tankB.brain.spikeCount;
 
-    // Global stats
     document.getElementById('d-epoch').textContent = game.epoch;
     document.getElementById('d-spikes').textContent =
         Math.round((tankA.brain.spikeCount + tankB.brain.spikeCount) / 2);
@@ -1873,9 +2691,21 @@ function updateUI() {
         ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3);
     document.getElementById('d-lr').textContent = tankA.brain.learningRate.toFixed(3);
     
-    // Epsilon (exploration rate)
     const epsilon = Math.max(0.05, 1.0 - game.epoch * 0.001);
     document.getElementById('d-explore').textContent = epsilon.toFixed(3);
+    document.getElementById('d-epsilon').textContent = epsilon.toFixed(3);
+    
+    // World model stats
+    const wmConfA = tankA.worldModel.getSuggestion();
+    const wmConfB = tankB.worldModel.getSuggestion();
+    document.getElementById('wm-conf-red').textContent = wmConfA ? wmConfA.confidence.toFixed(2) : '0.00';
+    document.getElementById('wm-conf-green').textContent = wmConfB ? wmConfB.confidence.toFixed(2) : '0.00';
+    
+    document.getElementById('wm-hyp-red').textContent = tankA.worldModel.hypotheses.enemyIntent || 'none';
+    document.getElementById('wm-hyp-green').textContent = tankB.worldModel.hypotheses.enemyIntent || 'none';
+    
+    document.getElementById('wm-memory').textContent = 
+        tankA.worldModel.memory.shots.length + tankB.worldModel.memory.shots.length;
 }
 
 const log = (msg, type = 'system') => {
@@ -1895,7 +2725,8 @@ const SYS = {
         game.lastTime = performance.now();
         document.getElementById('btn-start').disabled = true;
         document.getElementById('btn-start').textContent = '■ SIMULATION ACTIVE';
-        log('NEURAL COMBAT SYSTEM INITIALIZED', 'system');
+        log('NEURAL COMBAT SYSTEM v7.1 INITIALIZED', 'system');
+        log('WORLD MODEL ARCHITECTURE ACTIVE', 'system');
         requestAnimationFrame(loop);
     },
 
@@ -1938,6 +2769,12 @@ const SYS = {
         document.getElementById('particles-val').textContent = game.particles.enabled ? 'ACTIVE' : 'DISABLED';
         log(`Particle effects ${game.particles.enabled ? 'enabled' : 'disabled'}`, 'system');
     },
+    
+    toggleWorldModel() {
+        game.showWorldModel = !game.showWorldModel;
+        document.getElementById('worldmodel-val').textContent = game.showWorldModel ? 'ACTIVE' : 'DISABLED';
+        log(`World model ${game.showWorldModel ? 'enabled' : 'disabled'}`, 'system');
+    },
 
     emergencyBoost() {
         game.tanks.forEach(t => {
@@ -1955,7 +2792,7 @@ const SYS = {
     saveModel() {
         try {
             const model = {
-                version: '7.0',
+                version: '7.1',
                 epoch: game.epoch,
                 tanks: game.tanks.map(t => t.getSerializable()),
                 timestamp: Date.now()
@@ -1977,7 +2814,7 @@ const SYS = {
             }
             
             const model = JSON.parse(saved);
-            if (model.version !== '7.0') {
+            if (model.version !== '7.0' && model.version !== '7.1') {
                 log('INCOMPATIBLE MODEL VERSION', 'system');
                 return;
             }
@@ -2002,14 +2839,11 @@ const SYS = {
 
 function loop(timestamp) {
     if (!game.running) {
-        // Don't recursively call if not running
         return;
     }
 
-    // Calculate delta time with bounds
     const dt = Math.min(timestamp - game.lastTime, 50);
     
-    // Skip if dt is too small for stability
     if (dt < 8) {
         requestAnimationFrame(loop);
         return;
@@ -2018,7 +2852,6 @@ function loop(timestamp) {
     game.lastTime = timestamp;
     game.frameCount++;
 
-    // Calculate FPS every second
     if (timestamp > 1000) {
         const fps = Math.round((game.frameCount * 1000) / timestamp);
         if (fps !== game.fps) {
@@ -2026,13 +2859,11 @@ function loop(timestamp) {
         }
     }
 
-    // Run simulation with speed multiplier
     const steps = Math.ceil(game.speed);
     for (let i = 0; i < steps; i++) {
         update(dt / steps);
     }
 
-    // Render
     const canvas = document.getElementById('sim');
     if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -2050,7 +2881,6 @@ function resize() {
         canvas.width = area.clientWidth;
         canvas.height = area.clientHeight;
         
-        // Resize learning curve
         if (game.learningCurve) {
             game.learningCurve.resize();
         }
@@ -2064,22 +2894,17 @@ function resize() {
 window.addEventListener('resize', resize);
 
 window.onload = () => {
-    // Initialize log buffer
     window.logBuffer = new LogBuffer(100);
     
-    // Initialize game
     resize();
     initGame();
     
-    // Initialize learning curve
     game.learningCurve = new LearningCurve('reward-chart', 100);
     
-    // Hide loading screen
     setTimeout(() => {
         document.getElementById('loading').classList.add('hidden');
     }, 1500);
 
-    // Initial draw
     const canvas = document.getElementById('sim');
     if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -2088,11 +2913,10 @@ window.onload = () => {
     }
     
     log('SYSTEM READY - PRESS INITIALIZE', 'system');
-    log('NEURAL TANK COMBAT v7.0 PROFESSIONAL', 'system');
-    log('STDP LEARNING WITH ELIGIBILITY TRACES ACTIVE', 'dopamine');
+    log('NEURAL TANK COMBAT v7.1 WORLD MODEL', 'system');
+    log('INSTINCTS + STRATEGIES + SKILLS ACTIVE', 'system');
 };
 
-// Export for debugging (optional)
 window.game = game;
 window.SYS = SYS;
 </script>
