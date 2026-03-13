@@ -258,7 +258,7 @@
 <script>
 /**
  * ============================================================================
- * NEURAL TANK COMBAT v7.2 - МИНИМАЛЬНЫЕ ИСПРАВЛЕНИЯ
+ * NEURAL TANK COMBAT v7.2 - ПОЛНАЯ ВЕРСИЯ С ПРИЦЕЛИВАНИЕМ И ОБУЧЕНИЕМ
  * ============================================================================
  */
 
@@ -682,7 +682,7 @@ class DopamineSystem {
 }
 
 // ============================================================================
-// SECTION 8: SPIKING NEURAL NETWORK - ОРИГИНАЛ + МИНИМАЛЬНЫЕ ДОБАВЛЕНИЯ
+// SECTION 8: SPIKING NEURAL NETWORK - С ПРИЦЕЛИВАНИЕМ И ОБУЧЕНИЕМ
 // ============================================================================
 
 class SpikingNeuralNetwork {
@@ -718,6 +718,9 @@ class SpikingNeuralNetwork {
                 totalShots: 0
             }
         };
+        
+        // ===== НОВОЕ: ссылка на танк для калибровки =====
+        this.tank = null;
         
         this._initialize();
     }
@@ -781,42 +784,142 @@ class SpikingNeuralNetwork {
         }
     }
 
+    // ===== ДОБАВЛЕНО: Получить активные нейроны =====
+    getActiveNeurons() {
+        return this.neurons
+            .filter(n => n.out > 0 || n.trace > 0.5)
+            .map(n => n.id);
+    }
+
+    // ===== ДОБАВЛЕНО: Получить моторные команды =====
+    getMotorCommands() {
+        const outputStart = this.inputCount + this.hiddenCount;
+        const commands = {};
+        for (let i = 0; i < this.outputCount; i++) {
+            commands[`output_${i}`] = this.neurons[outputStart + i].out;
+        }
+        return commands;
+    }
+
     // ===== ДОБАВЛЕНО: Запомнить выстрел =====
     rememberShot(shotId, state) {
         this.shotMemory.all.set(shotId, {
             id: shotId,
+            // Физика
+            fromPos: state.tankPos ? {...state.tankPos} : null,
+            fromAngle: state.tankAngle,
             turretAngle: state.turretAngle,
-            tankAngle: state.tankAngle,
-            enemyDist: state.enemyDist,
-            enemyVel: state.enemyVel ? {...state.enemyVel} : null,
+            barrelAngle: state.barrelAngle,
             fireTime: performance.now(),
-            result: null
+            
+            // Цель
+            targetPos: state.targetPos ? {...state.targetPos} : null,
+            targetVel: state.targetVel ? {...state.targetVel} : null,
+            predictedPos: state.predictedPos ? {...state.predictedPos} : null,
+            intendedAngle: state.targetTurretAngle,
+            
+            // Мозг
+            activeNeurons: [...state.activeNeurons],
+            motorCommands: {...state.motorCommands},
+            strategy: state.strategy,
+            
+            // Результат (будет позже)
+            result: null,
+            hitPos: null,
+            hitTime: null,
+            flightTime: null,
+            angleError: null
         });
         this.shotMemory.stats.totalShots++;
     }
 
     // ===== ДОБАВЛЕНО: Обработать попадание =====
-    observeHit(shotId) {
+    observeHit(shotId, hitPos) {
         const shot = this.shotMemory.all.get(shotId);
         if (!shot) return;
         
         shot.result = 'hit';
         shot.hitTime = performance.now();
         shot.flightTime = shot.hitTime - shot.fireTime;
+        shot.hitPos = hitPos ? {...hitPos} : null;
         
         this.shotMemory.stats.totalHits++;
         
+        // Статистика по углу
         const angleKey = Math.round(shot.turretAngle * 100) / 100;
         const angleStats = this.shotMemory.patterns.byAngle.get(angleKey) || { hits: 0, total: 0 };
         angleStats.hits++;
         angleStats.total++;
         this.shotMemory.patterns.byAngle.set(angleKey, angleStats);
         
+        // ===== НОВОЕ: Анализ ошибки прицеливания =====
+        if (shot.fromPos && shot.hitPos) {
+            // Идеальный угол (куда нужно было стрелять)
+            const idealAngle = Math.atan2(
+                shot.hitPos.y - shot.fromPos.y,
+                shot.hitPos.x - shot.fromPos.x
+            );
+            
+            // Фактический угол выстрела
+            const actualAngle = shot.fromAngle + shot.turretAngle + shot.barrelAngle;
+            
+            // Ошибка
+            let angleError = idealAngle - actualAngle;
+            while (angleError > Math.PI) angleError -= Math.PI*2;
+            while (angleError < -Math.PI) angleError += Math.PI*2;
+            shot.angleError = angleError;
+            
+            // Обновить калибровку башни (скилл)
+            if (this.tank && this.tank.skills) {
+                // Корректировка turretOffset на основе ошибки
+                this.tank.skills.calibration.turretOffset += angleError * 0.05;
+                this.tank.skills.calibration.turretOffset = Math.max(-0.3, Math.min(0.3, this.tank.skills.calibration.turretOffset));
+            }
+            
+            // Обновить упреждение
+            if (shot.targetVel && Vec2.len(shot.targetVel) > 0.1 && this.tank && this.tank.skills) {
+                const flightTimeSec = shot.flightTime / 1000; // секунды
+                const targetSpeed = Vec2.len(shot.targetVel);
+                
+                // Какое упреждение БЫЛО использовано
+                const usedLead = shot.predictedPos && shot.targetPos ? 
+                    Vec2.dist(shot.predictedPos, shot.targetPos) / targetSpeed / 60 : 0.3;
+                
+                // Какое упреждение ДОЛЖНО БЫЛО БЫТЬ
+                const correctLead = flightTimeSec;
+                
+                // Скорректировать lead
+                this.tank.skills.calibration.lead = 
+                    (this.tank.skills.calibration.lead || 0.3) * 0.8 + correctLead * 0.2;
+            }
+            
+            // Точность (чем меньше ошибка, тем выше бонус)
+            const accuracyBonus = 1 - Math.min(1, Math.abs(angleError) / 0.5);
+            
+            // ===== УСИЛИВАЕМ нейроны с учётом точности =====
+            if (shot.activeNeurons) {
+                for (const neuronId of shot.activeNeurons) {
+                    for (const w of this.weights) {
+                        if (w.from === neuronId || w.to === neuronId) {
+                            w.w *= (1 + 0.1 * accuracyBonus);
+                            w.w = Math.min(5, w.w);
+                        }
+                    }
+                }
+            }
+            
+            log(`🎯 Попадание: ошибка ${(angleError*180/Math.PI).toFixed(1)}°, точность ${(accuracyBonus*100).toFixed(0)}%`, 'hit');
+        }
+        
+        // Запомнить текущую цель
         this.shotMemory.currentTarget = {
             angle: shot.turretAngle,
             confidence: angleStats.hits / angleStats.total,
             lastHitTime: performance.now(),
-            context: { dist: shot.enemyDist }
+            context: { 
+                dist: shot.targetPos ? Vec2.dist(shot.fromPos, shot.targetPos) : null,
+                angleError: shot.angleError
+            }
         };
     }
 
@@ -830,6 +933,18 @@ class SpikingNeuralNetwork {
         const angleStats = this.shotMemory.patterns.byAngle.get(angleKey) || { hits: 0, total: 0 };
         angleStats.total++;
         this.shotMemory.patterns.byAngle.set(angleKey, angleStats);
+        
+        // ===== НОВОЕ: ослабляем нейроны при промахе =====
+        if (shot.activeNeurons) {
+            for (const neuronId of shot.activeNeurons) {
+                for (const w of this.weights) {
+                    if (w.from === neuronId || w.to === neuronId) {
+                        w.w *= 0.9;  // -10%
+                        w.w = Math.max(0.1, w.w);  // не ниже 0.1
+                    }
+                }
+            }
+        }
     }
 
     // ===== ДОБАВЛЕНО: Получить совет =====
@@ -844,7 +959,7 @@ class SpikingNeuralNetwork {
             const timeSinceHit = performance.now() - this.shotMemory.currentTarget.lastHitTime;
             if (timeSinceHit < 5000) {
                 suggestion.biasTurret = this.shotMemory.currentTarget.angle;
-                suggestion.biasShoot = true;  // ===== ИСПРАВЛЕНО: теперь true =====
+                suggestion.biasShoot = true;
                 suggestion.confidence = this.shotMemory.currentTarget.confidence;
             }
         }
@@ -852,7 +967,26 @@ class SpikingNeuralNetwork {
         return suggestion;
     }
 
+    // ===== НОВОЕ: Гомеостаз =====
+    _homeostasis() {
+        const now = performance.now();
+        const SILENCE_THRESHOLD = 3000; // 3 секунды в миллисекундах
+        
+        for (let i = 0; i < this.neurons.length; i++) {
+            const n = this.neurons[i];
+            
+            // Если нейрон слишком долго молчит (переводим время в мс)
+            if (now - n.lastSpikeTime * 16 > SILENCE_THRESHOLD) {
+                n.v += (Math.random() - 0.5) * 0.3;
+                n.bias += (Math.random() - 0.5) * 0.05;
+            }
+        }
+    }
+
     process(inputs, reward, epsilon = 0.5) {
+        // Гомеостаз
+        this._homeostasis();
+        
         this.spikeCount = 0;
         this.time++;
 
@@ -1094,6 +1228,7 @@ class SpikingNeuralNetwork {
         this.time = 0;
         this.spikeTimes.clear();
         this.lastAction = null;
+        // shotMemory НЕ сбрасывается!
     }
 }
 
@@ -1390,7 +1525,8 @@ class Skills {
         this.calibration = {
             turretOffset: (Math.random() - 0.5) * 0.03,
             moveSpeed: 0.9 + Math.random() * 0.2,
-            turnSpeed: 0.1 + Math.random() * 0.05
+            turnSpeed: 0.1 + Math.random() * 0.05,
+            lead: 0.3  // базовое упреждение в секундах
         };
     }
 
@@ -1527,7 +1663,7 @@ class AudioSystem {
 }
 
 // ============================================================================
-// SECTION 10: TANK CLASS - МИНИМАЛЬНЫЕ ИСПРАВЛЕНИЯ
+// SECTION 10: TANK CLASS - С ПРИЦЕЛИВАНИЕМ
 // ============================================================================
 
 class Tank {
@@ -1547,6 +1683,8 @@ class Tank {
         
         // ОРИГИНАЛ: 33 входа
         this.brain = new SpikingNeuralNetwork(33, 64, 9);
+        this.brain.tank = this;  // связь для калибровки
+        
         this.worldModel = new WorldModel();
         this.instincts = new Instincts();
         this.strategies = new Strategies(this.worldModel);
@@ -1571,6 +1709,12 @@ class Tank {
         this.lastDealtDamage = 0;
         this.shotCounter = 0;
         this.enemy = null;
+        
+        // ===== НОВОЕ: для прицеливания =====
+        this.targetPos = null;
+        this.targetVel = null;
+        this.predictedPos = null;
+        this.targetTurretAngle = null;
     }
 
     getSensors(enemy, worldW, worldH) {
@@ -1661,7 +1805,7 @@ class Tank {
         ];
     }
 
-    takeDamage(amount, attacker) {
+    takeDamage(amount, attacker, hitPos) {
         if (!this.alive) return;
         
         const actualDamage = Math.max(0, Math.min(amount, this.hp));
@@ -1675,7 +1819,7 @@ class Tank {
             attacker.lastDealtDamage = actualDamage;
             
             if (attacker.lastShotId) {
-                attacker.brain.observeHit(attacker.lastShotId);
+                attacker.brain.observeHit(attacker.lastShotId, hitPos);
             }
         }
         
@@ -1685,7 +1829,7 @@ class Tank {
                 attacker.stats.kills++;
                 
                 if (attacker.lastShotId) {
-                    attacker.brain.observeHit(attacker.lastShotId);
+                    attacker.brain.observeHit(attacker.lastShotId, hitPos);
                 }
             }
             
@@ -1709,6 +1853,37 @@ class Tank {
         this.frameCount = time;
         this.worldModel.update(time);
         
+        // ===== НОВОЕ: расчёт прицеливания =====
+        if (enemy && enemy.alive) {
+            // Базовая позиция цели
+            this.targetPos = {...enemy.pos};
+            this.targetVel = enemy.vel ? {...enemy.vel} : {x:0, y:0};
+            
+            // Упреждение (learned parameter)
+            const leadTime = this.skills.calibration.lead || 0.3; // секунды
+            const leadFrames = leadTime * 60; // в кадрах
+            
+            this.predictedPos = {
+                x: this.targetPos.x + this.targetVel.x * leadFrames,
+                y: this.targetPos.y + this.targetVel.y * leadFrames
+            };
+            
+            // Рассчёт целевого угла башни (относительно корпуса)
+            const dx = this.predictedPos.x - this.pos.x;
+            const dy = this.predictedPos.y - this.pos.y;
+            const worldAngle = Math.atan2(dy, dx);
+            this.targetTurretAngle = worldAngle - this.angle;
+            
+            // Нормализация
+            while (this.targetTurretAngle > Math.PI) this.targetTurretAngle -= Math.PI*2;
+            while (this.targetTurretAngle < -Math.PI) this.targetTurretAngle += Math.PI*2;
+        } else {
+            this.targetPos = null;
+            this.targetVel = null;
+            this.predictedPos = null;
+            this.targetTurretAngle = null;
+        }
+        
         const inputs = this.getSensors(enemy, worldW, worldH);
         
         let reward = this.calcReward(enemy);
@@ -1724,10 +1899,19 @@ class Tank {
         
         if (this.lastShot) {
             this.brain.rememberShot(this.lastShot.id, {
-                turretAngle: this.turretAngle,
+                tankPos: {...this.pos},
                 tankAngle: this.angle,
+                turretAngle: this.turretAngle,
+                barrelAngle: this.barrelAngle,
+                targetPos: this.targetPos,
+                targetVel: this.targetVel,
+                predictedPos: this.predictedPos,
+                targetTurretAngle: this.targetTurretAngle,
                 enemyDist: enemy ? Vec2.dist(this.pos, enemy.pos) : null,
-                enemyVel: enemy?.vel
+                enemyVel: enemy?.vel,
+                activeNeurons: this.brain.getActiveNeurons(),
+                motorCommands: this.brain.getMotorCommands(),
+                strategy: this.currentStrategy?.name
             });
             
             this.worldModel.recordShot({
@@ -1763,10 +1947,33 @@ class Tank {
         if (turnL > 0.4 + noise) this.angle -= 0.07 * moveCalibration.turnSpeed;
         if (turnR > 0.4 + noise) this.angle += 0.07 * moveCalibration.turnSpeed;
         
-        // Башня с оффсетом
-        const turretAmount = 0.09 * (1 + moveCalibration.turretOffset);
-        if (turretL > 0.4 + noise) this.turretAngle -= turretAmount;
-        if (turretR > 0.4 + noise) this.turretAngle += turretAmount;
+        // ===== НОВОЕ: принудительное прицеливание поверх нейросети =====
+        if (this.targetTurretAngle !== null && this.enemy?.alive) {
+            // Текущий угол башни
+            const currentTurret = this.turretAngle;
+            
+            // Ошибка
+            let error = this.targetTurretAngle - currentTurret;
+            while (error > Math.PI) error -= Math.PI*2;
+            while (error < -Math.PI) error += Math.PI*2;
+            
+            // Максимальная скорость поворота
+            const maxTurn = 0.15;
+            const turn = Math.max(-maxTurn, Math.min(maxTurn, error * 0.3));
+            
+            // Применить поворот (поверх выходов нейросети)
+            this.turretAngle += turn;
+            
+            // Лог для отладки (редко)
+            if (Math.abs(error) > 0.1 && Math.random() < 0.01) {
+                log(`🎯 Целюсь: ${(this.targetTurretAngle*180/Math.PI).toFixed(0)}°, ошибка ${(error*180/Math.PI).toFixed(0)}°`, 'trace');
+            }
+        } else {
+            // Башня с оффсетом (обычное управление)
+            const turretAmount = 0.09 * (1 + moveCalibration.turretOffset);
+            if (turretL > 0.4 + noise) this.turretAngle -= turretAmount;
+            if (turretR > 0.4 + noise) this.turretAngle += turretAmount;
+        }
         
         // ===== ИСПОЛЬЗОВАТЬ BRAIN SUGGESTION =====
         const brainSuggestion = this.brain.getSuggestion({
@@ -1775,12 +1982,13 @@ class Tank {
             turretAngle: this.turretAngle
         });
         
-        if (brainSuggestion.biasTurret !== null) {
+        // Дополнительная коррекция от мозга
+        if (brainSuggestion.biasTurret !== null && !this.targetTurretAngle) {
             const error = brainSuggestion.biasTurret - this.turretAngle;
             if (error > 0.1) {
-                this.turretAngle += turretAmount * 0.3 * brainSuggestion.confidence;
+                this.turretAngle += 0.09 * 0.3 * brainSuggestion.confidence;
             } else if (error < -0.1) {
-                this.turretAngle -= turretAmount * 0.3 * brainSuggestion.confidence;
+                this.turretAngle -= 0.09 * 0.3 * brainSuggestion.confidence;
             }
         }
         
@@ -1847,8 +2055,12 @@ class Tank {
             id: shotId,
             from: { ...this.pos },
             angle: angle,
-            lead: 5,
-            context: null
+            lead: this.skills.calibration.lead || 0.3,
+            context: {
+                targetPos: this.targetPos,
+                predictedPos: this.predictedPos,
+                targetVel: this.targetVel
+            }
         };
     }
 
@@ -1979,6 +2191,27 @@ class Tank {
                     ctx.stroke();
                 }
             }
+            
+            // ===== НОВОЕ: отображение прицела =====
+            if (this.predictedPos) {
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(
+                    this.predictedPos.x - cam.x,
+                    this.predictedPos.y - cam.y,
+                    10,
+                    0, Math.PI * 2
+                );
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(this.predictedPos.x - cam.x - 15, this.predictedPos.y - cam.y);
+                ctx.lineTo(this.predictedPos.x - cam.x + 15, this.predictedPos.y - cam.y);
+                ctx.moveTo(this.predictedPos.x - cam.x, this.predictedPos.y - cam.y - 15);
+                ctx.lineTo(this.predictedPos.x - cam.x, this.predictedPos.y - cam.y + 15);
+                ctx.stroke();
+            }
         }
 
         ctx.save();
@@ -2106,6 +2339,10 @@ class Tank {
         this.lastReceivedDamage = 0;
         this.lastDealtDamage = 0;
         this.shotCounter = 0;
+        this.targetPos = null;
+        this.targetVel = null;
+        this.predictedPos = null;
+        this.targetTurretAngle = null;
     }
 
     getSerializable() {
@@ -2236,7 +2473,7 @@ function update(dt) {
 
             const dist = Vec2.dist(p.pos, tank.pos);
             if (dist < tank.radius + 5) {
-                tank.takeDamage(p.dmg, p.owner);
+                tank.takeDamage(p.dmg, p.owner, {...p.pos});
                 hit = true;
                 
                 if (game.particles.enabled) {
