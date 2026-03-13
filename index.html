@@ -258,7 +258,7 @@
 <script>
 /**
  * ============================================================================
- * NEURAL TANK COMBAT v7.2 - ПОЛНАЯ ВЕРСИЯ С ПРИЦЕЛИВАНИЕМ И ОБУЧЕНИЕМ
+ * NEURAL TANK COMBAT v7.2 - ГИБРИДНАЯ ВЕРСИЯ (Сеть + Калибровка)
  * ============================================================================
  */
 
@@ -874,16 +874,17 @@ class SpikingNeuralNetwork {
                 // Корректировка turretOffset на основе ошибки
                 this.tank.skills.calibration.turretOffset += angleError * 0.05;
                 this.tank.skills.calibration.turretOffset = Math.max(-0.3, Math.min(0.3, this.tank.skills.calibration.turretOffset));
+                
+                // Уверенность калибровки растёт при успехе
+                if (Math.abs(angleError) < 0.1) {
+                    this.tank.skills.calibration.confidence = Math.min(1, (this.tank.skills.calibration.confidence || 0.5) + 0.01);
+                }
             }
             
             // Обновить упреждение
             if (shot.targetVel && Vec2.len(shot.targetVel) > 0.1 && this.tank && this.tank.skills) {
                 const flightTimeSec = shot.flightTime / 1000; // секунды
                 const targetSpeed = Vec2.len(shot.targetVel);
-                
-                // Какое упреждение БЫЛО использовано
-                const usedLead = shot.predictedPos && shot.targetPos ? 
-                    Vec2.dist(shot.predictedPos, shot.targetPos) / targetSpeed / 60 : 0.3;
                 
                 // Какое упреждение ДОЛЖНО БЫЛО БЫТЬ
                 const correctLead = flightTimeSec;
@@ -1517,7 +1518,7 @@ class Strategies {
 }
 
 // ============================================================================
-// SECTION 8.4: SKILLS (LOW LEVEL EXECUTORS)
+// SECTION 8.4: SKILLS (LOW LEVEL EXECUTORS) - РАСШИРЕННАЯ ВЕРСИЯ
 // ============================================================================
 
 class Skills {
@@ -1526,7 +1527,8 @@ class Skills {
             turretOffset: (Math.random() - 0.5) * 0.03,
             moveSpeed: 0.9 + Math.random() * 0.2,
             turnSpeed: 0.1 + Math.random() * 0.05,
-            lead: 0.3  // базовое упреждение в секундах
+            lead: 0.3,  // базовое упреждение в секундах
+            confidence: 0.5  // уверенность калибровки
         };
     }
 
@@ -1663,7 +1665,7 @@ class AudioSystem {
 }
 
 // ============================================================================
-// SECTION 10: TANK CLASS - С ПРИЦЕЛИВАНИЕМ
+// SECTION 10: TANK CLASS - ГИБРИДНАЯ ВЕРСИЯ
 // ============================================================================
 
 class Tank {
@@ -1935,6 +1937,7 @@ class Tank {
         // ===== ИСПОЛЬЗОВАТЬ SKILLS =====
         const moveCalibration = this.skills.calibration;
         
+        // Движение
         if (fwd > 0.4 + noise) {
             this.vel.x += forwardDir.x * 0.4 * moveCalibration.moveSpeed;
             this.vel.y += forwardDir.y * 0.4 * moveCalibration.moveSpeed;
@@ -1947,42 +1950,38 @@ class Tank {
         if (turnL > 0.4 + noise) this.angle -= 0.07 * moveCalibration.turnSpeed;
         if (turnR > 0.4 + noise) this.angle += 0.07 * moveCalibration.turnSpeed;
         
-        // ===== НОВОЕ: принудительное прицеливание поверх нейросети =====
-        if (this.targetTurretAngle !== null && this.enemy?.alive) {
-            // Текущий угол башни
-            const currentTurret = this.turretAngle;
-            
-            // Ошибка
-            let error = this.targetTurretAngle - currentTurret;
-            while (error > Math.PI) error -= Math.PI*2;
-            while (error < -Math.PI) error += Math.PI*2;
-            
-            // Максимальная скорость поворота
-            const maxTurn = 0.15;
-            const turn = Math.max(-maxTurn, Math.min(maxTurn, error * 0.3));
-            
-            // Применить поворот (поверх выходов нейросети)
-            this.turretAngle += turn;
-            
-            // Лог для отладки (редко)
-            if (Math.abs(error) > 0.1 && Math.random() < 0.01) {
-                log(`🎯 Целюсь: ${(this.targetTurretAngle*180/Math.PI).toFixed(0)}°, ошибка ${(error*180/Math.PI).toFixed(0)}°`, 'trace');
-            }
-        } else {
-            // Башня с оффсетом (обычное управление)
-            const turretAmount = 0.09 * (1 + moveCalibration.turretOffset);
-            if (turretL > 0.4 + noise) this.turretAngle -= turretAmount;
-            if (turretR > 0.4 + noise) this.turretAngle += turretAmount;
+        // ===== ГИБРИДНОЕ УПРАВЛЕНИЕ БАШНЕЙ =====
+        // 1. Что предлагает сеть
+        const brainTurret = (turretR - turretL) * 0.09;
+        
+        // 2. Уверенность сети (дофамин + статистика)
+        const brainConfidence = Math.min(1, 
+            (this.brain.dopamine.level || 0) * 2 + 
+            (this.brain.shotMemory.stats.totalHits / 50)
+        );
+        
+        // 3. Калиброванное прицеливание (если есть цель)
+        let calibratedTurret = 0;
+        if (this.targetTurretAngle !== null) {
+            const error = this.targetTurretAngle - this.turretAngle;
+            calibratedTurret = Math.tanh(error * 2) * 0.1;
         }
         
-        // ===== ИСПОЛЬЗОВАТЬ BRAIN SUGGESTION =====
+        // 4. Вес калибровки падает с ростом уверенности сети
+        const calibrationWeight = Math.max(0.1, 1 - brainConfidence * 0.8);
+        const brainWeight = 1 - calibrationWeight;
+        
+        // 5. Итоговый поворот (гибрид)
+        const totalTurret = brainTurret * brainWeight + calibratedTurret * calibrationWeight;
+        this.turretAngle += totalTurret;
+        
+        // 6. Дополнительная коррекция от brain suggestion (если есть)
         const brainSuggestion = this.brain.getSuggestion({
             enemyDist: this.lastDist,
             enemyVel: this.enemy?.vel,
             turretAngle: this.turretAngle
         });
         
-        // Дополнительная коррекция от мозга
         if (brainSuggestion.biasTurret !== null && !this.targetTurretAngle) {
             const error = brainSuggestion.biasTurret - this.turretAngle;
             if (error > 0.1) {
@@ -1992,9 +1991,18 @@ class Tank {
             }
         }
         
+        // 7. Лог режима (редко)
+        if (Math.random() < 0.005) {
+            const mode = brainConfidence > 0.7 ? '🧠 СЕТЬ' : 
+                        brainConfidence > 0.3 ? '🔄 ГИБРИД' : '⚙️ КАЛИБРОВКА';
+            log(`${mode} | Уверенность: ${(brainConfidence*100).toFixed(0)}%`, 'trace');
+        }
+        
+        // Ствол
         if (barrelUp > 0.4 + noise) this.barrelAngle = Math.min(0.5, this.barrelAngle + 0.05);
         if (barrelDown > 0.4 + noise) this.barrelAngle = Math.max(-0.3, this.barrelAngle - 0.05);
 
+        // Выстрел
         let shouldShoot = shoot > 0.5 && this.shootCD <= 0;
         if (brainSuggestion.biasShoot && Math.random() < brainSuggestion.confidence * 0.3) {
             shouldShoot = true;
@@ -2290,6 +2298,17 @@ class Tank {
                 this.pos.y - cam.y - 70
             );
         }
+        
+        // ===== НОВОЕ: индикатор режима управления =====
+        const brainConf = Math.min(1, 
+            (this.brain.dopamine.level || 0) * 2 + 
+            (this.brain.shotMemory.stats.totalHits / 50)
+        );
+        const modeColor = brainConf > 0.7 ? '#00ff88' : brainConf > 0.3 ? '#ffaa00' : '#ff3366';
+        const modeText = brainConf > 0.7 ? 'NEURAL' : brainConf > 0.3 ? 'HYBRID' : 'CALIB';
+        
+        ctx.fillStyle = modeColor;
+        ctx.fillText(`🤖 ${modeText} ${(brainConf*100).toFixed(0)}%`, this.pos.x - cam.x - 40, this.pos.y - cam.y - 80);
     }
 
     darkenColor(color, amount) {
