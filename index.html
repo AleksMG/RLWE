@@ -47,7 +47,8 @@
         @keyframes glow {
             0%, 100% { box-shadow: 0 0 20px rgba(0,255,136,0.5); }
             50% { box-shadow: 0 0 40px rgba(0,255,136,0.8); }
-        }        .panel {
+        }
+        .panel {
             background: rgba(10, 10, 20, 0.95);
             border: 1px solid rgba(0,255,136,0.3);
             padding: 12px;
@@ -96,7 +97,8 @@
             background: linear-gradient(180deg, rgba(0,255,136,0.3), rgba(0,150,100,0.5));
             box-shadow: 0 0 25px rgba(0,255,136,0.6);
             transform: translateY(-2px);
-        }        button:active { transform: translateY(1px); }
+        }
+        button:active { transform: translateY(1px); }
         button:disabled { border-color: #333; color: #333; background: rgba(0,0,0,0.6); cursor: not-allowed; }
         .stat-row {
             display: flex;
@@ -145,7 +147,8 @@
         #game-area { flex-grow: 1; position: relative; }
         canvas { display: block; width: 100%; height: 100%; }
         .loading {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;            background: rgba(0,0,0,0.98);
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.98);
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             z-index: 1000;
@@ -194,7 +197,8 @@
             <button onclick="SYS.toggleVision()">VISION SYSTEM: <span id="vision-val">ACTIVE</span></button>
             <button onclick="SYS.toggleParticles()">PARTICLES: <span id="particles-val">ACTIVE</span></button>
             <button onclick="SYS.emergencyBoost()">EMERGENCY DOPAMINE BOOST</button>
-            <button onclick="SYS.saveModel()">SAVE NEURAL MODEL</button>            <button onclick="SYS.loadModel()">LOAD NEURAL MODEL</button>
+            <button onclick="SYS.saveModel()">SAVE NEURAL MODEL</button>
+            <button onclick="SYS.loadModel()">LOAD NEURAL MODEL</button>
         </div>
 
         <div class="panel">
@@ -260,29 +264,11 @@
 /**
  * ============================================================================
  * NEURAL TANK COMBAT v7.2 - PROFESSIONAL EDITION WITH WORLD MODEL
- * 
- * CHANGES FROM v7.1:
- * 1. WORLD MODEL INTEGRATION: 
- *    - The World Model now provides "Inference Inputs" to the SNN.
- *    - It tracks enemy position history, velocity, and intent.
- *    - It provides a "Predicted Position" input vector to the SNN, allowing 
- *      the SNN to lead targets or anticipate corners.
- * 
- * 2. INSTINCTS & STRATEGIES:
- *    - Preserved as "Context Generators".
- *    - They do NOT control the tank directly.
- *    - Instead, they generate a "Goal Vector" (e.g., [Survive, Kill, Explore]).
- *    - This Goal Vector is fed into the SNN Inputs, teaching the brain 
- *      context-dependent behavior.
- * 
- * 3. CODE INTEGRITY:
- *    - All physics, rendering, and SNN logic preserved and expanded.
- *    - No code deletion or simplification.
  * ============================================================================
  */
 
 // ============================================================================
-// SECTION 1: VECTOR MATHEMATICS LIBRARY
+// SECTION 1: VECTOR MATHEMATICS LIBRARY - ИСПРАВЛЕНО
 // ============================================================================
 
 const Vec2 = {
@@ -292,14 +278,15 @@ const Vec2 = {
     scale: function(v, s) { return { x: v.x * s, y: v.y * s }; },
     dot: function(a, b) { return a.x * b.x + a.y * b.y; },
     len: function(v) { return Math.sqrt(v.x * v.x + v.y * v.y); },
-    lenSq: function(v) { return v.x * v.x + v.y * v.y; },    norm: function(v) {
+    lenSq: function(v) { return v.x * v.x + v.y * v.y; },
+    norm: function(v) {
         const l = Math.sqrt(v.x * v.x + v.y * v.y);
         return l > 0.0001 ? { x: v.x / l, y: v.y / l } : { x: 0, y: 0 };
     },
     dist: function(a, b) { return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2); },
     distSq: function(a, b) { return (a.x - b.x) ** 2 + (a.y - b.y) ** 2; },
     angle: function(v) { return Math.atan2(v.y, v.x); },
-    fromAngle: function(a) { return { x: Math.cos(a), y: Math.sin(a); }; },
+    fromAngle: function(a) { return { x: Math.cos(a), y: Math.sin(a) }; }, // ИСПРАВЛЕНО: была пропущена скобка
     angleDiff: function(a1, a2) {
         let diff = a2 - a1;
         while (diff > Math.PI) diff -= Math.PI * 2;
@@ -341,8 +328,13 @@ const colorCache = new ColorCache();
 
 class LogBuffer {
     constructor(maxSize = 100) {
-        this.buffer = [];        this.maxSize = maxSize;
-        this.element = document.getElementById('log');
+        this.buffer = [];
+        this.maxSize = maxSize;
+        this.element = null; // Будет установлено позже
+    }
+
+    setElement(element) {
+        this.element = element;
     }
 
     add(msg, type = 'system') {
@@ -390,7 +382,7 @@ class LearningCurve {
         this.maxPoints = maxPoints;
         this.rewards = [];
         this.epochs = [];
-                if (this.canvas) {
+        if (this.canvas) {
             this.resize();
         }
     }
@@ -439,7 +431,7 @@ class LearningCurve {
         const maxReward = Math.max(...this.rewards, 0.1);
         const minReward = Math.min(...this.rewards, 0);
         const range = maxReward - minReward || 1;
-                this.ctx.strokeStyle = '#00ff88';
+        this.ctx.strokeStyle = '#00ff88';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         
@@ -500,7 +492,6 @@ class ParticleSystem {
     emit(x, y, config) {
         if (!this.enabled) return;
         if (this.particles.length >= this.maxParticles) {
-            // Remove oldest particle
             this.particles.shift();
         }
 
@@ -537,7 +528,8 @@ class ParticleSystem {
 
     emitTrail(x, y, angle, color) {
         this.emit(x, y, {
-            vel: Vec2.scale(Vec2.fromAngle(angle + Math.PI + (Math.random() - 0.5) * 0.5), 2),            life: 0.3,
+            vel: Vec2.scale(Vec2.fromAngle(angle + Math.PI + (Math.random() - 0.5) * 0.5), 2),
+            life: 0.3,
             size: 2,
             color: color,
             friction: 0.9,
@@ -582,11 +574,24 @@ class Vision360 {
     constructor(tank) {
         this.tank = tank;
         this.radius = 300;
-        this.fov = Math.PI * 2; // 360 degrees
+        this.fov = Math.PI * 2;
     }
 
     detect(enemy) {
-        const dx = enemy.pos.x - this.tank.pos.x;        const dy = enemy.pos.y - this.tank.pos.y;
+        if (!enemy || !enemy.alive) {
+            return { 
+                visible: false, 
+                dist: 1000, 
+                dx: 0, 
+                dy: 0, 
+                angle: 0,
+                angleDiff: 0,
+                inPeripheral: false 
+            };
+        }
+
+        const dx = enemy.pos.x - this.tank.pos.x;
+        const dy = enemy.pos.y - this.tank.pos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist > this.radius || !enemy.alive) {
@@ -605,11 +610,10 @@ class Vision360 {
         const turretAngle = this.tank.angle + this.tank.turretAngle;
         let angleDiff = enemyAngle - turretAngle;
 
-        // Normalize angle
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-        const inPeripheralVision = Math.abs(angleDiff) < 1.2; // ~70 degrees
+        const inPeripheralVision = Math.abs(angleDiff) < 1.2;
 
         return {
             visible: true,
@@ -634,8 +638,9 @@ class DopamineSystem {
         this.peak = 0;
         this.baseLevel = 0;
         this.decayRate = 0.985;
-        this.eligibilityTraces = new Map(); // For action-specific traces
-        this.lastAction = null;        this.actionTime = 0;
+        this.eligibilityTraces = new Map();
+        this.lastAction = null;
+        this.actionTime = 0;
         this.traceDecay = 0.95;
     }
 
@@ -643,7 +648,6 @@ class DopamineSystem {
         this.level = Math.min(1.0, this.level + amount);
         this.peak = Math.max(this.peak, this.level);
         
-        // Update eligibility trace for the action
         if (action !== null) {
             const trace = this.eligibilityTraces.get(action) || 0;
             this.eligibilityTraces.set(action, Math.min(1.0, trace + amount));
@@ -660,7 +664,6 @@ class DopamineSystem {
         this.level *= this.decayRate;
         this.peak *= 0.99;
         
-        // Decay eligibility traces
         for (const [action, trace] of this.eligibilityTraces.entries()) {
             const newTrace = trace * this.traceDecay;
             if (newTrace < 0.01) {
@@ -685,6 +688,7 @@ class DopamineSystem {
         this.lastAction = null;
     }
 }
+
 // ============================================================================
 // SECTION 8: SPIKING NEURAL NETWORK WITH PROPER STDP
 // ============================================================================
@@ -700,7 +704,7 @@ class SpikingNeuralNetwork {
         this.spikeCount = 0;
         this.learningRate = 0.15;
         this.time = 0;
-        this.spikeTimes = new Map(); // Store last spike times for STDP
+        this.spikeTimes = new Map();
         this._initialize();
     }
 
@@ -722,23 +726,22 @@ class SpikingNeuralNetwork {
                 decay: layer === 'input' ? 0.7 :
                     layer === 'hidden' ? 0.88 : 0.85,
                 bias: (Math.random() - 0.5) * 0.3,
-                refractory: 0, // Refractory period counter
+                refractory: 0,
                 lastSpikeTime: -1000
             });
         }
 
-        // Input to hidden connections
         for (let i = 0; i < this.inputCount; i++) {
             for (let h = 0; h < this.hiddenCount; h++) {
                 this.weights.push({
                     from: i,
                     to: this.inputCount + h,
-                    w: (Math.random() - 0.5) * 3,                    lastChange: 0
+                    w: (Math.random() - 0.5) * 3,
+                    lastChange: 0
                 });
             }
         }
 
-        // Hidden to output connections
         for (let h = 0; h < this.hiddenCount; h++) {
             for (let o = 0; o < this.outputCount; o++) {
                 this.weights.push({
@@ -750,7 +753,6 @@ class SpikingNeuralNetwork {
             }
         }
 
-        // Recurrent hidden connections (with sparsity)
         for (let h1 = 0; h1 < this.hiddenCount; h1++) {
             for (let h2 = 0; h2 < this.hiddenCount; h2++) {
                 if (h1 !== h2 && Math.random() < 0.25) {
@@ -769,21 +771,16 @@ class SpikingNeuralNetwork {
         this.spikeCount = 0;
         this.time++;
 
-        // Update dopamine with temporal difference
         if (reward > 0.01) {
             this.dopamine.spike(reward * 0.3, this.lastAction);
         }
         this.dopamine.update();
 
         const dopamineMod = this.dopamine.getModulation();
-        
-        // Update exploration rate
         const explorationNoise = epsilon * 0.2;
 
-        // Process input layer
         for (let i = 0; i < this.inputCount; i++) {
-            const n = this.neurons[i];            
-            // Apply refractory period
+            const n = this.neurons[i];
             if (n.refractory > 0) {
                 n.refractory--;
                 n.out = 0;
@@ -801,7 +798,6 @@ class SpikingNeuralNetwork {
             }
         }
 
-        // Process hidden layer
         for (let h = 0; h < this.hiddenCount; h++) {
             const idx = this.inputCount + h;
             const n = this.neurons[idx];
@@ -831,7 +827,7 @@ class SpikingNeuralNetwork {
             }
         }
 
-        // Process output layer        for (let o = 0; o < this.outputCount; o++) {
+        for (let o = 0; o < this.outputCount; o++) {
             const idx = this.inputCount + this.hiddenCount + o;
             const n = this.neurons[idx];
             
@@ -860,18 +856,15 @@ class SpikingNeuralNetwork {
             }
         }
 
-        // Apply STDP learning if reward is significant
         if (Math.abs(reward) > 0.001) {
             this._applySTDP(reward, dopamineMod);
         }
 
-        // Collect outputs
         const outputs = [];
         for (let o = 0; o < this.outputCount; o++) {
             outputs.push(this.neurons[this.inputCount + this.hiddenCount + o].out);
         }
         
-        // Store the action with highest activation
         let maxActivation = -Infinity;
         let maxAction = 0;
         for (let i = 0; i < outputs.length; i++) {
@@ -887,20 +880,18 @@ class SpikingNeuralNetwork {
     _spike(neuronId) {
         const n = this.neurons[neuronId];
         n.out = 1;
-        n.v = n.v - n.threshold; // Keep residual potential
+        n.v = n.v - n.threshold;
         n.trace = 1.0;
-        n.refractory = 3; // 3 frames refractory period
+        n.refractory = 3;
         n.lastSpikeTime = this.time;
         
-        // Store spike time for STDP
         this.spikeTimes.set(neuronId, this.time);
-        
         this.spikeCount++;
     }
 
     _applySTDP(reward, dopamineMod) {
         const lr = this.learningRate * (1 + dopamineMod * 0.5);
-        const timeWindow = 20; // Time window for STDP in frames
+        const timeWindow = 20;
 
         for (const w of this.weights) {
             const preNeuron = this.neurons[w.from];
@@ -909,27 +900,22 @@ class SpikingNeuralNetwork {
             const preSpikeTime = this.spikeTimes.get(w.from) || -1000;
             const postSpikeTime = this.spikeTimes.get(w.to) || -1000;
             
-            // Check if there was a spike pair within time window
             if (Math.abs(this.time - preSpikeTime) < timeWindow && 
                 Math.abs(this.time - postSpikeTime) < timeWindow) {
                 
                 const timeDiff = postSpikeTime - preSpikeTime;
                 
-                // STDP rule
                 let dw;
                 if (timeDiff > 0) {
-                    // Post after pre - LTP
                     dw = lr * reward * Math.exp(-timeDiff / 10) * dopamineMod;
                 } else {
-                    // Pre after post - LTD
                     dw = -lr * 0.3 * Math.exp(timeDiff / 10) * (1 + dopamineMod * 0.2);
                 }
                 
-                // Apply weight change with bounds
                 w.w = Math.max(-5, Math.min(5, w.w + dw));
                 w.lastChange = this.time;
             }
-                        // Eligibility trace based learning
+            
             const eligibility = this.dopamine.getEligibility(w.to % this.outputCount);
             if (eligibility > 0.1 && preNeuron.trace > 0.3) {
                 w.w += lr * reward * eligibility * preNeuron.trace * 0.1;
@@ -944,6 +930,8 @@ class SpikingNeuralNetwork {
     }
 
     draw(ctx, w, h) {
+        if (!ctx) return;
+        
         ctx.fillStyle = 'rgba(0,0,0,0.95)';
         ctx.fillRect(0, 0, w, h);
 
@@ -951,7 +939,6 @@ class SpikingNeuralNetwork {
         const cw = w / cols;
         const ch = h / cols;
 
-        // Draw only the most significant weights (top 50)
         const significantWeights = this.weights
             .filter(w => Math.abs(w.w) > 0.5)
             .sort((a, b) => Math.abs(b.w) - Math.abs(a.w))
@@ -976,9 +963,9 @@ class SpikingNeuralNetwork {
             ctx.stroke();
         }
 
-        // Draw neurons
         for (let i = 0; i < this.neurons.length; i++) {
-            const n = this.neurons[i];            const x = (i % cols) * cw + cw / 2;
+            const n = this.neurons[i];
+            const x = (i % cols) * cw + cw / 2;
             const y = Math.floor(i / cols) * ch + ch / 2;
             const intensity = Math.min(1, n.trace + Math.abs(n.v) / 2);
 
@@ -1025,9 +1012,10 @@ class SpikingNeuralNetwork {
 class WorldModel {
     constructor() {
         this.memory = {
-            shots: [],        // History of shots taken
-            hits: [],         // History of hits received/dealt
-            sightings: [],    // History of enemy sightings            damage: []        // History of damage events
+            shots: [],
+            hits: [],
+            sightings: [],
+            damage: []
         };
         
         this.stats = {
@@ -1047,7 +1035,6 @@ class WorldModel {
         this.frameCount = 0;
     }
     
-    // Record a shot event
     recordShot(shot) {
         this.memory.shots.push({
             ...shot,
@@ -1061,7 +1048,6 @@ class WorldModel {
         this.updateStats(shot);
     }
     
-    // Record a hit event
     recordHit(hit) {
         this.memory.hits.push({
             ...hit,
@@ -1072,12 +1058,11 @@ class WorldModel {
             this.memory.hits.shift();
         }
         
-        // If we hit while enemy was invisible, update hypothesis
         if (!hit.enemyVisible) {
             this.buildHypothesisFromHit(hit);
         }
-    }    
-    // Record sighting of enemy
+    }
+    
     recordSighting(sighting) {
         this.memory.sightings.push({
             ...sighting,
@@ -1088,12 +1073,10 @@ class WorldModel {
             this.memory.sightings.shift();
         }
         
-        // Update hypothesis with exact data
         this.hypotheses.enemyPosition = sighting.enemyPos;
         this.hypotheses.enemyIntent = this.analyzeIntent(sighting);
         this.hypotheses.confidence = 1.0;
         
-        // Calculate velocity
         if (this.memory.sightings.length >= 2) {
             const curr = this.memory.sightings[this.memory.sightings.length - 1];
             const prev = this.memory.sightings[this.memory.sightings.length - 2];
@@ -1102,7 +1085,6 @@ class WorldModel {
         }
     }
     
-    // Record damage event
     recordDamage(damage) {
         this.memory.damage.push({
             ...damage,
@@ -1114,7 +1096,6 @@ class WorldModel {
         }
     }
     
-    // Update internal stats
     updateStats(shot) {
         if (!shot.context) return;
         
@@ -1125,12 +1106,11 @@ class WorldModel {
         
         this.stats.accuracyByDist[dist].total++;
         if (shot.hit) {
-            this.stats.accuracyByDist[dist].hits++;        }
+            this.stats.accuracyByDist[dist].hits++;
+        }
     }
     
-    // Build hypothesis from blind hit
     buildHypothesisFromHit(hit) {
-        // Estimate enemy position based on shot angle
         const ray = {
             from: hit.from,
             angle: hit.angle,
@@ -1154,7 +1134,6 @@ class WorldModel {
         }
     }
     
-    // Find evidence supporting hypothesis
     findCorroboratingEvidence(ray) {
         const evidence = [];
         const rayEnd = {
@@ -1162,7 +1141,6 @@ class WorldModel {
             y: ray.from.y + Math.sin(ray.angle) * ray.distance
         };
         
-        // Check recent sightings
         for (const sight of this.memory.sightings.slice(-10)) {
             const dist = Vec2.dist(sight.enemyPos, rayEnd);
             if (dist < 100) {
@@ -1173,8 +1151,8 @@ class WorldModel {
         return evidence;
     }
     
-    // Analyze enemy intent based on movement
-    analyzeIntent(sighting) {        const recent = this.memory.sightings
+    analyzeIntent(sighting) {
+        const recent = this.memory.sightings
             .filter(s => Math.abs(s.time - sighting.time) < 50)
             .slice(-5);
         
@@ -1193,7 +1171,6 @@ class WorldModel {
         return 'patrolling';
     }
     
-    // Predict future position
     predictPosition(timeDelta) {
         if (!this.hypotheses.enemyPosition) return null;
         
@@ -1216,16 +1193,15 @@ class WorldModel {
         };
     }
     
-    // Get current suggestion for the brain
     getSuggestion() {
         return {
             target: this.hypotheses.enemyPosition,
             confidence: this.hypotheses.confidence,
             intent: this.hypotheses.enemyIntent,
             predicted: this.predictPosition(10)
-        };    }
+        };
+    }
     
-    // Update frame counter
     update(frame) {
         this.frameCount = frame;
     }
@@ -1244,10 +1220,7 @@ class Instincts {
         };
     }
 
-    // Determine current goal based on sensors
     getGoal(sensors) {
-        // Priority: survival > killing > exploration
-        
         if (sensors.health < 30 && sensors.enemyVisible) {
             return this.goals.SURVIVE;
         }
@@ -1272,17 +1245,16 @@ class Strategies {
             FLANK: { name: 'FLANK', priority: 7 },
             AMBUSH: { name: 'AMBUSH', priority: 9 },
             RETREAT: { name: 'RETREAT', priority: 10 },
-            SCAN: { name: 'SCAN', priority: 5 },            INVESTIGATE: { name: 'INVESTIGATE', priority: 6 }
+            SCAN: { name: 'SCAN', priority: 5 },
+            INVESTIGATE: { name: 'INVESTIGATE', priority: 6 }
         };
         
         this.currentStrategy = null;
         this.strategyStartTime = 0;
-        this.minStrategyTime = 180; // 3 seconds at 60fps
+        this.minStrategyTime = 180;
     }
 
-    // Choose strategy based on goal and situation
     choose(goal, sensors, time) {
-        // If current strategy is still running
         if (this.currentStrategy && time - this.strategyStartTime < this.minStrategyTime) {
             return this.currentStrategy;
         }
@@ -1321,7 +1293,8 @@ class Strategies {
 // SECTION 8.4: SKILLS (LOW LEVEL EXECUTORS)
 // ============================================================================
 
-class Skills {    constructor() {
+class Skills {
+    constructor() {
         this.calibration = {
             turretOffset: (Math.random() - 0.5) * 0.03,
             moveSpeed: 0.9 + Math.random() * 0.2,
@@ -1365,22 +1338,21 @@ class Skills {    constructor() {
 }
 
 // ============================================================================
-// SECTION 9: AUDIO SYSTEM WITH STATE MANAGEMENT - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// SECTION 9: AUDIO SYSTEM - УПРОЩЕННАЯ ВЕРСИЯ ДЛЯ GitHub Pages
 // ============================================================================
 
 class AudioSystem {
     constructor() {
-        this.ctx = null;
         this.enabled = false;
-        this.pendingSounds = [];
+        this.ctx = null;
     }
 
     init() {
-        if (!this.ctx) {
+        if (!this.ctx && window.AudioContext) {
             try {
-                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.ctx = new AudioContext();
             } catch (e) {
-                console.warn('Web Audio API not supported');
+                console.warn('AudioContext not supported');
             }
         }
     }
@@ -1389,120 +1361,81 @@ class AudioSystem {
         this.enabled = true;
         this.init();
         
-        if (this.ctx) {
+        if (this.ctx && this.ctx.state === 'suspended') {
             try {
-                if (this.ctx.state === 'suspended') {
-                    await this.ctx.resume();
-                }
+                await this.ctx.resume();
             } catch (e) {
-                console.warn('Failed to resume audio context');
+                console.warn('Could not resume audio context');
                 this.enabled = false;
             }
         }
     }
 
-    async _playSound(type) {
-        if (!this.enabled || !this.ctx) return;
+    playShoot() {
+        if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
         
         try {
-            if (this.ctx.state === 'suspended') {
-                await this.ctx.resume();
-            }
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
             
-            if (this.ctx.state !== 'running') return;
+            osc.frequency.value = 150;
+            gain.gain.value = 0.1;
             
-            switch (type) {
-                case 'shoot':
-                    this._playShoot();
-                    break;
-                case 'hit':
-                    this._playHit();
-                    break;
-                case 'explosion':
-                    this._playExplosion();
-                    break;
-            }
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.1);
         } catch (e) {
-            console.warn('Audio play failed:', e);
+            console.warn('Audio play failed');
         }
-    }
-
-    _playShoot() {
-        if (!this.ctx) return;
-
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.12);
-    }
-
-    _playHit() {
-        if (!this.ctx) return;
-
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(280, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.15);
-    }
-
-    _playExplosion() {
-        if (!this.ctx) return;
-
-        const bufferSize = this.ctx.sampleRate * 0.5;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
-        }
-        const noise = this.ctx.createBufferSource();
-        const filter = this.ctx.createBiquadFilter();
-        const gain = this.ctx.createGain();
-
-        noise.buffer = buffer;
-        filter.type = 'lowpass';
-        filter.frequency.value = 700;
-        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
-
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.ctx.destination);
-        noise.start();
-    }
-
-    playShoot() {
-        this._playSound('shoot');
     }
 
     playHit() {
-        this._playSound('hit');
+        if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+        
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.value = 200;
+            gain.gain.value = 0.15;
+            
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.1);
+        } catch (e) {
+            console.warn('Audio play failed');
+        }
     }
 
     playExplosion() {
-        this._playSound('explosion');
+        if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+        
+        try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = 'sawtooth';
+            osc.frequency.value = 80;
+            gain.gain.value = 0.2;
+            
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.2);
+        } catch (e) {
+            console.warn('Audio play failed');
+        }
     }
 }
 
 // ============================================================================
-// SECTION 10: TANK CLASS WITH ENHANCED PHYSICS AND WORLD MODEL
+// SECTION 10: TANK CLASS
 // ============================================================================
 
 class Tank {
@@ -1520,19 +1453,13 @@ class Tank {
         this.radius = 28;
         this.mass = 10;
         
-        // Expanded Brain Input: Standard sensors + World Model Inference + Goal Vector
-        // Total inputs: 26 (base) + 4 (world model) + 3 (goals) = 33 inputs        this.brain = new SpikingNeuralNetwork(33, 64, 9); 
-        
-        // World model components
+        this.brain = new SpikingNeuralNetwork(33, 64, 9);
         this.worldModel = new WorldModel();
         this.instincts = new Instincts();
         this.strategies = new Strategies(this.worldModel);
         this.skills = new Skills();
-        
-        // Vision
         this.vision = new Vision360(this);
         
-        // Stats
         this.stats = { kills: 0, damage: 0, shots: 0, hits: 0 };
         this.shootCD = 0;
         this.lastEnemyHp = 100;
@@ -1543,14 +1470,10 @@ class Tank {
         this.lastDist = 1000;
         this.lastAction = null;
         this.actionHistory = [];
-        
-        // World model state
         this.lastShot = null;
         this.currentGoal = null;
         this.currentStrategy = null;
         this.frameCount = 0;
-        
-        // Damage tracking for proper hit registration
         this.lastReceivedDamage = 0;
         this.lastDealtDamage = 0;
     }
@@ -1558,31 +1481,26 @@ class Tank {
     getSensors(enemy, worldW, worldH) {
         const vision = this.vision.detect(enemy);
         
-        // Wall distances
         const wallLeft = this.pos.x / worldW;
         const wallRight = (worldW - this.pos.x) / worldW;
         const wallTop = this.pos.y / worldH;
         const wallBottom = (worldH - this.pos.y) / worldH;
         
-        // Movement sensors
         const speed = Vec2.len(this.vel);
         const posChange = Vec2.dist(this.pos, this.lastPos);
         const angleChange = Math.abs(this.angle - this.lastAngle);
 
-        // Update stuck detection
-        if (posChange < 0.5 && angleChange < 0.05) {            this.stuckFrames++;
+        if (posChange < 0.5 && angleChange < 0.05) {
+            this.stuckFrames++;
         } else {
             this.stuckFrames = Math.max(0, this.stuckFrames - 3);
         }
 
-        // Store last positions
         this.lastPos = { ...this.pos };
         this.lastAngle = this.angle;
 
-        // Get world model suggestion
         const suggestion = this.worldModel.getSuggestion();
         
-        // Get goal and strategy context
         const sensorsObj = {
             enemyVisible: vision.visible,
             enemyDist: vision.dist,
@@ -1593,14 +1511,11 @@ class Tank {
         const strategy = this.strategies.choose(goal, sensorsObj, this.frameCount);
         this.currentStrategy = strategy;
         
-        // One-hot encoding for goals
         const goalKill = goal.name === 'KILL' ? 1 : 0;
         const goalSurvive = goal.name === 'SURVIVE' ? 1 : 0;
         const goalExplore = goal.name === 'EXPLORE' ? 1 : 0;
 
-        // Enhanced sensor array (33 inputs)
         return [
-            // 1. Basic Vision (7 inputs)
             vision.visible ? 1 : 0,
             vision.inPeripheral ? 1 : 0,
             vision.distNorm || 0,
@@ -1608,87 +1523,60 @@ class Tank {
             vision.dx,
             vision.dy,
             enemy ? enemy.hp / 100 : 0,
-            
-            // 2. State (4 inputs)
             this.hp / 100,
             speed / 5,
             this.vel.x / 5,
             this.vel.y / 5,
-            
-            // 3. Position (4 inputs)
             wallLeft,
             wallRight,
             wallTop,
-            wallBottom,            
-            // 4. Status (4 inputs)
+            wallBottom,
             this.shootCD / 25,
             this.stuckFrames / 40,
             Math.tanh(this.barrelAngle * 2),
             Math.sin(Date.now() * 0.001) * 0.1,
-            
-            // 5. Orientation (2 inputs)
             Math.cos(Date.now() * 0.0013) * 0.1,
             this.angle / (Math.PI * 2),
-            
-            // 6. World Model Inference (4 inputs) - NEW!
-            // Provides the Brain with "Understanding" of the world
             suggestion ? suggestion.confidence : 0,
             suggestion && suggestion.target ? 1 : 0,
             suggestion && suggestion.intent === 'camping' ? 1 : 0,
             suggestion && suggestion.intent === 'fleeing' ? 1 : 0,
-            
-            // 7. Instinct Context (3 inputs) - NEW!
-            // Provides the Brain with "Motivation"
             goalKill,
             goalSurvive,
             goalExplore,
-            
-            // 8. Extra inputs preserved for compatibility or padding
             this.worldModel.memory.shots.length / 100,
             this.worldModel.memory.hits.length / 50
         ];
     }
 
-    // ========================================================================
-    // PROFESSIONAL FIX: takeDamage method - properly handles damage application
-    // ========================================================================
     takeDamage(amount, attacker) {
         if (!this.alive) return;
         
-        // Apply damage with bounds checking
         const actualDamage = Math.max(0, Math.min(amount, this.hp));
         this.hp = Math.max(0, this.hp - actualDamage);
         this.stats.damage += actualDamage;
         this.lastReceivedDamage = actualDamage;
         
-        // Update attacker statistics if valid
         if (attacker && attacker !== this && actualDamage > 0) {
             attacker.stats.hits++;
             attacker.stats.damage += actualDamage;
             attacker.lastDealtDamage = actualDamage;
         }
         
-        // Handle destruction        if (this.hp <= 0) {
+        if (this.hp <= 0) {
             this.alive = false;
             if (attacker && attacker !== this) {
                 attacker.stats.kills++;
             }
-            // Play explosion audio and particles
-            if (game.audio) {
-                game.audio.playExplosion();
-            }
+            if (game.audio) game.audio.playExplosion();
             if (game.particles && game.particles.enabled) {
                 game.particles.emitExplosion(this.pos.x, this.pos.y, this.color, 30);
             }
-            // Log the elimination
             const attackerName = attacker?.id === 0 ? 'ALPHA' : attacker?.id === 1 ? 'BETA' : 'UNKNOWN';
             const targetName = this.id === 0 ? 'ALPHA' : this.id === 1 ? 'BETA' : 'UNKNOWN';
             log(`${attackerName} eliminated ${targetName}!`, 'kill');
         } else {
-            // Play hit sound for non-lethal damage
-            if (game.audio) {
-                game.audio.playHit();
-            }
+            if (game.audio) game.audio.playHit();
         }
     }
 
@@ -1698,7 +1586,6 @@ class Tank {
         this.frameCount = time;
         this.worldModel.update(time);
         
-        // 1. Get sensors (includes World Model inference)
         const sensors = {
             enemyVisible: this.vision.detect(enemy).visible,
             enemyDist: enemy ? Vec2.dist(this.pos, enemy.pos) : 1000,
@@ -1707,8 +1594,7 @@ class Tank {
             enemyVel: enemy ? Vec2.len(enemy.vel) : 0
         };
         
-        // 2. Record sighting if enemy visible
-        if (enemy?.visible || (enemy && enemy.alive && Vec2.dist(this.pos, enemy.pos) < this.vision.radius)) {
+        if (enemy?.alive && Vec2.dist(this.pos, enemy.pos) < this.vision.radius) {
             this.worldModel.recordSighting({
                 enemyPos: { ...enemy.pos },
                 enemyVel: { ...enemy.vel },
@@ -1716,26 +1602,18 @@ class Tank {
             });
         }
         
-        // 3. Get inputs for Brain
-        const inputs = this.getSensors(enemy, worldW, worldH);        
-        // 4. Calculate Reward
+        const inputs = this.getSensors(enemy, worldW, worldH);
         let reward = this.calcReward(enemy);
         
-        // 5. Process Brain (Main Decision Loop)
         const epsilon = Math.max(0.05, 1.0 - game.epoch * 0.001);
         const outputs = this.brain.process(inputs, reward, epsilon);
         
-        // 6. Actuate based on Brain Outputs
         this.actuate(outputs, epsilon);
         
-        // ====================================================================
-        // PROFESSIONAL FIX: Decrement shoot cooldown every frame
-        // ====================================================================
         if (this.shootCD > 0) {
             this.shootCD--;
         }
         
-        // 7. Record shot if fired
         if (this.lastShot) {
             const hit = this.lastDealtDamage > 0;
             this.worldModel.recordShot({
@@ -1753,10 +1631,9 @@ class Tank {
                 });
             }
             this.lastShot = null;
-            this.lastDealtDamage = 0; // Reset for next shot tracking
+            this.lastDealtDamage = 0;
         }
         
-        // 8. Physics
         this.applyPhysics(worldW, worldH);
     }
 
@@ -1766,7 +1643,8 @@ class Tank {
         const noise = epsilon * 0.2;
         const forwardDir = { x: Math.cos(this.angle), y: Math.sin(this.angle) };
 
-        if (fwd > 0.4 + noise) {            this.vel.x += forwardDir.x * 0.4;
+        if (fwd > 0.4 + noise) {
+            this.vel.x += forwardDir.x * 0.4;
             this.vel.y += forwardDir.y * 0.4;
         }
         if (back > 0.4 + noise) {
@@ -1815,16 +1693,16 @@ class Tank {
                 y: this.pos.y + Math.sin(angle) * 38
             },
             vel: {
-                x: Math.cos(angle) * 16,                y: Math.sin(angle) * 16
+                x: Math.cos(angle) * 16,
+                y: Math.sin(angle) * 16
             },
             owner: this,
             life: 120,
             dmg: 25
         });
 
-        game.audio.playShoot();
+        if (game.audio) game.audio.playShoot();
         
-        // Record shot for world model
         this.lastShot = {
             from: { ...this.pos },
             angle: angle,
@@ -1833,27 +1711,19 @@ class Tank {
         };
     }
 
-    // ========================================================================
-    // PROFESSIONAL FIX: checkHit removed - hit detection now handled in projectile collision
-    // ========================================================================
-
     applyPhysics(worldW, worldH) {
-        // Friction
         this.vel.x *= 0.93;
         this.vel.y *= 0.93;
 
-        // Speed limit
         const speed = Vec2.len(this.vel);
         if (speed > 5) {
             this.vel.x = (this.vel.x / speed) * 5;
             this.vel.y = (this.vel.y / speed) * 5;
         }
 
-        // Position
         this.pos.x += this.vel.x;
         this.pos.y += this.vel.y;
 
-        // Boundaries
         if (this.pos.x < this.radius) {
             this.pos.x = this.radius;
             this.vel.x *= -0.5;
@@ -1864,7 +1734,8 @@ class Tank {
         }
         if (this.pos.y < this.radius) {
             this.pos.y = this.radius;
-            this.vel.y *= -0.5;        }
+            this.vel.y *= -0.5;
+        }
         if (this.pos.y > worldH - this.radius) {
             this.pos.y = worldH - this.radius;
             this.vel.y *= -0.5;
@@ -1913,7 +1784,8 @@ class Tank {
 
         reward += 0.002;
 
-        if (this.stuckFrames > 60) {            reward -= 0.01;
+        if (this.stuckFrames > 60) {
+            reward -= 0.01;
         }
 
         if (this.stats.shots > 0 && this.stats.hits / this.stats.shots < 0.1) {
@@ -1941,7 +1813,6 @@ class Tank {
             );
             ctx.stroke();
             
-            // Draw world model hypothesis
             const suggestion = this.worldModel.getSuggestion();
             if (suggestion && suggestion.target && suggestion.confidence > 0.3) {
                 ctx.strokeStyle = `rgba(255,170,0,${suggestion.confidence})`;
@@ -1962,7 +1833,8 @@ class Tank {
                         suggestion.predicted.x - cam.x,
                         suggestion.predicted.y - cam.y,
                         15,
-                        0, Math.PI * 2                    );
+                        0, Math.PI * 2
+                    );
                     ctx.stroke();
                 }
             }
@@ -2011,7 +1883,8 @@ class Tank {
         ctx.restore();
 
         if (this.hp < this.maxHp) {
-            const barWidth = 50;            const barHeight = 6;
+            const barWidth = 50;
+            const barHeight = 6;
             const x = this.pos.x - cam.x - barWidth / 2;
             const y = this.pos.y - cam.y - 45;
 
@@ -2026,7 +1899,6 @@ class Tank {
             ctx.fillRect(x, y, barWidth * hpPercent, barHeight);
         }
         
-        // Draw current goal and strategy
         ctx.font = '8px Courier New';
         ctx.fillStyle = '#00ff88';
         ctx.fillText(
@@ -2060,7 +1932,8 @@ class Tank {
     }
 
     reset(x, y, angle) {
-        this.pos = { x: x, y: y };        this.vel = { x: 0, y: 0 };
+        this.pos = { x: x, y: y };
+        this.vel = { x: 0, y: 0 };
         this.angle = angle;
         this.turretAngle = 0;
         this.barrelAngle = 0;
@@ -2077,7 +1950,7 @@ class Tank {
         this.lastAction = null;
         this.actionHistory = [];
         this.brain.reset();
-        this.worldModel = new WorldModel(); // Reset world model
+        this.worldModel = new WorldModel();
         this.strategies = new Strategies(this.worldModel);
         this.lastReceivedDamage = 0;
         this.lastDealtDamage = 0;
@@ -2102,14 +1975,15 @@ class Tank {
 }
 
 // ============================================================================
-// SECTION 11: GAME ENGINE WITH ENHANCED PHYSICS
+// SECTION 11: GAME ENGINE
 // ============================================================================
 
 const game = {
     width: 1200,
     height: 800,
     tanks: [],
-    projectiles: [],    particles: new ParticleSystem(500),
+    projectiles: [],
+    particles: new ParticleSystem(500),
     audio: new AudioSystem(),
     epoch: 0,
     speed: 1,
@@ -2140,9 +2014,6 @@ function initGame() {
     }
 }
 
-// ============================================================================
-// PROFESSIONAL FIX: Enhanced collision resolution with safety checks
-// ============================================================================
 function resolveCollision(tankA, tankB) {
     const dx = tankB.pos.x - tankA.pos.x;
     const dy = tankB.pos.y - tankA.pos.y;
@@ -2150,15 +2021,14 @@ function resolveCollision(tankA, tankB) {
     const minDist = tankA.radius + tankB.radius;
     const minDistSq = minDist * minDist;
 
-    // Early exit if no collision
     if (distSq >= minDistSq) return;
     
-    // Safety check: prevent division by zero
     const dist = Math.sqrt(distSq);
     if (dist < 0.001) return;
 
     const overlap = minDist - dist;
-    const nx = dx / dist;    const ny = dy / dist;
+    const nx = dx / dist;
+    const ny = dy / dist;
 
     const totalMass = tankA.mass + tankB.mass;
     const ratioA = tankB.mass / totalMass;
@@ -2191,23 +2061,21 @@ function update(dt) {
     game.frameCount++;
     const [tankA, tankB] = game.tanks;
 
-    // Collision detection and resolution
     if (tankA.alive && tankB.alive) {
         resolveCollision(tankA, tankB);
     }
 
-    // Update tanks with world model
     tankA.update(tankB, game.width, game.height, game.frameCount);
     tankB.update(tankA, game.width, game.height, game.frameCount);
 
-    // Update projectiles
     for (let i = game.projectiles.length - 1; i >= 0; i--) {
         const p = game.projectiles[i];
         p.pos.x += p.vel.x * dt * 0.06;
         p.pos.y += p.vel.y * dt * 0.06;
         p.life--;
 
-        if (game.particles.enabled && Math.random() < 0.3) {            game.particles.emitTrail(p.pos.x, p.pos.y, Vec2.angle(p.vel), p.owner.color);
+        if (game.particles.enabled && Math.random() < 0.3) {
+            game.particles.emitTrail(p.pos.x, p.pos.y, Vec2.angle(p.vel), p.owner.color);
         }
 
         let hit = false;
@@ -2216,15 +2084,9 @@ function update(dt) {
 
             const dist = Vec2.dist(p.pos, tank.pos);
             if (dist < tank.radius + 5) {
-                // ====================================================================
-                // PROFESSIONAL FIX: Use proper takeDamage method instead of undefined call
-                // ====================================================================
                 tank.takeDamage(p.dmg, p.owner);
                 hit = true;
                 
-                // ====================================================================
-                // PROFESSIONAL FIX: Single explosion emission on hit (removed duplicate)
-                // ====================================================================
                 if (game.particles.enabled) {
                     game.particles.emitExplosion(p.pos.x, p.pos.y, '#ffaa00', 15);
                 }
@@ -2236,18 +2098,12 @@ function update(dt) {
             p.pos.x < 0 || p.pos.x > game.width ||
             p.pos.y < 0 || p.pos.y > game.height) {
             
-            // ====================================================================
-            // PROFESSIONAL FIX: Removed duplicate explosion emission here
-            // Explosion already handled at point of impact above
-            // ====================================================================
             game.projectiles.splice(i, 1);
         }
     }
 
-    // Update particles
     game.particles.update(dt);
 
-    // Check for epoch completion
     if (!tankA.alive || !tankB.alive) {
         game.epoch++;
         
@@ -2256,7 +2112,8 @@ function update(dt) {
         
         log(`EPOCH ${game.epoch} - WINNER: ${winner}`, 'system');
         log(`Alpha reward: ${tankA.roundReward.toFixed(2)}, Beta reward: ${tankB.roundReward.toFixed(2)}`, 'dopamine');
-        log(`Average reward: ${avgReward.toFixed(2)}`, 'reward');        
+        log(`Average reward: ${avgReward.toFixed(2)}`, 'reward');
+        
         if (game.learningCurve) {
             game.learningCurve.addReward(game.epoch, avgReward);
         }
@@ -2339,11 +2196,13 @@ function updateBrainVisualizations() {
         brainB.height = brainB.clientHeight;
     }
 
-    if (tankA?.brain) {
-        tankA.brain.draw(brainA.getContext('2d'), brainA.width, brainA.height);
+    if (tankA?.brain && brainA) {
+        const ctx = brainA.getContext('2d');
+        if (ctx) tankA.brain.draw(ctx, brainA.width, brainA.height);
     }
-    if (tankB?.brain) {
-        tankB.brain.draw(brainB.getContext('2d'), brainB.width, brainB.height);
+    if (tankB?.brain && brainB) {
+        const ctx = brainB.getContext('2d');
+        if (ctx) tankB.brain.draw(ctx, brainB.width, brainB.height);
     }
 }
 
@@ -2354,50 +2213,54 @@ function updateWorldModelVisualizations() {
     const wmVizB = document.getElementById('wm-viz-green');
     
     if (wmVizA && tankA?.worldModel) {
-        const ctx = wmVizA.getContext('2d');        if (wmVizA.width !== wmVizA.clientWidth) wmVizA.width = wmVizA.clientWidth;
-        if (wmVizA.height !== wmVizA.clientHeight) wmVizA.height = wmVizA.clientHeight;
-        
-        ctx.clearRect(0, 0, wmVizA.width, wmVizA.height);
-        
-        const suggestion = tankA.worldModel.getSuggestion();
-        if (suggestion && suggestion.target) {
-            const x = (suggestion.target.x / game.width) * wmVizA.width;
-            const y = (suggestion.target.y / game.height) * wmVizA.height;
+        const ctx = wmVizA.getContext('2d');
+        if (ctx) {
+            if (wmVizA.width !== wmVizA.clientWidth) wmVizA.width = wmVizA.clientWidth;
+            if (wmVizA.height !== wmVizA.clientHeight) wmVizA.height = wmVizA.clientHeight;
             
-            ctx.fillStyle = `rgba(255,170,0,${suggestion.confidence})`;
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.clearRect(0, 0, wmVizA.width, wmVizA.height);
+            
+            const suggestion = tankA.worldModel.getSuggestion();
+            if (suggestion && suggestion.target) {
+                const x = (suggestion.target.x / game.width) * wmVizA.width;
+                const y = (suggestion.target.y / game.height) * wmVizA.height;
+                
+                ctx.fillStyle = `rgba(255,170,0,${suggestion.confidence})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
     
     if (wmVizB && tankB?.worldModel) {
         const ctx = wmVizB.getContext('2d');
-        if (wmVizB.width !== wmVizB.clientWidth) wmVizB.width = wmVizB.clientWidth;
-        if (wmVizB.height !== wmVizB.clientHeight) wmVizB.height = wmVizB.clientHeight;
-        
-        ctx.clearRect(0, 0, wmVizB.width, wmVizB.height);
-        
-        const suggestion = tankB.worldModel.getSuggestion();
-        if (suggestion && suggestion.target) {
-            const x = (suggestion.target.x / game.width) * wmVizB.width;
-            const y = (suggestion.target.y / game.height) * wmVizB.height;
+        if (ctx) {
+            if (wmVizB.width !== wmVizB.clientWidth) wmVizB.width = wmVizB.clientWidth;
+            if (wmVizB.height !== wmVizB.clientHeight) wmVizB.height = wmVizB.clientHeight;
             
-            ctx.fillStyle = `rgba(255,170,0,${suggestion.confidence})`;
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.clearRect(0, 0, wmVizB.width, wmVizB.height);
+            
+            const suggestion = tankB.worldModel.getSuggestion();
+            if (suggestion && suggestion.target) {
+                const x = (suggestion.target.x / game.width) * wmVizB.width;
+                const y = (suggestion.target.y / game.height) * wmVizB.height;
+                
+                ctx.fillStyle = `rgba(255,170,0,${suggestion.confidence})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
 }
 
 // ============================================================================
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ updateUI С ПРОВЕРКАМИ
+// ФУНКЦИЯ updateUI С ПРОВЕРКАМИ
 // ============================================================================
 function updateUI() {
     const [tankA, tankB] = game.tanks;
     
-    // Безопасное обновление элементов
     const safeSetStyle = (id, property, value) => {
         const el = document.getElementById(id);
         if (el) el.style[property] = value;
@@ -2442,7 +2305,6 @@ function updateUI() {
     safeSetText('d-explore', epsilon.toFixed(3));
     safeSetText('d-epsilon', epsilon.toFixed(3));
     
-    // World model stats
     const wmConfA = tankA.worldModel.getSuggestion();
     const wmConfB = tankB.worldModel.getSuggestion();
     safeSetText('wm-conf-red', wmConfA ? wmConfA.confidence.toFixed(2) : '0.00');
@@ -2464,7 +2326,8 @@ const log = (msg, type = 'system') => {
 // SECTION 12: SYSTEM CONTROL
 // ============================================================================
 
-const SYS = {    start() {
+const SYS = {
+    start() {
         if (game.running) return;
         game.running = true;
         game.lastTime = performance.now();
@@ -2522,6 +2385,7 @@ const SYS = {    start() {
         if (particlesEl) particlesEl.textContent = game.particles.enabled ? 'ACTIVE' : 'DISABLED';
         log(`Particle effects ${game.particles.enabled ? 'enabled' : 'disabled'}`, 'system');
     },
+    
     emergencyBoost() {
         game.tanks.forEach(t => {
             t.brain.dopamine.spike(0.4);
@@ -2570,7 +2434,7 @@ const SYS = {    start() {
                     tank.loadFromSerializable(model.tanks[i]);
                 }
             });
-                        game.epoch = model.epoch;
+            game.epoch = model.epoch;
             log(`MODEL LOADED - EPOCH ${model.epoch}`, 'system');
         } catch (e) {
             log(`LOAD FAILED: ${e.message}`, 'system');
@@ -2579,7 +2443,7 @@ const SYS = {    start() {
 };
 
 // ============================================================================
-// SECTION 13: MAIN LOOP WITH PROPER TIMING
+// SECTION 13: MAIN LOOP
 // ============================================================================
 
 function loop(timestamp) {
@@ -2619,7 +2483,8 @@ function loop(timestamp) {
     requestAnimationFrame(loop);
 }
 
-function resize() {    const canvas = document.getElementById('sim');
+function resize() {
+    const canvas = document.getElementById('sim');
     const area = document.getElementById('game-area');
     if (canvas && area) {
         canvas.width = area.clientWidth;
@@ -2635,17 +2500,14 @@ function resize() {    const canvas = document.getElementById('sim');
 // SECTION 14: INITIALIZATION - ИСПРАВЛЕННАЯ ВЕРСИЯ
 // ============================================================================
 
-// Глобальная переменная для отслеживания готовности
 let appInitialized = false;
 
 window.addEventListener('resize', resize);
 
-// Функция безопасной инициализации
 function safeInit() {
     if (appInitialized) return;
     
     try {
-        // Проверяем наличие всех необходимых элементов
         const requiredElements = [
             'sim', 'brain-red', 'brain-green', 'wm-viz-red', 
             'wm-viz-green', 'reward-chart', 'log'
@@ -2659,21 +2521,23 @@ function safeInit() {
             }
         }
         
-        // Все элементы найдены, инициализируем
+        // Инициализация лога
         window.logBuffer = new LogBuffer(100);
+        const logElement = document.getElementById('log');
+        if (logElement) {
+            window.logBuffer.setElement(logElement);
+        }
         
         resize();
         initGame();
         
         game.learningCurve = new LearningCurve('reward-chart', 100);
         
-        // Безопасное скрытие загрузочного экрана
         const loadingEl = document.getElementById('loading');
         if (loadingEl) {
             loadingEl.classList.add('hidden');
         }
         
-        // Первоначальная отрисовка
         const canvas = document.getElementById('sim');
         if (canvas) {
             const ctx = canvas.getContext('2d');
@@ -2693,12 +2557,10 @@ function safeInit() {
     }
 }
 
-// Безопасная инициализация аудио
 async function safeAudioInit() {
     if (!game.audio) return;
     
     try {
-        // Не инициализируем аудио автоматически, ждем действия пользователя
         game.audio.enabled = false;
         const audioEl = document.getElementById('audio-val');
         if (audioEl) audioEl.textContent = 'OFFLINE';
@@ -2707,20 +2569,16 @@ async function safeAudioInit() {
     }
 }
 
-// Исправленный обработчик загрузки
 document.addEventListener('DOMContentLoaded', () => {
-    // Показываем загрузку
     const loadingEl = document.getElementById('loading');
     if (loadingEl) {
         loadingEl.classList.remove('hidden');
     }
     
-    // Запускаем инициализацию с задержкой
     setTimeout(safeInit, 100);
     safeAudioInit();
 });
 
-// Резервный план - если DOMContentLoaded уже произошел
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(safeInit, 100);
 }
