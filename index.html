@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-scale, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEURAL TANK COMBAT v8.0 - PROFESSIONAL</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -259,7 +259,7 @@
 /**
  * ============================================================================
  * NEURAL TANK COMBAT v8.0 - PROFESSIONAL EDITION
- * Fixed aiming system with proper barrel angle compensation
+ * Fixed: Vision system - tank ONLY knows enemy position through Vision360
  * ============================================================================
  */
 
@@ -560,7 +560,7 @@ class ParticleSystem {
 }
 
 // ============================================================================
-// SECTION 6: 360 DEGREE VISION SYSTEM
+// SECTION 6: 360 DEGREE VISION SYSTEM - КАМЕРА, НЕ АБСТРАКЦИЯ
 // ============================================================================
 
 class Vision360 {
@@ -571,14 +571,16 @@ class Vision360 {
     }
 
     detect(enemy) {
+        // Нет врага - нет данных
         if (!enemy || !enemy.alive) {
             return { 
                 visible: false, 
-                dist: 1000, 
+                dist: 0,
+                distNorm: 0,
                 dx: 0, 
                 dy: 0, 
                 angle: 0,
-                angleDiff: 0,
+                angleNorm: 0,
                 inPeripheral: false 
             };
         }
@@ -587,18 +589,21 @@ class Vision360 {
         const dy = enemy.pos.y - this.tank.pos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist > this.radius || !enemy.alive) {
+        // Вне радиуса - нет данных (0, не dist!)
+        if (dist > this.radius) {
             return { 
                 visible: false, 
-                dist: dist, 
+                dist: 0,
+                distNorm: 0,
                 dx: 0, 
                 dy: 0, 
                 angle: 0,
-                angleDiff: 0,
+                angleNorm: 0,
                 inPeripheral: false 
             };
         }
 
+        // В радиусе - возвращаем данные
         const enemyAngle = Math.atan2(dy, dx);
         const turretAngle = this.tank.angle + this.tank.turretAngle;
         let angleDiff = enemyAngle - turretAngle;
@@ -683,7 +688,7 @@ class DopamineSystem {
 }
 
 // ============================================================================
-// SECTION 8: SPIKING NEURAL NETWORK - FIXED AIMING
+// SECTION 8: SPIKING NEURAL NETWORK
 // ============================================================================
 
 class SpikingNeuralNetwork {
@@ -839,7 +844,6 @@ class SpikingNeuralNetwork {
         angleStats.total++;
         this.shotMemory.patterns.byAngle.set(angleKey, angleStats);
         
-        // 🔧 ФИКС #2: Корректная калибровка (знак минус)
         if (shot.fromPos && shot.hitPos) {
             const idealAngle = Math.atan2(
                 shot.hitPos.y - shot.fromPos.y,
@@ -854,7 +858,6 @@ class SpikingNeuralNetwork {
             shot.angleError = angleError;
             
             if (this.tank && this.tank.skills) {
-                // 🔧 ИСПРАВЛЕНО: корректируем в ПРОТИВОПОЛОЖНУЮ сторону
                 this.tank.skills.calibration.turretOffset -= angleError * 0.05;
                 this.tank.skills.calibration.turretOffset = Math.max(-0.3, Math.min(0.3, this.tank.skills.calibration.turretOffset));
                 
@@ -1632,7 +1635,7 @@ class AudioSystem {
 }
 
 // ============================================================================
-// SECTION 10: TANK CLASS - FIXED AIMING SYSTEM
+// SECTION 10: TANK CLASS - ИСПРАВЛЕНО: НЕТ ПРЯМОГО ДОСТУПА К enemy.pos
 // ============================================================================
 
 class Tank {
@@ -1734,7 +1737,7 @@ class Tank {
             vision.angleNorm || 0,
             vision.dx,
             vision.dy,
-            enemy ? enemy.hp / 100 : 0,
+            (vision.visible && enemy) ? enemy.hp / 100 : 0,
             this.hp / 100,
             speed / 5,
             this.vel.x / 5,
@@ -1743,7 +1746,7 @@ class Tank {
             wallRight,
             wallTop,
             wallBottom,
-            this.shootCD / 60,
+            this.shootCD / 120,
             this.stuckFrames / 40,
             Math.tanh(this.barrelAngle * 2),
             Math.sin(Date.now() * 0.001) * 0.1,
@@ -1817,8 +1820,11 @@ class Tank {
         this.frameCount = time;
         this.worldModel.update(time);
         
-        // 🔧 ФИКС #1: Корректный расчёт угла с учётом barrelAngle
-        if (enemy && enemy.alive) {
+        // 🔧 ИСПРАВЛЕНО: Получаем данные ТОЛЬКО через Vision360
+        const vision = this.vision.detect(enemy);
+        
+        // 🔧 ТОЛЬКО если видим - вычисляем прицел
+        if (vision.visible && enemy && enemy.alive) {
             this.targetPos = {...enemy.pos};
             this.targetVel = enemy.vel ? {...enemy.vel} : {x:0, y:0};
             
@@ -1830,16 +1836,17 @@ class Tank {
                 y: this.targetPos.y + this.targetVel.y * leadFrames
             };
             
-            const dx = this.predictedPos.x - this.pos.x;
-            const dy = this.predictedPos.y - this.pos.y;
+            // 🔧 Используем vision.dx и vision.dy (нормализованные)
+            const dx = vision.dx * this.vision.radius;
+            const dy = vision.dy * this.vision.radius;
             const worldAngle = Math.atan2(dy, dx);
             
-            // 🔧 КЛЮЧЕВОЙ ФИКС: учитываем barrelAngle
             this.targetTurretAngle = worldAngle - this.angle - this.barrelAngle;
             
             while (this.targetTurretAngle > Math.PI) this.targetTurretAngle -= Math.PI*2;
             while (this.targetTurretAngle < -Math.PI) this.targetTurretAngle += Math.PI*2;
         } else {
+            // 🔧 Не видим - сбрасываем цель
             this.targetPos = null;
             this.targetVel = null;
             this.predictedPos = null;
@@ -1853,11 +1860,11 @@ class Tank {
         const epsilon = Math.max(0.05, 1.0 - game.epoch * 0.001);
         const outputs = this.brain.process(inputs, reward, epsilon);
         
-        this.actuate(outputs, epsilon);
-        
         if (this.shootCD > 0) {
             this.shootCD--;
         }
+        
+        this.actuate(outputs, epsilon);
         
         if (this.lastShot) {
             this.brain.rememberShot(this.lastShot.id, {
@@ -1908,7 +1915,6 @@ class Tank {
         if (turnL > 0.4 + noise) this.angle -= 0.07 * moveCalibration.turnSpeed;
         if (turnR > 0.4 + noise) this.angle += 0.07 * moveCalibration.turnSpeed;
         
-        // 🔧 ФИКС #3: Стабильное гибридное управление башней
         const brainTurret = (turretR - turretL) * 0.09;
         
         let finalTurretTurn = 0;
@@ -1919,7 +1925,6 @@ class Tank {
             const maxTurn = 0.12;
             let turn = Math.tanh(error * 2.5) * maxTurn;
             
-            // "Замок" на цель при малой ошибке
             if (Math.abs(error) < 0.03) {
                 turn = error;
             }
@@ -1958,7 +1963,7 @@ class Tank {
         
         if (shouldShoot) {
             this.fire();
-            this.shootCD = 60;
+            this.shootCD = 120;
             this.lastAction = 8;
         } else {
             const actions = [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown];
@@ -2690,7 +2695,7 @@ const SYS = {
             btn.textContent = 'SIMULATION ACTIVE';
         }
         log('NEURAL COMBAT SYSTEM v8.0 INITIALIZED', 'system');
-        log('FIXED AIMING SYSTEM ACTIVE', 'system');
+        log('FIXED: Vision system - no direct enemy.pos access', 'system');
         requestAnimationFrame(loop);
     },
 
@@ -2899,7 +2904,7 @@ function safeInit() {
         
         log('SYSTEM READY - PRESS INITIALIZE', 'system');
         log('NEURAL TANK COMBAT v8.0 PROFESSIONAL', 'system');
-        log('FIXED AIMING SYSTEM ACTIVE', 'system');
+        log('VISION SYSTEM FIXED - NO CHEATING', 'system');
         
         appInitialized = true;
         
