@@ -1650,7 +1650,7 @@ class Tank {
         this.radius = 28;
         this.mass = 10;
         
-        this.brain = new SpikingNeuralNetwork(33, 256, 9);
+        this.brain = new SpikingNeuralNetwork(33, 128, 9);
         this.brain.tank = this;
         
         this.worldModel = new WorldModel();
@@ -1743,7 +1743,7 @@ class Tank {
             wallRight,
             wallTop,
             wallBottom,
-            this.shootCD / 120,
+            this.shootCD / 60,
             this.stuckFrames / 40,
             Math.tanh(this.barrelAngle * 2),
             Math.sin(Date.now() * 0.001) * 0.1,
@@ -1955,13 +1955,10 @@ class Tank {
         if (barrelDown > 0.4 + noise) this.barrelAngle = Math.max(-0.3, this.barrelAngle - 0.05);
 
         let shouldShoot = shoot > 0.5 && this.shootCD <= 0;
-        if (brainSuggestion.biasShoot && Math.random() < brainSuggestion.confidence * 0.3) {
-            shouldShoot = true;
-        }
         
         if (shouldShoot) {
             this.fire();
-            this.shootCD = 22;
+            this.shootCD = 60;
             this.lastAction = 8;
         } else {
             const actions = [fwd, back, turnL, turnR, turretL, turretR, barrelUp, barrelDown];
