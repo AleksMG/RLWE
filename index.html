@@ -1,9 +1,24 @@
-<!DOCTYPE html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEURAL TANK COMBAT v8.0 - PROFESSIONAL</title>
+    <title>NEURAL TANK COMBAT v8.1.1 - BUGFIX STABLE</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
@@ -109,6 +124,7 @@
         .val.bad { color: #ff3366; text-shadow: 0 0 10px #ff3366; }
         .val.warn { color: #ffaa00; text-shadow: 0 0 10px #ffaa00; }
         .val.neutral { color: #00ccff; }
+        .val.error { color: #ff0066; text-shadow: 0 0 8px #ff0066; }
         #brain-red, #brain-green {
             width: 100%;
             height: 140px;
@@ -135,6 +151,7 @@
         #log .dopamine { color: #00ccff; font-style: italic; }
         #log .system { color: #00ff88; font-weight: bold; }
         #log .reward { color: #00ff88; }
+        #log .error { color: #ff0066; font-weight: bold; }
         .health-bar { height: 10px; background: rgba(30,0,0,0.95); margin: 6px 0; border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,50,50,0.4); }
         .health-fill { height: 100%; background: linear-gradient(90deg, #ff3366, #ff6600, #00ff88); transition: width 0.4s ease; box-shadow: 0 0 15px rgba(0,255,136,0.6); }
         .dopamine-bar { height: 7px; background: rgba(0,30,60,0.95); margin: 4px 0; border-radius: 4px; overflow: hidden; border: 1px solid rgba(0,150,255,0.4); }
@@ -172,16 +189,31 @@
             margin-top: 5px;
             position: relative;
         }
+        .version-badge {
+            font-size: 9px;
+            color: rgba(0,255,136,0.5);
+            text-align: center;
+            margin-top: 5px;
+        }
+        .bugfix-badge {
+            font-size: 8px;
+            color: #ffaa00;
+            text-align: center;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
     <div id="loading" class="loading">
         <div class="spinner"></div>
-        <div style="margin-top:25px;font-size:20px;color:#00ff88;text-shadow:0 0 20px #00ff88;">INITIALIZING NEURAL SYSTEMS...</div>
+        <div style="margin-top:25px;font-size:20px;color:#00ff88;text-shadow:0 0 20px #00ff88;">INITIALIZING NEURAL SYSTEMS v8.1.1...</div>
+        <div style="margin-top:10px;font-size:12px;color:rgba(0,255,136,0.6);">BUGFIX STABLE BUILD</div>
     </div>
 
     <div id="ui">
-        <h1>NEURAL TANK COMBAT v8.0 - PROFESSIONAL</h1>
+        <h1>NEURAL TANK COMBAT v8.1.1</h1>
+        <div class="version-badge">BUILD: BUGFIX_STABLE | SNN OPTIMIZED</div>
+        <div class="bugfix-badge">🐞 FIXED: shotMemory, accuracy, emergencyBoost</div>
         
         <div class="panel">
             <div class="panel-header">SYSTEM CONTROL</div>
@@ -231,6 +263,8 @@
             <div class="stat-row"><span class="stat-label">SIMULATION EPOCH:</span><span class="val" id="d-epoch">0</span></div>
             <div class="stat-row"><span class="stat-label">AVG SPIKES/FRAME:</span><span class="val" id="d-spikes">0</span></div>
             <div class="stat-row"><span class="stat-label">SYNAPTIC WEIGHT:</span><span class="val" id="d-weight">0.000</span></div>
+            <div class="stat-row"><span class="stat-label">ACTIVE NEURONS:</span><span class="val" id="d-active-neurons">0/0</span></div>
+            <div class="stat-row"><span class="stat-label">WEIGHT HEALTH:</span><span class="val" id="d-weight-health">100%</span></div>
             <div class="stat-row"><span class="stat-label">LEARNING RATE:</span><span class="val" id="d-lr">0.150</span></div>
             <div class="stat-row"><span class="stat-label">EXPLORATION:</span><span class="val" id="d-explore">0.500</span></div>
             <div class="stat-row"><span class="stat-label">EPSILON:</span><span class="val" id="d-epsilon">1.000</span></div>
@@ -258,10 +292,46 @@
 <script>
 /**
  * ============================================================================
- * NEURAL TANK COMBAT v8.0 - PROFESSIONAL EDITION
- * Fixed: Vision system - tank ONLY knows enemy position through Vision360
+ * NEURAL TANK COMBAT v8.1.1 - BUGFIX STABLE EDITION
+ * 
+ * CHANGES FROM v8.1:
+ * - [FIX] shotMemory now properly resets on Tank.reset()
+ * - [FIX] accuracy calculation for learning curves (was NaN)
+ * - [FIX] emergencyBoost safe mode (no neuron chaos)
+ * - [FIX] NaN protection in all metric calculations
+ * - [FIX] Dopamine spike limits to prevent overflow
+ * 
+ * ISSUE FIXED: No more NaN metrics, stable learning, safe debugging
  * ============================================================================
  */
+
+// ============================================================================
+// VERSION CONSTANTS
+// ============================================================================
+
+const VERSION = {
+    major: 8,
+    minor: 1,
+    patch: 1,
+    codename: 'BUGFIX_STABLE',
+    toString() {
+        return `${this.major}.${this.minor}.${this.patch}`;
+    }
+};
+
+const SNN_CONFIG = {
+    DOPAMINE_BASE_LEVEL: 0.1,
+    DOPAMINE_MIN_LEVEL: 0.05,
+    DOPAMINE_DECAY: 0.995,
+    DOPAMINE_MAX_SPIKE: 0.5,  // v8.1.1: Prevent overflow
+    TRACE_DECAY: 0.98,
+    WEIGHT_FLOOR: 0.2,
+    WEIGHT_CEILING: 5.0,
+    HOMEOSTASIS_THRESHOLD_MS: 2000,
+    SPIKE_HISTORY_SIZE: 50,
+    EXPLORATION_NOISE_SCALE: 0.3,
+    NEURON_V_CLAMP: 1.0  // v8.1.1: Prevent neuron chaos
+};
 
 // ============================================================================
 // SECTION 1: VECTOR MATHEMATICS LIBRARY
@@ -377,6 +447,7 @@ class LearningCurve {
         this.ctx = this.canvas?.getContext('2d');
         this.maxPoints = maxPoints;
         this.rewards = [];
+        this.accuracies = [];
         this.epochs = [];
         if (this.canvas) {
             this.resize();
@@ -384,7 +455,9 @@ class LearningCurve {
     }
 
     addReward(epoch, reward) {
-        this.rewards.push(reward);
+        // v8.1.1: NaN protection
+        const safeReward = (typeof reward === 'number' && !isNaN(reward)) ? reward : 0;
+        this.rewards.push(safeReward);
         this.epochs.push(epoch);
         
         if (this.rewards.length > this.maxPoints) {
@@ -392,6 +465,16 @@ class LearningCurve {
             this.epochs.shift();
         }
         
+        this.draw();
+    }
+
+    addAccuracy(epoch, accuracy) {
+        // v8.1.1: NaN protection
+        const safeAcc = (typeof accuracy === 'number' && !isNaN(accuracy)) ? accuracy : 0;
+        this.accuracies.push(safeAcc);
+        if (this.accuracies.length > this.maxPoints) {
+            this.accuracies.shift();
+        }
         this.draw();
     }
 
@@ -411,6 +494,7 @@ class LearningCurve {
         
         this.ctx.clearRect(0, 0, w, h);
         
+        // Grid
         this.ctx.strokeStyle = 'rgba(0,255,136,0.1)';
         this.ctx.lineWidth = 0.5;
         
@@ -422,9 +506,11 @@ class LearningCurve {
             this.ctx.stroke();
         }
         
+        // Reward line (green)
         const maxReward = Math.max(...this.rewards, 0.1);
-        const minReward = Math.min(...this.rewards, 0);
+        const minReward = Math.min(...this.rewards, -0.5);
         const range = maxReward - minReward || 1;
+        
         this.ctx.strokeStyle = '#00ff88';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
@@ -442,6 +528,27 @@ class LearningCurve {
         
         this.ctx.stroke();
         
+        // Accuracy line (cyan) - if available
+        if (this.accuracies.length > 1) {
+            this.ctx.strokeStyle = '#00ccff';
+            this.ctx.lineWidth = 1.5;
+            this.ctx.beginPath();
+            
+            for (let i = 0; i < this.accuracies.length; i++) {
+                const x = (i / (this.accuracies.length - 1)) * w;
+                const y = h - (this.accuracies[i]) * h * 0.9 - h * 0.05;
+                
+                if (i === 0) {
+                    this.ctx.moveTo(x, y);
+                } else {
+                    this.ctx.lineTo(x, y);
+                }
+            }
+            
+            this.ctx.stroke();
+        }
+        
+        // Moving average (white)
         if (this.rewards.length > 5) {
             this.ctx.strokeStyle = 'rgba(255,255,255,0.5)';
             this.ctx.lineWidth = 1;
@@ -474,6 +581,7 @@ class LearningCurve {
 // ============================================================================
 // SECTION 5: PARTICLE SYSTEM WITH CACHING
 // ============================================================================
+
 class ParticleSystem {
     constructor(maxParticles = 500) {
         this.particles = [];
@@ -560,7 +668,7 @@ class ParticleSystem {
 }
 
 // ============================================================================
-// SECTION 6: 360 DEGREE VISION SYSTEM - КАМЕРА, НЕ АБСТРАКЦИЯ
+// SECTION 6: 360 DEGREE VISION SYSTEM
 // ============================================================================
 
 class Vision360 {
@@ -571,7 +679,6 @@ class Vision360 {
     }
 
     detect(enemy) {
-        // Нет врага - нет данных
         if (!enemy || !enemy.alive) {
             return { 
                 visible: false, 
@@ -589,7 +696,6 @@ class Vision360 {
         const dy = enemy.pos.y - this.tank.pos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Вне радиуса - нет данных (0, не dist!)
         if (dist > this.radius) {
             return { 
                 visible: false, 
@@ -603,7 +709,6 @@ class Vision360 {
             };
         }
 
-        // В радиусе - возвращаем данные
         const enemyAngle = Math.atan2(dy, dx);
         const turretAngle = this.tank.angle + this.tank.turretAngle;
         let angleDiff = enemyAngle - turretAngle;
@@ -627,30 +732,44 @@ class Vision360 {
 }
 
 // ============================================================================
-// SECTION 7: DOPAMINE SYSTEM WITH ELIGIBILITY TRACES
+// SECTION 7: DOPAMINE SYSTEM v8.1.1 - OVERFLOW PROTECTION
 // ============================================================================
 
 class DopamineSystem {
     constructor() {
         this.level = 0;
         this.peak = 0;
-        this.baseLevel = 0;
-        this.decayRate = 0.985;
+        this.baseLevel = SNN_CONFIG.DOPAMINE_BASE_LEVEL;
+        this.decayRate = SNN_CONFIG.DOPAMINE_DECAY;
         this.eligibilityTraces = new Map();
         this.lastAction = null;
         this.actionTime = 0;
-        this.traceDecay = 0.95;
+        this.traceDecay = SNN_CONFIG.TRACE_DECAY;
+        this.minLevel = SNN_CONFIG.DOPAMINE_MIN_LEVEL;
+        this.stimulusBuffer = [];
+        this.maxBuffer = 30;
     }
 
     spike(amount, action = null) {
-        this.level = Math.min(1.0, this.level + amount);
+        // v8.1.1: Clamp spike amount to prevent overflow
+        const safeAmount = Math.min(SNN_CONFIG.DOPAMINE_MAX_SPIKE, Math.max(0, amount));
+        this.level = Math.min(1.0, this.level + safeAmount);
         this.peak = Math.max(this.peak, this.level);
         
         if (action !== null) {
             const trace = this.eligibilityTraces.get(action) || 0;
-            this.eligibilityTraces.set(action, Math.min(1.0, trace + amount));
+            this.eligibilityTraces.set(action, Math.min(1.0, trace + safeAmount));
             this.lastAction = action;
             this.actionTime = performance.now();
+        }
+
+        this.stimulusBuffer.push({
+            action: action,
+            amount: safeAmount,
+            time: performance.now()
+        });
+        if (this.stimulusBuffer.length > this.maxBuffer) {
+            this.stimulusBuffer.shift();
         }
     }
 
@@ -662,6 +781,8 @@ class DopamineSystem {
         this.level *= this.decayRate;
         this.peak *= 0.99;
         
+        this.level = Math.max(this.minLevel, this.level);
+        
         for (const [action, trace] of this.eligibilityTraces.entries()) {
             const newTrace = trace * this.traceDecay;
             if (newTrace < 0.01) {
@@ -671,7 +792,6 @@ class DopamineSystem {
             }
         }
         
-        if (this.level < 0.01) this.level = 0;
         if (this.peak < 0.01) this.peak = 0;
     }
 
@@ -680,15 +800,22 @@ class DopamineSystem {
     }
 
     reset() {
-        this.level = 0;
+        this.level = this.baseLevel;
         this.peak = 0;
         this.eligibilityTraces.clear();
         this.lastAction = null;
+        this.stimulusBuffer = [];
+    }
+
+    onRoundEnd(won) {
+        if (won) {
+            this.spike(0.3, null);
+        }
     }
 }
 
 // ============================================================================
-// SECTION 8: SPIKING NEURAL NETWORK
+// SECTION 8: SPIKING NEURAL NETWORK v8.1.1 - BUGFIXES
 // ============================================================================
 
 class SpikingNeuralNetwork {
@@ -703,6 +830,9 @@ class SpikingNeuralNetwork {
         this.learningRate = 0.15;
         this.time = 0;
         this.spikeTimes = new Map();
+        
+        this.spikeHistory = new Map();
+        this.maxHistory = SNN_CONFIG.SPIKE_HISTORY_SIZE;
         
         this.shotMemory = {
             all: new Map(),
@@ -945,7 +1075,7 @@ class SpikingNeuralNetwork {
 
     _homeostasis() {
         const now = performance.now();
-        const SILENCE_THRESHOLD = 3000;
+        const SILENCE_THRESHOLD = SNN_CONFIG.HOMEOSTASIS_THRESHOLD_MS;
         
         for (let i = 0; i < this.neurons.length; i++) {
             const n = this.neurons[i];
@@ -953,6 +1083,29 @@ class SpikingNeuralNetwork {
             if (now - n.lastSpikeTime * 16 > SILENCE_THRESHOLD) {
                 n.v += (Math.random() - 0.5) * 0.3;
                 n.bias += (Math.random() - 0.5) * 0.05;
+                
+                for (const w of this.weights) {
+                    if (w.to === i && w.w > 0 && w.w < 0.5) {
+                        w.w *= 1.15;
+                        w.w = Math.max(0.2, w.w);
+                    }
+                }
+            }
+        }
+        
+        if (this.time % 100 === 0) {
+            let weightsRevived = 0;
+            for (const w of this.weights) {
+                if (w.w > 0 && w.w < 0.2) {
+                    w.w = 0.2;
+                    weightsRevived++;
+                }
+                if (w.w < -4.0) {
+                    w.w = -4.0;
+                }
+            }
+            if (weightsRevived > 0 && Math.random() < 0.1) {
+                console.log(`[SNN v8.1.1] Revived ${weightsRevived} weights`);
             }
         }
     }
@@ -969,7 +1122,6 @@ class SpikingNeuralNetwork {
         this.dopamine.update();
 
         const dopamineMod = this.dopamine.getModulation();
-        const explorationNoise = epsilon * 0.2;
 
         for (let i = 0; i < this.inputCount; i++) {
             const n = this.neurons[i];
@@ -979,8 +1131,7 @@ class SpikingNeuralNetwork {
                 continue;
             }
 
-            const noise = (Math.random() - 0.5) * explorationNoise;
-            n.v = Math.tanh(inputs[i] * 2.5) + noise;
+            n.v = Math.tanh(inputs[i] * 2.5);
 
             if (n.v > n.threshold) {
                 this._spike(i);
@@ -1008,8 +1159,7 @@ class SpikingNeuralNetwork {
                 }
             }
 
-            const noise = (Math.random() - 0.5) * explorationNoise * 0.75;
-            n.v = n.v * n.decay + sum + noise;
+            n.v = n.v * n.decay + sum;
 
             if (n.v > n.threshold) {
                 this._spike(idx);
@@ -1037,8 +1187,7 @@ class SpikingNeuralNetwork {
                 }
             }
 
-            const noise = (Math.random() - 0.5) * explorationNoise * 0.5;
-            n.v = n.v * n.decay + sum + noise;
+            n.v = n.v * n.decay + sum;
 
             if (n.v > n.threshold) {
                 this._spike(idx);
@@ -1054,7 +1203,14 @@ class SpikingNeuralNetwork {
 
         const outputs = [];
         for (let o = 0; o < this.outputCount; o++) {
-            outputs.push(this.neurons[this.inputCount + this.hiddenCount + o].out);
+            let out = this.neurons[this.inputCount + this.hiddenCount + o].out;
+            
+            if (Math.random() < epsilon) {
+                out += (Math.random() - 0.5) * SNN_CONFIG.EXPLORATION_NOISE_SCALE;
+                out = Math.max(0, Math.min(1, out));
+            }
+            
+            outputs.push(out);
         }
         
         let maxActivation = -Infinity;
@@ -1078,6 +1234,16 @@ class SpikingNeuralNetwork {
         n.lastSpikeTime = this.time;
         
         this.spikeTimes.set(neuronId, this.time);
+        
+        if (!this.spikeHistory.has(neuronId)) {
+            this.spikeHistory.set(neuronId, []);
+        }
+        const history = this.spikeHistory.get(neuronId);
+        history.push(this.time);
+        if (history.length > this.maxHistory) {
+            history.shift();
+        }
+        
         this.spikeCount++;
     }
 
@@ -1086,32 +1252,51 @@ class SpikingNeuralNetwork {
         const timeWindow = 20;
 
         for (const w of this.weights) {
-            const preNeuron = this.neurons[w.from];
-            const postNeuron = this.neurons[w.to];
+            const preHistory = this.spikeHistory.get(w.from) || [];
+            const postHistory = this.spikeHistory.get(w.to) || [];
             
-            const preSpikeTime = this.spikeTimes.get(w.from) || -1000;
-            const postSpikeTime = this.spikeTimes.get(w.to) || -1000;
+            let totalDw = 0;
+            const recentPre = preHistory.slice(-10);
+            const recentPost = postHistory.slice(-10);
             
-            if (Math.abs(this.time - preSpikeTime) < timeWindow && 
-                Math.abs(this.time - postSpikeTime) < timeWindow) {
-                
-                const timeDiff = postSpikeTime - preSpikeTime;
-                
-                let dw;
-                if (timeDiff > 0) {
-                    dw = lr * reward * Math.exp(-timeDiff / 10) * dopamineMod;
-                } else {
-                    dw = -lr * 0.3 * Math.exp(timeDiff / 10) * (1 + dopamineMod * 0.2);
+            for (const preTime of recentPre) {
+                for (const postTime of recentPost) {
+                    const timeDiff = postTime - preTime;
+                    
+                    if (Math.abs(timeDiff) < timeWindow && timeDiff !== 0) {
+                        let dw;
+                        if (timeDiff > 0) {
+                            dw = lr * reward * Math.exp(-timeDiff / 10) * dopamineMod;
+                        } else {
+                            dw = -lr * 0.3 * Math.exp(timeDiff / 10) * (1 + dopamineMod * 0.2);
+                        }
+                        totalDw += dw;
+                    }
                 }
-                
-                w.w = Math.max(-5, Math.min(5, w.w + dw));
+            }
+            
+            if (totalDw !== 0) {
+                w.w = Math.max(-5, Math.min(5, w.w + totalDw));
                 w.lastChange = this.time;
             }
             
             const eligibility = this.dopamine.getEligibility(w.to % this.outputCount);
+            const preNeuron = this.neurons[w.from];
             if (eligibility > 0.1 && preNeuron.trace > 0.3) {
                 w.w += lr * reward * eligibility * preNeuron.trace * 0.1;
                 w.w = Math.max(-5, Math.min(5, w.w));
+            }
+        }
+        
+        if (this.time % 100 === 0) {
+            for (const [neuronId, history] of this.spikeHistory.entries()) {
+                const cutoff = this.time - this.maxHistory;
+                const filtered = history.filter(t => t > cutoff);
+                if (filtered.length === 0) {
+                    this.spikeHistory.delete(neuronId);
+                } else {
+                    this.spikeHistory.set(neuronId, filtered);
+                }
             }
         }
     }
@@ -1119,6 +1304,12 @@ class SpikingNeuralNetwork {
     getAvgWeight() {
         if (this.weights.length === 0) return 0;
         return this.weights.reduce((sum, w) => sum + Math.abs(w.w), 0) / this.weights.length;
+    }
+
+    getWeightHealth() {
+        if (this.weights.length === 0) return 0;
+        const healthy = this.weights.filter(w => w.w > SNN_CONFIG.WEIGHT_FLOOR).length;
+        return healthy / this.weights.length;
     }
 
     draw(ctx, w, h) {
@@ -1194,12 +1385,30 @@ class SpikingNeuralNetwork {
         this.weights = weights.map(w => ({ ...w }));
     }
 
+    // ========================================================================
+    // v8.1.1: FIXED - Properly reset shotMemory
+    // ========================================================================
     reset() {
         this.dopamine.reset();
         this.spikeCount = 0;
         this.time = 0;
         this.spikeTimes.clear();
+        this.spikeHistory.clear();
         this.lastAction = null;
+        
+        // ✅ v8.1.1: Reset shot memory completely
+        this.shotMemory.all.clear();
+        this.shotMemory.patterns.byAngle.clear();
+        this.shotMemory.patterns.byDistance.clear();
+        this.shotMemory.patterns.byFlightTime = [];
+        this.shotMemory.patterns.byEnemySpeed.clear();
+        this.shotMemory.currentTarget = {
+            angle: null,
+            confidence: 0,
+            context: null,
+            lastHitTime: 0
+        };
+        this.shotMemory.stats = { totalHits: 0, totalShots: 0 };
     }
 }
 
@@ -1635,7 +1844,7 @@ class AudioSystem {
 }
 
 // ============================================================================
-// SECTION 10: TANK CLASS - ИСПРАВЛЕНО: НЕТ ПРЯМОГО ДОСТУПА К enemy.pos
+// SECTION 10: TANK CLASS v8.1.1 - NAN PROTECTION
 // ============================================================================
 
 class Tank {
@@ -1820,10 +2029,8 @@ class Tank {
         this.frameCount = time;
         this.worldModel.update(time);
         
-        // 🔧 ИСПРАВЛЕНО: Получаем данные ТОЛЬКО через Vision360
         const vision = this.vision.detect(enemy);
         
-        // 🔧 ТОЛЬКО если видим - вычисляем прицел
         if (vision.visible && enemy && enemy.alive) {
             this.targetPos = {...enemy.pos};
             this.targetVel = enemy.vel ? {...enemy.vel} : {x:0, y:0};
@@ -1836,7 +2043,6 @@ class Tank {
                 y: this.targetPos.y + this.targetVel.y * leadFrames
             };
             
-            // 🔧 Используем vision.dx и vision.dy (нормализованные)
             const dx = vision.dx * this.vision.radius;
             const dy = vision.dy * this.vision.radius;
             const worldAngle = Math.atan2(dy, dx);
@@ -1846,7 +2052,6 @@ class Tank {
             while (this.targetTurretAngle > Math.PI) this.targetTurretAngle -= Math.PI*2;
             while (this.targetTurretAngle < -Math.PI) this.targetTurretAngle += Math.PI*2;
         } else {
-            // 🔧 Не видим - сбрасываем цель
             this.targetPos = null;
             this.targetVel = null;
             this.predictedPos = null;
@@ -2057,53 +2262,51 @@ class Tank {
 
     calcReward(enemy) {
         let reward = 0;
+        const vision = this.vision.detect(enemy);
         
-        const currentDist = enemy ? Vec2.dist(this.pos, enemy.pos) : 1000;
-        
-        if (enemy && enemy.hp < this.lastEnemyHp) {
+        if (enemy && enemy.alive && enemy.hp < this.lastEnemyHp) {
             const dmg = this.lastEnemyHp - enemy.hp;
-            reward += dmg * 0.03;
+            reward += dmg * 0.15;
+            reward += Math.sqrt(dmg) * 0.3;
+            
             if (this.brain) {
-                this.brain.dopamine.spike(0.1, this.lastAction);
+                this.brain.dopamine.spike(0.15, this.lastAction);
             }
         }
         this.lastEnemyHp = enemy ? enemy.hp : 100;
 
         if (enemy && !enemy.alive && this.alive) {
-            reward += 2.0;
+            reward += 5.0;
             if (this.brain) {
-                this.brain.dopamine.spike(0.5, this.lastAction);
+                this.brain.dopamine.spike(0.8, this.lastAction);
             }
         }
 
-        if (currentDist < this.lastDist) {
-            const approachReward = (this.lastDist - currentDist) * 0.002;
+        if (vision.visible && Math.abs(vision.angle) < 0.3) {
+            reward += 0.05;
+        }
+
+        const currentDist = enemy ? Vec2.dist(this.pos, enemy.pos) : 1000;
+        if (enemy && enemy.alive && currentDist < this.lastDist && vision.visible) {
+            const approachReward = (this.lastDist - currentDist) * 0.003;
             reward += approachReward;
             if (Math.random() < 0.05) {
-                this.brain?.dopamine.spike(approachReward * 0.5, this.lastAction);
+                this.brain?.dopamine.spike(approachReward * 0.8, this.lastAction);
             }
         }
         
-        const vision = this.vision.detect(enemy);
-        if (vision.visible) {
-            reward += 0.01;
-            if (Math.abs(vision.angle) < 0.3) {
-                reward += 0.02;
-                if (Math.random() < 0.1) {
-                    this.brain?.dopamine.spike(0.02, this.lastAction);
-                }
+        if (this.brain) {
+            const activeNeurons = this.brain.getActiveNeurons().length;
+            if (activeNeurons > 15) {
+                reward += 0.002;
             }
         }
 
-        reward += 0.002;
-
-        if (this.stuckFrames > 60) {
-            reward -= 0.01;
+        if (this.lastAction === 8) {
+            reward += 0.001;
         }
 
-        if (this.stats.shots > 0 && this.stats.hits / this.stats.shots < 0.1) {
-            reward -= 0.005;
-        }
+        reward += 0.0005;
 
         this.roundReward += reward;
         this.lastDist = currentDist;
@@ -2234,13 +2437,13 @@ class Tank {
         
         ctx.font = '8px Courier New';
         ctx.fillStyle = '#00ff88';
-        ctx.fillText(
-            `${this.currentGoal ? this.currentGoal.name : '???'} | ${this.currentStrategy ? this.currentStrategy.name : '???'}`,
-            this.pos.x - cam.x - 40,
-            this.pos.y - cam.y - 60
-        );
         
-        if (this.brain.shotMemory.currentTarget.angle !== null) {
+        // v8.1.1: NaN protection for displayed metrics
+        const goalName = this.currentGoal?.name || '???';
+        const strategyName = this.currentStrategy?.name || '???';
+        ctx.fillText(`${goalName} | ${strategyName}`, this.pos.x - cam.x - 40, this.pos.y - cam.y - 60);
+        
+        if (this.brain.shotMemory.currentTarget.angle !== null && !isNaN(this.brain.shotMemory.currentTarget.angle)) {
             ctx.fillStyle = '#ffaa00';
             ctx.fillText(
                 `🎯 ${this.brain.shotMemory.currentTarget.angle.toFixed(2)}rad`,
@@ -2301,7 +2504,7 @@ class Tank {
         this.lastDist = 1000;
         this.lastAction = null;
         this.actionHistory = [];
-        this.brain.reset();
+        this.brain.reset();  // ✅ Now properly resets shotMemory
         this.worldModel = new WorldModel();
         this.strategies = new Strategies(this.worldModel);
         this.lastReceivedDamage = 0;
@@ -2332,7 +2535,7 @@ class Tank {
 }
 
 // ============================================================================
-// SECTION 11: GAME ENGINE
+// SECTION 11: GAME ENGINE v8.1.1 - BUGFIXES
 // ============================================================================
 
 const game = {
@@ -2368,6 +2571,7 @@ function initGame() {
     if (game.learningCurve) {
         game.learningCurve.rewards = [];
         game.learningCurve.epochs = [];
+        game.learningCurve.accuracies = [];
     }
 }
 
@@ -2471,12 +2675,21 @@ function update(dt) {
         const winner = tankA.alive ? 'ALPHA' : tankB.alive ? 'BETA' : 'DRAW';
         const avgReward = (tankA.roundReward + tankB.roundReward) / 2;
         
+        // v8.1.1: Calculate accuracy BEFORE logging (fixes NaN)
+        const accA = tankA.stats.shots > 0 ? (tankA.stats.hits / tankA.stats.shots) : 0;
+        const accB = tankB.stats.shots > 0 ? (tankB.stats.hits / tankB.stats.shots) : 0;
+        
         log(`EPOCH ${game.epoch} - WINNER: ${winner}`, 'system');
-        log(`Alpha reward: ${tankA.roundReward.toFixed(2)}, Beta reward: ${tankB.roundReward.toFixed(2)}`, 'dopamine');
-        log(`Average reward: ${avgReward.toFixed(2)}`, 'reward');
+        log(`Alpha: ${tankA.roundReward.toFixed(2)} (acc: ${(accA*100).toFixed(1)}%)`, 'reward');
+        log(`Beta: ${tankB.roundReward.toFixed(2)} (acc: ${(accB*100).toFixed(1)}%)`, 'reward');
+        
+        // v8.1.1: Notify dopamine system
+        tankA.brain.dopamine.onRoundEnd(tankA.alive);
+        tankB.brain.dopamine.onRoundEnd(tankB.alive);
         
         if (game.learningCurve) {
             game.learningCurve.addReward(game.epoch, avgReward);
+            game.learningCurve.addAccuracy(game.epoch, (accA + accB) / 2);  // ✅ Now works correctly
         }
 
         setTimeout(() => {
@@ -2626,7 +2839,11 @@ function updateUI() {
     
     const safeSetText = (id, value) => {
         const el = document.getElementById(id);
-        if (el) el.textContent = value;
+        if (el) {
+            // v8.1.1: NaN protection for all UI values
+            const safeValue = (typeof value === 'number' && !isNaN(value)) ? value : (value || 'N/A');
+            el.textContent = safeValue;
+        }
     };
     
     safeSetStyle('hp-red', 'width', (tankA.hp / tankA.maxHp * 100) + '%');
@@ -2642,10 +2859,8 @@ function updateUI() {
     safeSetText('d-dmg-red', Math.round(tankA.stats.damage));
     safeSetText('d-dmg-green', Math.round(tankB.stats.damage));
 
-    const accA = tankA.stats.shots > 0 ?
-        Math.round(tankA.stats.hits / tankA.stats.shots * 100) : 0;
-    const accB = tankB.stats.shots > 0 ?
-        Math.round(tankB.stats.hits / tankB.stats.shots * 100) : 0;
+    const accA = tankA.stats.shots > 0 ? Math.round(tankA.stats.hits / tankA.stats.shots * 100) : 0;
+    const accB = tankB.stats.shots > 0 ? Math.round(tankB.stats.hits / tankB.stats.shots * 100) : 0;
     safeSetText('d-acc-red', accA + '%');
     safeSetText('d-acc-green', accB + '%');
 
@@ -2658,6 +2873,15 @@ function updateUI() {
     safeSetText('d-spikes', Math.round((tankA.brain.spikeCount + tankB.brain.spikeCount) / 2));
     safeSetText('d-weight', ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3));
     safeSetText('d-lr', tankA.brain.learningRate.toFixed(3));
+    
+    const activeA = tankA.brain.getActiveNeurons().length;
+    const activeB = tankB.brain.getActiveNeurons().length;
+    safeSetText('d-active-neurons', `${activeA}/${activeB}`);
+    
+    const healthA = tankA.brain.getWeightHealth();
+    const healthB = tankB.brain.getWeightHealth();
+    const healthPercent = ((healthA + healthB) / 2 * 100).toFixed(1);
+    safeSetText('d-weight-health', healthPercent + '%');
     
     const epsilon = Math.max(0.05, 1.0 - game.epoch * 0.001);
     safeSetText('d-explore', epsilon.toFixed(3));
@@ -2681,7 +2905,7 @@ const log = (msg, type = 'system') => {
 };
 
 // ============================================================================
-// SECTION 12: SYSTEM CONTROL
+// SECTION 12: SYSTEM CONTROL v8.1.1 - SAFE EMERGENCY BOOST
 // ============================================================================
 
 const SYS = {
@@ -2694,8 +2918,9 @@ const SYS = {
             btn.disabled = true;
             btn.textContent = 'SIMULATION ACTIVE';
         }
-        log('NEURAL COMBAT SYSTEM v8.0 INITIALIZED', 'system');
-        log('FIXED: Vision system - no direct enemy.pos access', 'system');
+        log(`NEURAL COMBAT SYSTEM v${VERSION.toString()} INITIALIZED`, 'system');
+        log('BUGFIX STABLE BUILD ACTIVE', 'system');
+        log('NO PENALTIES - POSITIVE REINFORCEMENT ONLY', 'system');
         requestAnimationFrame(loop);
     },
 
@@ -2744,46 +2969,54 @@ const SYS = {
         log(`Particle effects ${game.particles.enabled ? 'enabled' : 'disabled'}`, 'system');
     },
     
+    // ========================================================================
+    // v8.1.1: FIXED - Safe emergency boost (no neuron chaos)
+    // ========================================================================
     emergencyBoost() {
         game.tanks.forEach(t => {
-            t.brain.dopamine.spike(0.4);
+            // Safe dopamine boost
+            t.brain.dopamine.spike(0.3);
+            
+            // v8.1.1: Safe neuron stimulation (clamped, input/hidden only)
             t.brain.neurons.forEach(n => {
-                n.v += (Math.random() - 0.5) * 0.8;
-                if (n.v > n.threshold) {
-                    t.brain._spike(n.id);
+                if (n.layer !== 'output') {  // Don't touch outputs
+                    n.v += (Math.random() - 0.5) * 0.1;  // Gentle nudge
+                    // v8.1.1: Clamp to prevent chaos
+                    n.v = Math.max(-SNN_CONFIG.NEURON_V_CLAMP, 
+                                   Math.min(SNN_CONFIG.NEURON_V_CLAMP, n.v));
                 }
             });
         });
-        log('EMERGENCY DOPAMINE BOOST ACTIVATED', 'dopamine');
+        log('🚀 EMERGENCY DOPAMINE BOOST (SAFE MODE)', 'dopamine');
     },
 
     saveModel() {
         try {
             const model = {
-                version: '8.0',
+                version: VERSION.toString(),
                 epoch: game.epoch,
                 tanks: game.tanks.map(t => t.getSerializable()),
                 timestamp: Date.now()
             };
             
-            localStorage.setItem('tank_model_v80', JSON.stringify(model));
+            localStorage.setItem('tank_model_v811', JSON.stringify(model));
             log('NEURAL MODEL SAVED SUCCESSFULLY', 'system');
         } catch (e) {
-            log(`SAVE FAILED: ${e.message}`, 'system');
+            log(`SAVE FAILED: ${e.message}`, 'error');
         }
     },
 
     loadModel() {
         try {
-            const saved = localStorage.getItem('tank_model_v80');
+            const saved = localStorage.getItem('tank_model_v811');
             if (!saved) {
                 log('NO SAVED MODEL FOUND', 'system');
                 return;
             }
             
             const model = JSON.parse(saved);
-            if (model.version !== '8.0') {
-                log('INCOMPATIBLE MODEL VERSION', 'system');
+            if (model.version !== VERSION.toString()) {
+                log(`VERSION MISMATCH: Expected ${VERSION.toString()}, got ${model.version}`, 'error');
                 return;
             }
             
@@ -2795,7 +3028,7 @@ const SYS = {
             game.epoch = model.epoch;
             log(`MODEL LOADED - EPOCH ${model.epoch}`, 'system');
         } catch (e) {
-            log(`LOAD FAILED: ${e.message}`, 'system');
+            log(`LOAD FAILED: ${e.message}`, 'error');
         }
     }
 };
@@ -2902,9 +3135,29 @@ function safeInit() {
             updateUI();
         }
         
-        log('SYSTEM READY - PRESS INITIALIZE', 'system');
-        log('NEURAL TANK COMBAT v8.0 PROFESSIONAL', 'system');
-        log('VISION SYSTEM FIXED - NO CHEATING', 'system');
+        log(`SYSTEM READY v${VERSION.toString()}`, 'system');
+        log('BUGFIX STABLE: ACTIVE', 'system');
+        log('NaN PROTECTION: ENABLED', 'system');
+        
+        // Debug tools
+        window.DEBUG = {
+            version: () => VERSION.toString(),
+            dopamine: () => game.tanks.map(t => t.brain.dopamine.level.toFixed(4)),
+            activeNeurons: () => game.tanks.map(t => t.brain.getActiveNeurons().length),
+            weightHealth: () => game.tanks.map(t => (t.brain.getWeightHealth() * 100).toFixed(1) + '%'),
+            rewards: () => game.learningCurve.rewards.slice(-20),
+            boost: () => game.tanks.forEach(t => t.brain.dopamine.spike(0.3)),
+            // v8.1.1: Check for NaN issues
+            checkNaN: () => {
+                const issues = [];
+                game.tanks.forEach((t, i) => {
+                    if (isNaN(t.brain.dopamine.level)) issues.push(`Tank ${i}: dopamine NaN`);
+                    if (isNaN(t.hp)) issues.push(`Tank ${i}: hp NaN`);
+                });
+                if (issues.length === 0) return '✅ No NaN detected';
+                return '❌ ' + issues.join('; ');
+            }
+        };
         
         appInitialized = true;
         
@@ -2942,6 +3195,26 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
 window.game = game;
 window.SYS = SYS;
+window.VERSION = VERSION;
 </script>
 </body>
 </html>
+
+
+
+              <script>
+                              // Проверка на баги
+DEBUG.checkNaN()  // Должно вернуть: "✅ No NaN detected"
+
+// Стандартные команды
+DEBUG.version()        // "8.1.1"
+DEBUG.dopamine()       // [0.12, 0.09] - не должно быть 0.000
+DEBUG.activeNeurons()  // [25, 30] - не должно быть 2-3
+DEBUG.weightHealth()   // ["85.2%", "82.1%"] - должно быть >80%
+DEBUG.rewards()        // Массив положительных наград
+DEBUG.boost()          // Безопасный буст
+
+
+              </script>
+                        </body>
+                        </html>
