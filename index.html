@@ -339,8 +339,8 @@ const SNN_CONFIG = {
     NEURON_V_CLAMP: 1.0,
     SPONTANEOUS_RATE_MIN: 0.01,      // FIXED: Properly defined
     SPONTANEOUS_RATE_MAX: 0.03,      // FIXED: Properly defined
-    MIN_ACTIVE_NEURONS: 6,
-    MAX_ACTIVE_NEURONS: 51,
+    MIN_ACTIVE_NEURONS: 12,
+    MAX_ACTIVE_NEURONS: 64,
     CLUSTER_THRESHOLD: 0.6,
     LATERAL_INHIBITION: 0.05         // FIXED: Very weak (was 0.1)
 };
@@ -1719,8 +1719,8 @@ class Skills {
     constructor() {
         this.calibration = {
             turretOffset: (Math.random() - 0.5) * 0.03,
-            moveSpeed: 0.9 + Math.random() * 0.2,
-            turnSpeed: 0.1 + Math.random() * 0.05,
+            moveSpeed: 1.9 + Math.random() * 0.2,
+            turnSpeed: 0.3 + Math.random() * 0.05,
             lead: 0.3,
             confidence: 0.5
         };
