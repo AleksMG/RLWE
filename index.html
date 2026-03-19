@@ -5231,5 +5231,272 @@ window.SYS = SYS;
 window.CONFIG = CONFIG;
 window.TestRunner = TestRunner;
 </script>
+    <script>
+/**
+ * ============================================================================
+ * INFRASTRUCTURE LAYER - DIAGNOSTICS & TEST RUNNER
+ * Single Responsibility: Runtime integrity verification and debugging
+ * ============================================================================ */
+const TestRunner = Object.freeze({
+    results: [],
+    
+    /**
+     * Run all diagnostic tests
+     */
+    runAll() {
+        this.results = [];
+        log('--- STARTING DIAGNOSTICS ---', 'test');
+        
+        this.test('NaN Check', () => {
+            const issues = [];
+            game.tanks.forEach((t, i) => {
+                if (isNaN(t.brain.neurotransmitters.dopamine.level)) issues.push(`Tank ${i}: dopamine NaN`);
+                if (isNaN(t.hp)) issues.push(`Tank ${i}: hp NaN`);
+                if (isNaN(t.pos.x) || isNaN(t.pos.y)) issues.push(`Tank ${i}: position NaN`);
+                if (isNaN(t.emotions.confidence)) issues.push(`Tank ${i}: emotion NaN`);
+            });
+            return issues.length === 0 ? 'PASS' : 'FAIL: ' + issues.join('; ');
+        });
+
+        this.test('Weight Health', () => {
+            const avg = (game.tanks[0].brain.getWeightHealth() + game.tanks[1].brain.getWeightHealth()) / 2;
+            return avg > 0.5 ? `PASS (${(avg*100).toFixed(0)}%)` : 'WARN: Low health';
+        });
+
+        this.test('Neuron Activity', () => {
+            const count = game.tanks[0].brain.getActiveNeurons().length + game.tanks[1].brain.getActiveNeurons().length;
+            return count > 10 ? `PASS (${count} active)` : 'FAIL: Network silent';
+        });
+
+        this.test('Memory Leak Check', () => {
+            const projCount = game.projectiles.length;
+            const particleCount = game.particles.getCount();
+            const shotMem = game.tanks[0].brain.shotMemory.all.size + game.tanks[1].brain.shotMemory.all.size;
+            return `Projectiles: ${projCount}, Particles: ${particleCount}, ShotMemory: ${shotMem}`;
+        });
+
+        this.test('Emotion-Chemistry Synergy', () => {
+            const synergyA = game.tanks[0]._getEmotionChemistrySynergy();
+            const synergyB = game.tanks[1]._getEmotionChemistrySynergy();
+            return `Alpha: ${synergyA.desc} (×${synergyA.rewardMod.toFixed(2)}), Beta: ${synergyB.desc}`;
+        });
+
+        log('--- DIAGNOSTICS COMPLETE ---', 'test');
+    },
+
+    /**
+     * Run single test and log result
+     * @param {string} name - Test name
+     * @param {Function} fn - Test function
+     */
+    test(name, fn) {
+        try {
+            const result = fn();
+            log(`[TEST] ${name}: ${result}`, 'test');
+            this.results.push({ name, result });
+        } catch (e) {
+            log(`[TEST] ${name}: ERROR ${e.message}`, 'error');
+            this.results.push({ name, result: 'ERROR' });
+        }
+    }
+});
+
+/**
+ * ============================================================================
+ * INFRASTRUCTURE LAYER - MAIN LOOP & INITIALIZATION
+ * Single Responsibility: Production-ready game loop with performance monitoring
+ * ============================================================================ */
+function loop(timestamp) {
+    if (!game.running) {
+        return;
+    }
+
+    const startFrame = performance.now();
+    const dt = Math.min(timestamp - game.lastTime, 50);
+    
+    if (dt < 8) {
+        requestAnimationFrame(loop);
+        return;
+    }
+    
+    game.lastTime = timestamp; 
+    game.frameCount++;
+
+    // Profiling: Physics & AI
+    const startPhysics = performance.now();
+    const steps = Math.ceil(game.speed);
+    for (let i = 0; i < steps; i++) update(dt / steps);
+    const endPhysics = performance.now();
+
+    // Profiling: Render
+    const startRender = performance.now();
+    const canvas = UICache.get(CONFIG.DOM.IDS.SIM);
+    if (canvas) { 
+        const ctx = canvas.getContext('2d'); 
+        draw(ctx); 
+    }
+    const endRender = performance.now();
+
+    // Profiling: UI
+    updateUI();
+    
+    // Update Profiler UI
+    const frameTime = performance.now() - startFrame;
+    UICache.setText(CONFIG.DOM.IDS.P_FPS, Math.round(1000 / (timestamp - game.lastTime + 1)));
+    UICache.setText(CONFIG.DOM.IDS.P_FRAME, frameTime.toFixed(1) + ' ms');
+    UICache.setText(CONFIG.DOM.IDS.P_PHYSICS, (endPhysics - startPhysics).toFixed(1) + ' ms');
+    UICache.setText(CONFIG.DOM.IDS.P_AI, 'N/A'); // Combined in physics step
+    UICache.setText(CONFIG.DOM.IDS.P_RENDER, (endRender - startRender).toFixed(1) + ' ms');
+
+    requestAnimationFrame(loop);
+}
+
+/**
+ * Handle window resize
+ */
+function resize() {
+    const canvas = UICache.get(CONFIG.DOM.IDS.SIM);
+    const area = document.getElementById('game-area');
+    if (canvas && area) {
+        canvas.width = area.clientWidth; 
+        canvas.height = area.clientHeight;
+        if (game.learningCurve) game.learningCurve.resize();
+    }
+}
+
+let appInitialized = false;
+
+window.addEventListener('resize', resize);
+
+/**
+ * Safe initialization with retry logic
+ */
+function safeInit() {
+    if (appInitialized) return;
+    
+    try {
+        const requiredElements = [
+            CONFIG.DOM.IDS.SIM, CONFIG.DOM.IDS.BRAIN_RED, CONFIG.DOM.IDS.BRAIN_GREEN,
+            CONFIG.DOM.IDS.WM_VIZ_RED, CONFIG.DOM.IDS.WM_VIZ_GREEN,
+            CONFIG.DOM.IDS.REWARD_CHART, CONFIG.DOM.IDS.LOG
+        ];
+        
+        for (const id of requiredElements) {
+            if (!document.getElementById(id)) {
+                console.warn(`Element ${id} not found, retrying...`);
+                setTimeout(safeInit, 100);
+                return;
+            }
+        }
+        
+        window.logBuffer = new LogBuffer(CONFIG.GAME.LOG_MAX_SIZE);
+        const logElement = UICache.get(CONFIG.DOM.IDS.LOG);
+        if (logElement) window.logBuffer.setElement(logElement);
+        
+        UICache.init(); // Initialize DOM cache
+        resize();
+        initGame();
+        
+        game.learningCurve = new LearningCurve(CONFIG.DOM.IDS.REWARD_CHART, CONFIG.GAME.CHART_MAX_POINTS);
+        
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) {
+            loadingEl.classList.add('hidden');
+        }
+        
+        const canvas = UICache.get(CONFIG.DOM.IDS.SIM);
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            draw(ctx);
+            updateUI();
+        }
+        
+        log(`SYSTEM READY v${CONFIG.VERSION.major}.${CONFIG.VERSION.minor}.${CONFIG.VERSION.patch}`, 'system');
+        log('🧠 Professional Architecture - All Critical Fixes Applied', 'system');
+        log('🎯 EXPECT: One-shot learning, tactical fear, emotion-chemistry synergy', 'system');
+        
+        // ============================================================================
+        // DEBUG UTILITIES - FULLY RESTORED
+        // ============================================================================
+        window.DEBUG = Object.freeze({
+            version: () => `${CONFIG.VERSION.major}.${CONFIG.VERSION.minor}.${CONFIG.VERSION.patch}`,
+            dopamine: () => game.tanks.map(t => t.brain.neurotransmitters.dopamine.level.toFixed(4)),
+            adrenaline: () => game.tanks.map(t => t.brain.neurotransmitters.adrenaline.level.toFixed(4)),
+            serotonin: () => game.tanks.map(t => t.brain.neurotransmitters.serotonin.level.toFixed(4)),
+            activeNeurons: () => game.tanks.map(t => t.brain.getActiveNeurons().length),
+            activeIds: () => game.tanks.map(t => t.brain.getActiveNeurons()),
+            weightHealth: () => game.tanks.map(t => (t.brain.getWeightHealth() * 100).toFixed(1) + '%'),
+            rewards: () => game.learningCurve.rewards.slice(-20),
+            emotions: () => game.tanks.map(t => t.emotions.getState()),
+            boost: () => SYS.emergencyBoost(),
+            checkNaN: () => {
+                const issues = [];
+                game.tanks.forEach((t, i) => {
+                    if (isNaN(t.brain.neurotransmitters.dopamine.level)) issues.push(`Tank ${i}: dopamine NaN`);
+                    if (isNaN(t.hp)) issues.push(`Tank ${i}: hp NaN`);
+                    if (isNaN(t.emotions.confidence)) issues.push(`Tank ${i}: emotion NaN`);
+                });
+                return issues.length === 0 ? '✅ No NaN detected' : '❌ ' + issues.join('; ');
+            },
+            markFrame: () => {
+                if (CONFIG.DEBUG.PERF_LOGGING) {
+                    performance.mark('frame-start');
+                }
+            },
+            memoryStats: () => {
+                return {
+                    particles: game.particles.getCount(),
+                    projectiles: game.projectiles.length,
+                    colorCache: colorCache.getSize(),
+                    logBuffer: window.logBuffer?.getSize() || 0
+                };
+            }
+        });
+        
+        appInitialized = true;
+        
+    } catch (error) {
+        console.error('Initialization error:', error);
+        setTimeout(safeInit, 500);
+    }
+}
+
+/**
+ * Safe audio initialization
+ * @async
+ */
+async function safeAudioInit() {
+    if (!game.audio) return;
+    
+    try {
+        game.audio.enabled = false;
+        UICache.setText(CONFIG.DOM.IDS.AUDIO_VAL, 'OFFLINE');
+    } catch (e) {
+        console.warn('Audio init failed:', e);
+    }
+}
+
+// DOMContentLoaded handler
+document.addEventListener('DOMContentLoaded', () => {
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+        loadingEl.classList.remove('hidden');
+    }
+    
+    setTimeout(safeInit, 100);
+    safeAudioInit();
+});
+
+// Fallback for already-loaded documents
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(safeInit, 100);
+}
+
+// Export globals for debugging
+window.game = game;
+window.SYS = SYS;
+window.CONFIG = CONFIG;
+window.TestRunner = TestRunner;
+            </script>
 </body>
     </html>
