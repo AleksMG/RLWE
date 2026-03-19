@@ -1,20 +1,5 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -167,6 +152,7 @@
         #log .system { color: #00ff88; font-weight: bold; }
         #log .reward { color: #00ff88; }
         #log .error { color: #ff0066; font-weight: bold; }
+        #log .test { color: #00ccff; border-left: 2px solid #00ccff; padding-left: 5px; }
         
         .health-bar {
             height: 10px; background: rgba(30,0,0,0.95);
@@ -272,6 +258,16 @@
             <button onclick="SYS.emergencyBoost()">⚡ ADRENALINE BURST</button>
             <button onclick="SYS.saveModel()">SAVE NEURAL MODEL</button>
             <button onclick="SYS.loadModel()">LOAD NEURAL MODEL</button>
+            <button onclick="TestRunner.runAll()">🧪 RUN DIAGNOSTICS</button>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">📊 PERFORMANCE PROFILER</div>
+            <div class="stat-row"><span class="stat-label">FPS:</span><span class="val good" id="p-fps">0</span></div>
+            <div class="stat-row"><span class="stat-label">FRAME TIME:</span><span class="val warn" id="p-frame">0 ms</span></div>
+            <div class="stat-row"><span class="stat-label">PHYSICS:</span><span class="val" id="p-physics">0 ms</span></div>
+            <div class="stat-row"><span class="stat-label">AI PROCESSING:</span><span class="val" id="p-ai">0 ms</span></div>
+            <div class="stat-row"><span class="stat-label">RENDER:</span><span class="val" id="p-render">0 ms</span></div>
         </div>
 
         <div class="panel">
@@ -377,7 +373,9 @@ const CONFIG = {
             D_LR: 'd-lr', D_EXPLORE: 'd-explore', D_EPSILON: 'd-epsilon',
             D_BALANCE: 'd-balance', WM_MEMORY: 'wm-memory',
             SPEED_VAL: 'speed-val', AUDIO_VAL: 'audio-val',
-            VISION_VAL: 'vision-val', PARTICLES_VAL: 'particles-val'
+            VISION_VAL: 'vision-val', PARTICLES_VAL: 'particles-val',
+            P_FPS: 'p-fps', P_FRAME: 'p-frame', P_PHYSICS: 'p-physics',
+            P_AI: 'p-ai', P_RENDER: 'p-render'
         }
     },
     
@@ -2045,7 +2043,7 @@ function updateUI() {
     UICache.setText(CONFIG.DOM.IDS.D_ACT_GREEN, tankB.brain.spikeCount);
     UICache.setText(CONFIG.DOM.IDS.D_EPOCH, game.epoch);
     UICache.setText(CONFIG.DOM.IDS.D_SPIKES, Math.round((tankA.brain.spikeCount + tankB.brain.spikeCount) / 2));
-    UICache.setText(CONFIG.DOM.IDS.D_WEIGHT, ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3));
+        UICache.setText(CONFIG.DOM.IDS.D_WEIGHT, ((tankA.brain.getAvgWeight() + tankB.brain.getAvgWeight()) / 2).toFixed(3));
     UICache.setText(CONFIG.DOM.IDS.D_LR, tankA.brain.learningRate.toFixed(3));
     
     const activeA = tankA.brain.getActiveNeurons().length, activeB = tankB.brain.getActiveNeurons().length;
@@ -2093,11 +2091,10 @@ const SYS = {
         log('✅ Credit Assignment: Projectile ID passing', 'system');
         log('✅ Threat Propagation: Active to brain.process()', 'system');
         log('✅ GC Optimization: Mutable Vec2 in hot paths', 'system');
-        log('✅ UI Performance: DOM query caching', 'system');
-        log('✅ STDP: Event-driven weight updates', 'system');
         requestAnimationFrame(loop);
     },
     reset() {
+        game.running = false;
         initGame();
         const logEl = UICache.get(CONFIG.DOM.IDS.LOG);
         if (logEl) logEl.innerHTML = '';
@@ -2169,22 +2166,99 @@ const SYS = {
 
 /**
  * ============================================================================
+ * INFRASTRUCTURE LAYER - DIAGNOSTICS & TEST RUNNER
+ * Single Responsibility: Runtime integrity verification
+ * ============================================================================ */
+const TestRunner = {
+    results: [],
+    
+    runAll() {
+        this.results = [];
+        log('--- STARTING DIAGNOSTICS ---', 'test');
+        
+        this.test('NaN Check', () => {
+            const issues = [];
+            game.tanks.forEach((t, i) => {
+                if (isNaN(t.brain.neurotransmitters.dopamine.level)) issues.push(`Tank ${i}: dopamine NaN`);
+                if (isNaN(t.hp)) issues.push(`Tank ${i}: hp NaN`);
+                if (isNaN(t.pos.x) || isNaN(t.pos.y)) issues.push(`Tank ${i}: position NaN`);
+            });
+            return issues.length === 0 ? 'PASS' : 'FAIL: ' + issues.join('; ');
+        });
+
+        this.test('Weight Health', () => {
+            const avg = (game.tanks[0].brain.getWeightHealth() + game.tanks[1].brain.getWeightHealth()) / 2;
+            return avg > 0.5 ? `PASS (${(avg*100).toFixed(0)}%)` : 'WARN: Low health';
+        });
+
+        this.test('Neuron Activity', () => {
+            const count = game.tanks[0].brain.getActiveNeurons().length + game.tanks[1].brain.getActiveNeurons().length;
+            return count > 10 ? `PASS (${count} active)` : 'FAIL: Network silent';
+        });
+
+        this.test('Memory Leak Check', () => {
+            const projCount = game.projectiles.length;
+            const particleCount = game.particles.particles.length;
+            const shotMem = game.tanks[0].brain.shotMemory.all.size + game.tanks[1].brain.shotMemory.all.size;
+            return `Projectiles: ${projCount}, Particles: ${particleCount}, ShotMemory: ${shotMem}`;
+        });
+
+        log('--- DIAGNOSTICS COMPLETE ---', 'test');
+    },
+
+    test(name, fn) {
+        try {
+            const result = fn();
+            log(`[TEST] ${name}: ${result}`, 'test');
+            this.results.push({ name, result });
+        } catch (e) {
+            log(`[TEST] ${name}: ERROR ${e.message}`, 'error');
+            this.results.push({ name, result: 'ERROR' });
+        }
+    }
+};
+
+/**
+ * ============================================================================
  * INFRASTRUCTURE LAYER - MAIN LOOP & INITIALIZATION
  * Single Responsibility: Production-ready game loop with performance monitoring
  * ============================================================================ */
 function loop(timestamp) {
     if (!game.running) return;
+    
+    const startFrame = performance.now();
     const dt = Math.min(timestamp - game.lastTime, 50);
+    
     if (dt < 8) { requestAnimationFrame(loop); return; }
-    game.lastTime = timestamp; game.frameCount++;
-    if (timestamp > 1000) {
-        const fps = Math.round((game.frameCount * 1000) / timestamp);
-        if (fps !== game.fps) game.fps = fps;
-    }
+    game.lastTime = timestamp; 
+    game.frameCount++;
+
+    // Profiling: Physics & AI
+    const startPhysics = performance.now();
     const steps = Math.ceil(game.speed);
     for (let i = 0; i < steps; i++) update(dt / steps);
+    const endPhysics = performance.now();
+
+    // Profiling: Render
+    const startRender = performance.now();
     const canvas = UICache.get(CONFIG.DOM.IDS.SIM);
-    if (canvas) { const ctx = canvas.getContext('2d'); draw(ctx); updateUI(); }
+    if (canvas) { 
+        const ctx = canvas.getContext('2d'); 
+        draw(ctx); 
+    }
+    const endRender = performance.now();
+
+    // Profiling: UI
+    updateUI();
+    
+    // Update Profiler UI
+    const frameTime = performance.now() - startFrame;
+    UICache.setText(CONFIG.DOM.IDS.P_FPS, Math.round(1000 / (timestamp - game.lastTime + 1)));
+    UICache.setText(CONFIG.DOM.IDS.P_FRAME, frameTime.toFixed(1) + ' ms');
+    UICache.setText(CONFIG.DOM.IDS.P_PHYSICS, (endPhysics - startPhysics).toFixed(1) + ' ms');
+    UICache.setText(CONFIG.DOM.IDS.P_AI, 'N/A'); // Combined in physics step here
+    UICache.setText(CONFIG.DOM.IDS.P_RENDER, (endRender - startRender).toFixed(1) + ' ms');
+
     requestAnimationFrame(loop);
 }
 
@@ -2192,7 +2266,8 @@ function resize() {
     const canvas = UICache.get(CONFIG.DOM.IDS.SIM);
     const area = document.getElementById('game-area');
     if (canvas && area) {
-        canvas.width = area.clientWidth; canvas.height = area.clientHeight;
+        canvas.width = area.clientWidth; 
+        canvas.height = area.clientHeight;
         if (game.learningCurve) game.learningCurve.resize();
     }
 }
@@ -2266,23 +2341,3 @@ window.game = game; window.SYS = SYS; window.CONFIG = CONFIG;
 </script>
 </body>
 </html>
-
-
-
-              <script>
-                              // Доступно в консоли браузера:
-DEBUG.checkNaN()      // Проверка на числовые ошибки
-DEBUG.activeNeurons() // Мониторинг активности сети
-DEBUG.weightHealth()  // Здоровье синаптических весов
-DEBUG.rewards()       // Последние 20 значений награды
-
-// Быстрая проверка в консоли:
-console.log('✅ v10.1.0 loaded');
-console.log('✅ Credit assignment:', DEBUG.checkNaN());
-console.log('✅ Network health:', DEBUG.weightHealth());
-
-
-              </script>
-                        </body>
-                        </html>
-                    
